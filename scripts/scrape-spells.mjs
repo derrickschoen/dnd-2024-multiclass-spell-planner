@@ -196,6 +196,36 @@ export function classify(description, duration = '', castingTime = '') {
     return { attackModes, saveAbilities, concentration, ritual, effectReliabilityCategory: category };
 }
 
+/**
+ * The two editions write the level line in completely different shapes:
+ *   2014  "2nd-level abjuration"
+ *   2024  "Level 2 Abjuration (Artificer, Bard, Cleric, ...)"
+ * Handling only the 2014 form silently produced level -1 for every non-cantrip
+ * 2024 spell -- 385 of 419 records -- which is why `assertLevel` below now
+ * treats an unparsed level as a hard failure rather than a value.
+ *
+ * @returns 0-9, or -1 when the line could not be understood.
+ */
+export function parseSpellLevel(levelLine) {
+    if (/cantrip/i.test(levelLine)) return 0;
+
+    const modern = levelLine.match(/^\s*Level\s+(\d)/i);   // 2024
+    if (modern) return Number(modern[1]);
+
+    const legacy = levelLine.match(/(\d)(?:st|nd|rd|th)-level/i); // 2014
+    if (legacy) return Number(legacy[1]);
+
+    // Run-on pages merge the whole stat block into one paragraph, so "Level 8"
+    // is no longer at the start. Anchoring on a following school name keeps this
+    // from matching description prose like "a spell of level 7 or lower".
+    const runOn = levelLine.match(
+        /\bLevel\s+(\d)\s+(?:Abjuration|Conjuration|Divination|Enchantment|Evocation|Illusion|Necromancy|Transmutation)/i
+    );
+    if (runOn) return Number(runOn[1]);
+
+    return -1;
+}
+
 /** Pass 2 — detail page. Source book + attack/save only exist here. */
 export function parseSpellPage(htmlText, indexRow) {
     const root = parse(htmlText);
@@ -221,8 +251,10 @@ export function parseSpellPage(htmlText, indexRow) {
     // and is NOT identity, so this splits rather than minting a combined "book".
     const sourceBooks = bookOnly.split('/').map((s) => s.trim()).filter(Boolean);
 
-    const levelLine = paragraphs.find((p) => /cantrip|\d(st|nd|rd|th)-level/i.test(p)) || '';
-    let level = /cantrip/i.test(levelLine) ? 0 : Number(levelLine.match(/(\d)(?:st|nd|rd|th)-level/i)?.[1] ?? -1);
+    const levelLine = paragraphs
+        .slice(0, 3)
+        .find((p) => /cantrip|^\s*Level \d|\d(?:st|nd|rd|th)-level|\bLevel \d\s+[a-z]/i.test(p)) || '';
+    const level = parseSpellLevel(levelLine);
 
     const description = paragraphs
         .filter((p) => !/^(Source|Casting Time|Range|Components|Duration):/i.test(p) && p !== levelLine)
@@ -281,6 +313,13 @@ export async function buildDataset({ editions = ['2024', '2014'], limit = 0, off
                     // No parseable source line IS a real failure: the record cannot
                     // be attributed to a book.
                     failures.push(`${ed}/${row.slug}: no parseable source book on the page`);
+                    continue;
+                }
+                // Spell level drives eligibility, slot levels and preparation caps.
+                // An unparsed level must never reach the dataset -- the original gate
+                // only validated source books, so it published 385 levelless records.
+                if (!Number.isInteger(detail.level) || detail.level < 0 || detail.level > 9) {
+                    failures.push(`${ed}/${row.slug}: unparseable spell level (${detail.level})`);
                     continue;
                 }
                 sourceBooks.filter((b) => !KNOWN_SOURCES.includes(b)).forEach((b) => newSources.add(b));

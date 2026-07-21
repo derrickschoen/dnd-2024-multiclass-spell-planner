@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\BuildReportController;
 use Illuminate\Foundation\Application;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Route;
@@ -11,3 +12,5 @@ Route::get('/', fn () => Inertia::render('Health', [
     'journalMode' => DB::select('PRAGMA journal_mode')[0]->journal_mode,
     'foreignKeys' => (int) DB::select('PRAGMA foreign_keys')[0]->foreign_keys,
 ]))->name('health');
+
+Route::get('/build-report', BuildReportController::class)->name('build-report');

@@ -1,42 +1,42 @@
 [
   {
-    "identityKey": "alustriel-s-mooncloak",
-    "versionKey": "2024:alustriel-s-mooncloak",
-    "name": "Alustriel's Mooncloak",
+    "identityKey": "spellfire-flare",
+    "versionKey": "2024:spellfire-flare",
+    "name": "Spellfire Flare",
     "edition": "2024",
-    "level": -1,
-    "school": "Abjuration",
+    "level": 1,
+    "school": "Evocation",
     "castingTime": "Action",
-    "range": "Self",
-    "components": "V, S, M(C)",
-    "duration": "C, up to 1 minute",
+    "range": "60 feet",
+    "components": "V, S",
+    "duration": "Instantaneous",
     "concentration": false,
     "ritual": false,
-    "attackModes": [],
+    "attackModes": [
+      "ranged_spell"
+    ],
     "saveAbilities": [],
-    "effectReliabilityCategory": "modifier_scaled",
+    "effectReliabilityCategory": "attack_roll",
     "spellLists": [
-      "Bard",
-      "Druid",
-      "Ranger",
+      "Sorcerer",
       "Wizard"
     ],
     "sourceBooks": [
       "Forgotten Realms - Heroes of Faerun"
     ],
     "sourcePage": null,
-    "sourceSlug": "alustriel-s-mooncloak"
+    "sourceSlug": "spellfire-flare"
   },
   {
-    "identityKey": "backlash",
-    "versionKey": "2024:backlash",
-    "name": "Backlash",
+    "identityKey": "wardaway",
+    "versionKey": "2024:wardaway",
+    "name": "Wardaway",
     "edition": "2024",
-    "level": -1,
+    "level": 1,
     "school": "Abjuration",
-    "castingTime": "Reaction",
+    "castingTime": "Action",
     "range": "60 feet",
-    "components": "V",
+    "components": "V, S, M",
     "duration": "Instantaneous",
     "concentration": false,
     "ritual": false,
@@ -47,51 +47,99 @@
     "effectReliabilityCategory": "saving_throw",
     "spellLists": [
       "Bard",
-      "Sorcerer",
-      "Warlock",
+      "Cleric",
+      "Paladin",
       "Wizard"
     ],
     "sourceBooks": [
       "Forgotten Realms - Heroes of Faerun"
     ],
     "sourcePage": null,
-    "sourceSlug": "backlash"
+    "sourceSlug": "wardaway"
   },
   {
-    "identityKey": "blade-of-disaster",
-    "versionKey": "2024:blade-of-disaster",
-    "name": "Blade Of Disaster",
+    "identityKey": "death-armor",
+    "versionKey": "2024:death-armor",
+    "name": "Death Armor",
     "edition": "2024",
-    "level": -1,
-    "school": "Conjuration",
-    "castingTime": "Bonus Action",
-    "range": "60 feet",
-    "components": "V, S",
-    "duration": "C, up to 1 minute",
+    "level": 2,
+    "school": "Necromancy",
+    "castingTime": "Action",
+    "range": "Touch",
+    "components": "V, S, M(C*)",
+    "duration": "1 hour",
     "concentration": false,
     "ritual": false,
-    "attackModes": [
-      "melee_spell"
-    ],
+    "attackModes": [],
     "saveAbilities": [],
-    "effectReliabilityCategory": "attack_roll",
+    "effectReliabilityCategory": "fixed_effect",
     "spellLists": [
       "Sorcerer",
-      "Warlock",
       "Wizard"
     ],
     "sourceBooks": [
       "Forgotten Realms - Heroes of Faerun"
     ],
     "sourcePage": null,
-    "sourceSlug": "blade-of-disaster"
+    "sourceSlug": "death-armor"
+  },
+  {
+    "identityKey": "deryan-s-helpful-homunculi",
+    "versionKey": "2024:deryan-s-helpful-homunculi",
+    "name": "Deryan's Helpful Homunculi",
+    "edition": "2024",
+    "level": 2,
+    "school": "Conjuration",
+    "castingTime": "Action or R",
+    "range": "Self",
+    "components": "V, S, M(C*)",
+    "duration": "8 hours",
+    "concentration": false,
+    "ritual": false,
+    "attackModes": [],
+    "saveAbilities": [],
+    "effectReliabilityCategory": "fixed_effect",
+    "spellLists": [
+      "Cleric",
+      "Wizard"
+    ],
+    "sourceBooks": [
+      "Forgotten Realms - Heroes of Faerun"
+    ],
+    "sourcePage": null,
+    "sourceSlug": "deryan-s-helpful-homunculi"
+  },
+  {
+    "identityKey": "elminster-s-elusion",
+    "versionKey": "2024:elminster-s-elusion",
+    "name": "Elminster's Elusion",
+    "edition": "2024",
+    "level": 2,
+    "school": "Abjuration",
+    "castingTime": "Bonus Action",
+    "range": "Self",
+    "components": "V, S",
+    "duration": "C, up to 10 minutes",
+    "concentration": false,
+    "ritual": false,
+    "attackModes": [],
+    "saveAbilities": [],
+    "effectReliabilityCategory": "fixed_effect",
+    "spellLists": [
+      "Wizard"
+    ],
+    "sourceBooks": [
+      "Forgotten Realms - Heroes of Faerun"
+    ],
+    "sourcePage": null,
+    "sourceSlug": "elminster-s-elusion"
   },
   {
     "identityKey": "cacophonic-shield",
     "versionKey": "2024:cacophonic-shield",
     "name": "Cacophonic Shield",
     "edition": "2024",
-    "level": -1,
+    "level": 3,
     "school": "Evocation",
     "castingTime": "Action",
     "range": "Self",
@@ -120,7 +168,7 @@
     "versionKey": "2024:conjure-constructs",
     "name": "Conjure Constructs",
     "edition": "2024",
-    "level": -1,
+    "level": 3,
     "school": "Conjuration",
     "castingTime": "Action",
     "range": "60 feet",
@@ -143,202 +191,11 @@
     "sourceSlug": "conjure-constructs"
   },
   {
-    "identityKey": "death-armor",
-    "versionKey": "2024:death-armor",
-    "name": "Death Armor",
-    "edition": "2024",
-    "level": -1,
-    "school": "Necromancy",
-    "castingTime": "Action",
-    "range": "Touch",
-    "components": "V, S, M(C*)",
-    "duration": "1 hour",
-    "concentration": false,
-    "ritual": false,
-    "attackModes": [],
-    "saveAbilities": [],
-    "effectReliabilityCategory": "fixed_effect",
-    "spellLists": [
-      "Sorcerer",
-      "Wizard"
-    ],
-    "sourceBooks": [
-      "Forgotten Realms - Heroes of Faerun"
-    ],
-    "sourcePage": null,
-    "sourceSlug": "death-armor"
-  },
-  {
-    "identityKey": "deryan-s-helpful-homunculi",
-    "versionKey": "2024:deryan-s-helpful-homunculi",
-    "name": "Deryan's Helpful Homunculi",
-    "edition": "2024",
-    "level": -1,
-    "school": "Conjuration",
-    "castingTime": "Action or R",
-    "range": "Self",
-    "components": "V, S, M(C*)",
-    "duration": "8 hours",
-    "concentration": false,
-    "ritual": true,
-    "attackModes": [],
-    "saveAbilities": [],
-    "effectReliabilityCategory": "ritual_utility",
-    "spellLists": [
-      "Cleric",
-      "Wizard"
-    ],
-    "sourceBooks": [
-      "Forgotten Realms - Heroes of Faerun"
-    ],
-    "sourcePage": null,
-    "sourceSlug": "deryan-s-helpful-homunculi"
-  },
-  {
-    "identityKey": "dirge",
-    "versionKey": "2024:dirge",
-    "name": "Dirge",
-    "edition": "2024",
-    "level": -1,
-    "school": "Enchantment",
-    "castingTime": "Action",
-    "range": "Self",
-    "components": "V",
-    "duration": "C, up to 1 minute",
-    "concentration": false,
-    "ritual": false,
-    "attackModes": [],
-    "saveAbilities": [
-      "constitution"
-    ],
-    "effectReliabilityCategory": "saving_throw",
-    "spellLists": [
-      "Bard",
-      "Cleric"
-    ],
-    "sourceBooks": [
-      "Forgotten Realms - Heroes of Faerun"
-    ],
-    "sourcePage": null,
-    "sourceSlug": "dirge"
-  },
-  {
-    "identityKey": "doomtide",
-    "versionKey": "2024:doomtide",
-    "name": "Doomtide",
-    "edition": "2024",
-    "level": -1,
-    "school": "Conjuration",
-    "castingTime": "Action",
-    "range": "120 feet",
-    "components": "V, S, M",
-    "duration": "C, up to 1 minute",
-    "concentration": false,
-    "ritual": false,
-    "attackModes": [],
-    "saveAbilities": [
-      "wisdom"
-    ],
-    "effectReliabilityCategory": "saving_throw",
-    "spellLists": [
-      "Bard",
-      "Cleric",
-      "Warlock"
-    ],
-    "sourceBooks": [
-      "Forgotten Realms - Heroes of Faerun"
-    ],
-    "sourcePage": null,
-    "sourceSlug": "doomtide"
-  },
-  {
-    "identityKey": "elminster-s-effulgent-spheres",
-    "versionKey": "2024:elminster-s-effulgent-spheres",
-    "name": "Elminster's Effulgent Spheres",
-    "edition": "2024",
-    "level": -1,
-    "school": "Evocation",
-    "castingTime": "Action",
-    "range": "Self",
-    "components": "V, S, M(C)",
-    "duration": "1 hour",
-    "concentration": false,
-    "ritual": false,
-    "attackModes": [
-      "ranged_spell"
-    ],
-    "saveAbilities": [],
-    "effectReliabilityCategory": "attack_roll",
-    "spellLists": [
-      "Druid",
-      "Sorcerer",
-      "Wizard"
-    ],
-    "sourceBooks": [
-      "Forgotten Realms - Heroes of Faerun"
-    ],
-    "sourcePage": null,
-    "sourceSlug": "elminster-s-effulgent-spheres"
-  },
-  {
-    "identityKey": "elminster-s-elusion",
-    "versionKey": "2024:elminster-s-elusion",
-    "name": "Elminster's Elusion",
-    "edition": "2024",
-    "level": -1,
-    "school": "Abjuration",
-    "castingTime": "Bonus Action",
-    "range": "Self",
-    "components": "V, S",
-    "duration": "C, up to 10 minutes",
-    "concentration": false,
-    "ritual": false,
-    "attackModes": [],
-    "saveAbilities": [],
-    "effectReliabilityCategory": "fixed_effect",
-    "spellLists": [
-      "Wizard"
-    ],
-    "sourceBooks": [
-      "Forgotten Realms - Heroes of Faerun"
-    ],
-    "sourcePage": null,
-    "sourceSlug": "elminster-s-elusion"
-  },
-  {
-    "identityKey": "holy-star-of-mystra",
-    "versionKey": "2024:holy-star-of-mystra",
-    "name": "Holy Star of Mystra",
-    "edition": "2024",
-    "level": -1,
-    "school": "Evocation",
-    "castingTime": "Bonus Action",
-    "range": "Self",
-    "components": "V, S",
-    "duration": "C, up to 1 minute",
-    "concentration": false,
-    "ritual": false,
-    "attackModes": [
-      "ranged_spell"
-    ],
-    "saveAbilities": [],
-    "effectReliabilityCategory": "attack_roll",
-    "spellLists": [
-      "Cleric",
-      "Wizard"
-    ],
-    "sourceBooks": [
-      "Forgotten Realms - Heroes of Faerun"
-    ],
-    "sourcePage": null,
-    "sourceSlug": "holy-star-of-mystra"
-  },
-  {
     "identityKey": "laeral-s-silver-lance",
     "versionKey": "2024:laeral-s-silver-lance",
     "name": "Laeral's Silver Lance",
     "edition": "2024",
-    "level": -1,
+    "level": 3,
     "school": "Evocation",
     "castingTime": "Action",
     "range": "Self",
@@ -363,21 +220,110 @@
     "sourceSlug": "laeral-s-silver-lance"
   },
   {
-    "identityKey": "simbul-s-synostodweomer",
-    "versionKey": "2024:simbul-s-synostodweomer",
-    "name": "Simbul's Synostodweomer",
+    "identityKey": "sylune-s-viper",
+    "versionKey": "2024:sylune-s-viper",
+    "name": "Sylune's Viper",
     "edition": "2024",
-    "level": -1,
-    "school": "Transmutation",
-    "castingTime": "Action",
-    "range": "Touch",
-    "components": "V, S",
+    "level": 3,
+    "school": "Conjuration",
+    "castingTime": "Bonus Action",
+    "range": "Self",
+    "components": "V, S, M",
     "duration": "1 hour",
     "concentration": false,
     "ritual": false,
-    "attackModes": [],
+    "attackModes": [
+      "ranged_spell"
+    ],
     "saveAbilities": [],
-    "effectReliabilityCategory": "modifier_scaled",
+    "effectReliabilityCategory": "attack_roll",
+    "spellLists": [
+      "Druid",
+      "Wizard"
+    ],
+    "sourceBooks": [
+      "Forgotten Realms - Heroes of Faerun"
+    ],
+    "sourcePage": null,
+    "sourceSlug": "sylune-s-viper"
+  },
+  {
+    "identityKey": "backlash",
+    "versionKey": "2024:backlash",
+    "name": "Backlash",
+    "edition": "2024",
+    "level": 4,
+    "school": "Abjuration",
+    "castingTime": "Reaction",
+    "range": "60 feet",
+    "components": "V",
+    "duration": "Instantaneous",
+    "concentration": false,
+    "ritual": false,
+    "attackModes": [],
+    "saveAbilities": [
+      "constitution"
+    ],
+    "effectReliabilityCategory": "saving_throw",
+    "spellLists": [
+      "Bard",
+      "Sorcerer",
+      "Warlock",
+      "Wizard"
+    ],
+    "sourceBooks": [
+      "Forgotten Realms - Heroes of Faerun"
+    ],
+    "sourcePage": null,
+    "sourceSlug": "backlash"
+  },
+  {
+    "identityKey": "doomtide",
+    "versionKey": "2024:doomtide",
+    "name": "Doomtide",
+    "edition": "2024",
+    "level": 4,
+    "school": "Conjuration",
+    "castingTime": "Action",
+    "range": "120 feet",
+    "components": "V, S, M",
+    "duration": "C, up to 1 minute",
+    "concentration": false,
+    "ritual": false,
+    "attackModes": [],
+    "saveAbilities": [
+      "wisdom"
+    ],
+    "effectReliabilityCategory": "saving_throw",
+    "spellLists": [
+      "Bard",
+      "Cleric",
+      "Warlock"
+    ],
+    "sourceBooks": [
+      "Forgotten Realms - Heroes of Faerun"
+    ],
+    "sourcePage": null,
+    "sourceSlug": "doomtide"
+  },
+  {
+    "identityKey": "spellfire-storm",
+    "versionKey": "2024:spellfire-storm",
+    "name": "Spellfire Storm",
+    "edition": "2024",
+    "level": 4,
+    "school": "Evocation",
+    "castingTime": "Action",
+    "range": "60 feet",
+    "components": "V, S",
+    "duration": "C, up to 1 minute",
+    "concentration": false,
+    "ritual": false,
+    "attackModes": [],
+    "saveAbilities": [
+      "constitution"
+    ],
+    "effectReliabilityCategory": "saving_throw",
     "spellLists": [
       "Sorcerer",
       "Wizard"
@@ -386,14 +332,42 @@
       "Forgotten Realms - Heroes of Faerun"
     ],
     "sourcePage": null,
-    "sourceSlug": "simbul-s-synostodweomer"
+    "sourceSlug": "spellfire-storm"
+  },
+  {
+    "identityKey": "alustriel-s-mooncloak",
+    "versionKey": "2024:alustriel-s-mooncloak",
+    "name": "Alustriel's Mooncloak",
+    "edition": "2024",
+    "level": 5,
+    "school": "Abjuration",
+    "castingTime": "Action",
+    "range": "Self",
+    "components": "V, S, M(C)",
+    "duration": "C, up to 1 minute",
+    "concentration": false,
+    "ritual": false,
+    "attackModes": [],
+    "saveAbilities": [],
+    "effectReliabilityCategory": "modifier_scaled",
+    "spellLists": [
+      "Bard",
+      "Druid",
+      "Ranger",
+      "Wizard"
+    ],
+    "sourceBooks": [
+      "Forgotten Realms - Heroes of Faerun"
+    ],
+    "sourcePage": null,
+    "sourceSlug": "alustriel-s-mooncloak"
   },
   {
     "identityKey": "songal-s-elemental-suffusion",
     "versionKey": "2024:songal-s-elemental-suffusion",
     "name": "Songal's Elemental Suffusion",
     "edition": "2024",
-    "level": -1,
+    "level": 5,
     "school": "Transmutation",
     "castingTime": "Action",
     "range": "Self",
@@ -418,43 +392,15 @@
     "sourceSlug": "songal-s-elemental-suffusion"
   },
   {
-    "identityKey": "spellfire-flare",
-    "versionKey": "2024:spellfire-flare",
-    "name": "Spellfire Flare",
+    "identityKey": "dirge",
+    "versionKey": "2024:dirge",
+    "name": "Dirge",
     "edition": "2024",
-    "level": -1,
-    "school": "Evocation",
+    "level": 6,
+    "school": "Enchantment",
     "castingTime": "Action",
-    "range": "60 feet",
-    "components": "V, S",
-    "duration": "Instantaneous",
-    "concentration": false,
-    "ritual": false,
-    "attackModes": [
-      "ranged_spell"
-    ],
-    "saveAbilities": [],
-    "effectReliabilityCategory": "attack_roll",
-    "spellLists": [
-      "Sorcerer",
-      "Wizard"
-    ],
-    "sourceBooks": [
-      "Forgotten Realms - Heroes of Faerun"
-    ],
-    "sourcePage": null,
-    "sourceSlug": "spellfire-flare"
-  },
-  {
-    "identityKey": "spellfire-storm",
-    "versionKey": "2024:spellfire-storm",
-    "name": "Spellfire Storm",
-    "edition": "2024",
-    "level": -1,
-    "school": "Evocation",
-    "castingTime": "Action",
-    "range": "60 feet",
-    "components": "V, S",
+    "range": "Self",
+    "components": "V",
     "duration": "C, up to 1 minute",
     "concentration": false,
     "ritual": false,
@@ -464,25 +410,25 @@
     ],
     "effectReliabilityCategory": "saving_throw",
     "spellLists": [
-      "Sorcerer",
-      "Wizard"
+      "Bard",
+      "Cleric"
     ],
     "sourceBooks": [
       "Forgotten Realms - Heroes of Faerun"
     ],
     "sourcePage": null,
-    "sourceSlug": "spellfire-storm"
+    "sourceSlug": "dirge"
   },
   {
-    "identityKey": "sylune-s-viper",
-    "versionKey": "2024:sylune-s-viper",
-    "name": "Sylune's Viper",
+    "identityKey": "elminster-s-effulgent-spheres",
+    "versionKey": "2024:elminster-s-effulgent-spheres",
+    "name": "Elminster's Effulgent Spheres",
     "edition": "2024",
-    "level": -1,
-    "school": "Conjuration",
-    "castingTime": "Bonus Action",
+    "level": 6,
+    "school": "Evocation",
+    "castingTime": "Action",
     "range": "Self",
-    "components": "V, S, M",
+    "components": "V, S, M(C)",
     "duration": "1 hour",
     "concentration": false,
     "ritual": false,
@@ -493,42 +439,96 @@
     "effectReliabilityCategory": "attack_roll",
     "spellLists": [
       "Druid",
+      "Sorcerer",
       "Wizard"
     ],
     "sourceBooks": [
       "Forgotten Realms - Heroes of Faerun"
     ],
     "sourcePage": null,
-    "sourceSlug": "sylune-s-viper"
+    "sourceSlug": "elminster-s-effulgent-spheres"
   },
   {
-    "identityKey": "wardaway",
-    "versionKey": "2024:wardaway",
-    "name": "Wardaway",
+    "identityKey": "simbul-s-synostodweomer",
+    "versionKey": "2024:simbul-s-synostodweomer",
+    "name": "Simbul's Synostodweomer",
     "edition": "2024",
-    "level": -1,
-    "school": "Abjuration",
+    "level": 7,
+    "school": "Transmutation",
     "castingTime": "Action",
-    "range": "60 feet",
-    "components": "V, S, M",
-    "duration": "Instantaneous",
+    "range": "Touch",
+    "components": "V, S",
+    "duration": "1 hour",
     "concentration": false,
     "ritual": false,
     "attackModes": [],
-    "saveAbilities": [
-      "constitution"
-    ],
-    "effectReliabilityCategory": "saving_throw",
+    "saveAbilities": [],
+    "effectReliabilityCategory": "modifier_scaled",
     "spellLists": [
-      "Bard",
-      "Cleric",
-      "Paladin",
+      "Sorcerer",
       "Wizard"
     ],
     "sourceBooks": [
       "Forgotten Realms - Heroes of Faerun"
     ],
     "sourcePage": null,
-    "sourceSlug": "wardaway"
+    "sourceSlug": "simbul-s-synostodweomer"
+  },
+  {
+    "identityKey": "holy-star-of-mystra",
+    "versionKey": "2024:holy-star-of-mystra",
+    "name": "Holy Star of Mystra",
+    "edition": "2024",
+    "level": 8,
+    "school": "Evocation",
+    "castingTime": "Bonus Action",
+    "range": "Self",
+    "components": "V, S",
+    "duration": "C, up to 1 minute",
+    "concentration": false,
+    "ritual": false,
+    "attackModes": [
+      "ranged_spell"
+    ],
+    "saveAbilities": [],
+    "effectReliabilityCategory": "attack_roll",
+    "spellLists": [
+      "Cleric",
+      "Wizard"
+    ],
+    "sourceBooks": [
+      "Forgotten Realms - Heroes of Faerun"
+    ],
+    "sourcePage": null,
+    "sourceSlug": "holy-star-of-mystra"
+  },
+  {
+    "identityKey": "blade-of-disaster",
+    "versionKey": "2024:blade-of-disaster",
+    "name": "Blade Of Disaster",
+    "edition": "2024",
+    "level": 9,
+    "school": "Conjuration",
+    "castingTime": "Bonus Action",
+    "range": "60 feet",
+    "components": "V, S",
+    "duration": "C, up to 1 minute",
+    "concentration": false,
+    "ritual": false,
+    "attackModes": [
+      "melee_spell"
+    ],
+    "saveAbilities": [],
+    "effectReliabilityCategory": "attack_roll",
+    "spellLists": [
+      "Sorcerer",
+      "Warlock",
+      "Wizard"
+    ],
+    "sourceBooks": [
+      "Forgotten Realms - Heroes of Faerun"
+    ],
+    "sourcePage": null,
+    "sourceSlug": "blade-of-disaster"
   }
 ]

@@ -1,6 +1,6 @@
 import { test, describe } from 'node:test';
 import assert from 'node:assert/strict';
-import { parseIndex, classify, canonicalSourceBook } from './scrape-spells.mjs';
+import { parseIndex, classify, canonicalSourceBook, parseSpellLevel } from './scrape-spells.mjs';
 
 /**
  * These fixtures encode the REAL header layouts, captured from both sites on
@@ -91,5 +91,42 @@ describe('canonicalSourceBook disambiguates the two PHBs', () => {
             canonicalSourceBook("Xanathar's Guide to Everything", '2014'),
             "Xanathar's Guide to Everything"
         );
+    });
+});
+
+describe('parseSpellLevel handles BOTH edition formats', () => {
+    test('2024 writes "Level N School (lists)"', () => {
+        // Handling only the 2014 form silently gave level -1 to every non-cantrip
+        // 2024 spell: 385 of 419 records.
+        assert.equal(parseSpellLevel('Level 2 Abjuration (Artificer, Bard, Cleric)'), 2);
+        assert.equal(parseSpellLevel('Level 9 Conjuration (Wizard)'), 9);
+    });
+
+    test('2014 writes "Nth-level school"', () => {
+        assert.equal(parseSpellLevel('2nd-level abjuration'), 2);
+        assert.equal(parseSpellLevel('1st-level evocation (ritual)'), 1);
+        assert.equal(parseSpellLevel('9th-level necromancy'), 9);
+    });
+
+    test('cantrips are level 0 in either format', () => {
+        assert.equal(parseSpellLevel('Evocation Cantrip (Sorcerer, Wizard)'), 0);
+        assert.equal(parseSpellLevel('Evocation cantrip'), 0);
+    });
+
+    test('an unrecognised line returns -1 so the gate can reject it', () => {
+        assert.equal(parseSpellLevel('something else entirely'), -1);
+        assert.equal(parseSpellLevel(''), -1);
+    });
+});
+
+describe('parseSpellLevel survives run-on pages', () => {
+    test('recovers the level when the stat block is merged into one paragraph', () => {
+        const runOn = "Forgotten Realms - Heroes of Faerun Level 8 Evocation (Cleric, Wizard) Casting Time: Bonus Action";
+        assert.equal(parseSpellLevel(runOn), 8);
+    });
+
+    test('does not mistake description prose for a level line', () => {
+        // Holy Star of Mystra's own text says "a spell of level 7 or lower".
+        assert.equal(parseSpellLevel('if you succeed on a saving throw against a spell of level 7 or lower'), -1);
     });
 });
