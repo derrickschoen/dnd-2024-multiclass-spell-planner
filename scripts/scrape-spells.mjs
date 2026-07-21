@@ -214,26 +214,27 @@ export function parseSpellLevel(levelLine) {
         return Number.isInteger(level) && level >= 0 && level <= 9 ? level : -1;
     };
 
-    const modern = levelLine.match(/^\s*Level\s+(\d+)\b/i);   // 2024
-    if (modern) return acceptedLevel(modern[1]);
+    const school = '(?:Abjuration|Conjuration|Divination|Enchantment|Evocation|Illusion|Necromancy|Transmutation)';
+    const shapes = [
+        { header: `Level\\s+(?<level>\\d+)\\s+${school}(?:\\s+\\([^)]*\\))?`, cantrip: false },
+        { header: `(?<level>\\d+)(?:st|nd|rd|th)-level\\s+${school}(?:\\s+\\([^)]*\\))*`, cantrip: false },
+        { header: `${school}\\s+Cantrip(?:\\s+\\([^)]*\\))?`, cantrip: true },
+    ];
 
-    const legacy = levelLine.match(/\b(\d+)(?:st|nd|rd|th)-level/i); // 2014
-    if (legacy) return acceptedLevel(legacy[1]);
-
-    // Run-on pages merge the whole stat block into one paragraph, so "Level 8"
-    // is no longer at the start. Anchoring on a following school name keeps this
-    // from matching description prose like "a spell of level 7 or lower".
-    const runOn = levelLine.match(
-        /\bLevel\s+(\d+)\s+(?:Abjuration|Conjuration|Divination|Enchantment|Evocation|Illusion|Necromancy|Transmutation)/i
-    );
-    if (runOn) return acceptedLevel(runOn[1]);
-
-    // "cantrip" is common description prose. It only denotes level zero when
-    // it appears in the actual School + Cantrip header shape.
-    const cantrip = levelLine.match(
-        /\b(?:Abjuration|Conjuration|Divination|Enchantment|Evocation|Illusion|Necromancy|Transmutation)\s+Cantrip(?:\s*\(|\b)/i
-    );
-    if (cantrip) return 0;
+    for (const shape of shapes) {
+        // Headers are either their own paragraph, start a merged stat-block
+        // paragraph, or immediately follow Source metadata in that paragraph.
+        // In merged forms, "Casting Time:" is the required closing delimiter.
+        const completeForms = [
+            `^\\s*${shape.header}\\s*$`,
+            `^\\s*${shape.header}\\s+Casting Time:\\s+.+$`,
+            `^\\s*Source:\\s*.+?\\s+${shape.header}\\s+Casting Time:\\s+.+$`,
+        ];
+        for (const completeForm of completeForms) {
+            const match = levelLine.match(new RegExp(completeForm, 'i'));
+            if (match) return shape.cantrip ? 0 : acceptedLevel(match.groups.level);
+        }
+    }
 
     return -1;
 }

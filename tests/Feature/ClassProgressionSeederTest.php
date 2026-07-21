@@ -108,3 +108,51 @@ it('takes prepared counts from the class table regardless of ability score', fun
     expect($lookup->preparedCountForCharacterClass($characters[0], $wizardId))->toBe(4)
         ->and($lookup->preparedCountForCharacterClass($characters[1], $wizardId))->toBe(4);
 });
+
+it('separates Mystic Arcanum from ordinary Warlock preparations', function (int $level, array $arcanumLevels) {
+    $this->seed(ClassProgressionSeeder::class);
+    $rules = DB::table('class_progressions as progression')
+        ->join('class_definitions as class', 'class.id', '=', 'progression.class_definition_id')
+        ->where('class.name', 'Warlock')
+        ->where('progression.class_level', $level)
+        ->value('progression.grant_rules');
+    $rules = collect(json_decode((string) $rules, true, 512, JSON_THROW_ON_ERROR));
+
+    $ordinary = $rules->firstWhere('rule_key', 'warlock-prepared');
+    expect(data_get($ordinary, 'count'))->toBe(10)
+        ->and(data_get($ordinary, 'level_min'))->toBe(1)
+        ->and(data_get($ordinary, 'level_max'))->toBe(5)
+        ->and(data_get($ordinary, 'with_slots'))->toBeTrue();
+
+    $arcanum = $rules
+        ->filter(static fn (array $rule): bool => str_starts_with(
+            (string) data_get($rule, 'rule_key'),
+            'warlock-mystic-arcanum-',
+        ))
+        ->values();
+    expect($arcanum->pluck('level_min')->all())->toBe($arcanumLevels)
+        ->and($arcanum->pluck('level_max')->all())->toBe($arcanumLevels);
+    foreach ($arcanum as $rule) {
+        $spellLevel = (int) data_get($rule, 'level_min');
+        expect($rule)->toMatchArray([
+            'kind' => 'choice_from_list',
+            'rule_key' => "warlock-mystic-arcanum-{$spellLevel}",
+            'count' => 1,
+            'bucket' => 'prepared',
+            'list' => 'Warlock',
+            'level_min' => $spellLevel,
+            'level_max' => $spellLevel,
+            'with_slots' => false,
+            'free_cast' => [
+                'uses' => 1,
+                'recovery' => 'long_rest',
+                'pool_scope' => 'per_spell',
+            ],
+        ]);
+    }
+})->with([
+    'Warlock 11' => [11, [6]],
+    'Warlock 13' => [13, [6, 7]],
+    'Warlock 15' => [15, [6, 7, 8]],
+    'Warlock 17' => [17, [6, 7, 8, 9]],
+]);

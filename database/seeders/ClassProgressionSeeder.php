@@ -143,6 +143,15 @@ final class ClassProgressionSeeder extends Seeder
         $list = $name;
         $key = strtolower($name);
         $rules = [];
+        $arcanumLevels = $name === 'Warlock'
+            ? array_keys(array_filter([
+                6 => $contribution->classLevel >= 11,
+                7 => $contribution->classLevel >= 13,
+                8 => $contribution->classLevel >= 15,
+                9 => $contribution->classLevel >= 17,
+            ]))
+            : [];
+        $ordinaryPreparedCount = $preparedCount - count($arcanumLevels);
         if ($cantripCount > 0) {
             $rules[] = [
                 'kind' => 'choice_from_list',
@@ -155,11 +164,11 @@ final class ClassProgressionSeeder extends Seeder
                 'with_slots' => false,
             ];
         }
-        if ($preparedCount > 0) {
+        if ($ordinaryPreparedCount > 0) {
             $rules[] = [
                 'kind' => 'choice_from_list',
                 'rule_key' => "{$key}-prepared",
-                'count' => $preparedCount,
+                'count' => $ordinaryPreparedCount,
                 'bucket' => 'prepared',
                 'list' => $list,
                 'level_min' => 1,
@@ -169,6 +178,23 @@ final class ClassProgressionSeeder extends Seeder
             if ($name === 'Wizard') {
                 $rules[array_key_last($rules)]['selection_collection'] = 'wizard_spellbook';
             }
+        }
+        foreach ($arcanumLevels as $spellLevel) {
+            $rules[] = [
+                'kind' => 'choice_from_list',
+                'rule_key' => "warlock-mystic-arcanum-{$spellLevel}",
+                'count' => 1,
+                'bucket' => 'prepared',
+                'list' => 'Warlock',
+                'level_min' => $spellLevel,
+                'level_max' => $spellLevel,
+                'with_slots' => false,
+                'free_cast' => [
+                    'uses' => 1,
+                    'recovery' => 'long_rest',
+                    'pool_scope' => 'per_spell',
+                ],
+            ];
         }
         if ($name === 'Wizard') {
             $rules[] = [

@@ -105,6 +105,8 @@ describe('parseSpellLevel handles BOTH edition formats', () => {
     test('2014 writes "Nth-level school"', () => {
         assert.equal(parseSpellLevel('2nd-level abjuration'), 2);
         assert.equal(parseSpellLevel('1st-level evocation (ritual)'), 1);
+        assert.equal(parseSpellLevel('1st-level divination (dunamancy:chronurgy)'), 1);
+        assert.equal(parseSpellLevel('2nd-level conjuration (ritual) (dunamancy)'), 2);
         assert.equal(parseSpellLevel('9th-level necromancy'), 9);
     });
 
@@ -121,7 +123,7 @@ describe('parseSpellLevel handles BOTH edition formats', () => {
 
 describe('parseSpellLevel survives run-on pages', () => {
     test('recovers the level when the stat block is merged into one paragraph', () => {
-        const runOn = "Forgotten Realms - Heroes of Faerun Level 8 Evocation (Cleric, Wizard) Casting Time: Bonus Action";
+        const runOn = "Source: Forgotten Realms - Heroes of Faerun Level 8 Evocation (Cleric, Wizard) Casting Time: Bonus Action";
         assert.equal(parseSpellLevel(runOn), 8);
     });
 
@@ -131,7 +133,7 @@ describe('parseSpellLevel survives run-on pages', () => {
     });
 
     test('prefers an explicit numeric header over later cantrip prose', () => {
-        const runOn = 'Level 8 Evocation (Wizard) Casting Time: Action This spell empowers a cantrip you cast.';
+        const runOn = 'Source: Test Book Level 8 Evocation (Wizard) Casting Time: Action This spell empowers a cantrip you cast.';
         assert.equal(parseSpellLevel(runOn), 8);
     });
 });
@@ -173,5 +175,27 @@ describe('parseSpellPage extracts only a real level header from run-on content',
             Casting Time: Action Range: 60 feet Components: V, S Duration: Instantaneous
         </p></div>`;
         assert.equal(parseSpellPage(html, indexRow).level, 0);
+    });
+
+    test('rejects a fractional level when no complete real header exists', () => {
+        const html = `<div id="page-content">
+            <p>Source: Test Book</p>
+            <p>Level 0.5 Evocation (Wizard)</p>
+            <p>Casting Time: Action Range: 60 feet Components: V, S Duration: Instantaneous</p>
+        </div>`;
+        assert.equal(parseSpellPage(html, indexRow).level, -1);
+    });
+
+    test('rejects cantrip and numbered-level prose when the real header is absent', () => {
+        const cantripProse = `<div id="page-content">
+            <p>Source: Test Book</p>
+            <p>This behaves like an Evocation cantrip when you cast it.</p>
+        </div>`;
+        const numberedProse = `<div id="page-content">
+            <p>Source: Test Book</p>
+            <p>You can cast it as a 2nd-level evocation spell.</p>
+        </div>`;
+        assert.equal(parseSpellPage(cantripProse, indexRow).level, -1);
+        assert.equal(parseSpellPage(numberedProse, indexRow).level, -1);
     });
 });

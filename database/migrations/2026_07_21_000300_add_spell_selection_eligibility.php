@@ -26,8 +26,10 @@ return new class extends Migration
         DB::transaction(function () use ($upgrade): void {
             foreach (data_get($upgrade, 'wizard_slots', []) as $slot) {
                 $slotId = (int) data_get($slot, 'id');
-                $assignedVersionId = data_get($upgrade, "assignments.{$slotId}");
-                $versionId = $assignedVersionId ?? data_get($slot, 'current_spell_version_id');
+                $allAssignments = data_get($upgrade, 'assignments', []);
+                $versionId = array_key_exists($slotId, $allAssignments)
+                    ? $allAssignments[$slotId]
+                    : data_get($slot, 'current_spell_version_id');
                 $valid = $versionId !== null && $this->slotAllowsSpell($slot, (int) $versionId);
                 DB::table('spell_selection_slots')->where('id', $slotId)->update([
                     'current_spell_version_id' => $versionId,
@@ -58,6 +60,31 @@ return new class extends Migration
             $table->unique(['character_id', 'wizard_spellbook_entry_id']);
         });
 
+        $prepared = DB::table('spell_selection_slots as slot')
+            ->join('character_source_instances as source', 'source.id', '=', 'slot.source_instance_id')
+            ->join('class_definitions as class', 'class.id', '=', 'source.source_definition_id')
+            ->join('wizard_spellbook_entries as entry', function ($join): void {
+                $join->on('entry.character_id', '=', 'slot.character_id')
+                    ->on('entry.spell_version_id', '=', 'slot.current_spell_version_id');
+            })
+            ->where('source.source_type', 'class')
+            ->where('class.name', 'Wizard')
+            ->where('slot.bucket', 'prepared')
+            ->where('slot.state', 'active')
+            ->where('slot.selection_collection', 'wizard_spellbook')
+            ->where('slot.selection_eligibility', 'valid')
+            ->select(['slot.character_id', 'entry.id as wizard_spellbook_entry_id'])
+            ->distinct()
+            ->get();
+        foreach ($prepared as $entry) {
+            DB::table('wizard_prepared_entries')->insert([
+                'character_id' => data_get($entry, 'character_id'),
+                'wizard_spellbook_entry_id' => data_get($entry, 'wizard_spellbook_entry_id'),
+                'created_at' => now(),
+                'updated_at' => now(),
+            ]);
+        }
+
         Schema::table('spell_selection_slots', function (Blueprint $table): void {
             $table->dropIndex('slots_character_collection_index');
             $table->dropColumn([
@@ -68,7 +95,7 @@ return new class extends Migration
         });
     }
 
-    /** @return array{wizard_slots: list<object>, assignments: array<int, int>} */
+    /** @return array{wizard_slots: list<object>, assignments: array<int, int|null>} */
     private function legacyWizardPreparationUpgrade(): array
     {
         if (! Schema::hasTable('wizard_prepared_entries')) {
@@ -99,41 +126,120 @@ return new class extends Migration
             ->orderBy('prepared.id')
             ->get();
 
-        foreach ($legacy->groupBy('character_id') as $characterId => $preparations) {
-            if ($preparations->count() > $slotsByCharacter->get($characterId, collect())->count()) {
-                throw new RuntimeException(
-                    'Legacy Wizard preparations exceed available Wizard preparation slot capacity.'
-                );
-            }
-        }
-
+        $legacyByCharacter = $legacy->groupBy('character_id');
+        $characterIds = $slotsByCharacter->keys()
+            ->merge($legacyByCharacter->keys())
+            ->unique();
         $assignments = [];
-        $claimedSlotIds = [];
-        foreach ($legacy as $preparation) {
-            $versionId = (int) data_get($preparation, 'spell_version_id');
-            $candidates = $slotsByCharacter->get(data_get($preparation, 'character_id'), collect())
-                ->filter(fn (object $slot): bool => ! in_array((int) data_get($slot, 'id'), $claimedSlotIds, true))
-                ->sortBy(fn (object $slot): array => [
-                    (int) data_get($slot, 'current_spell_version_id') === $versionId ? 0 : 1,
-                    (int) data_get($slot, 'ordinal'),
-                ]);
-            $destination = $candidates->first(
-                fn (object $slot): bool => $this->slotAllowsSpell($slot, $versionId),
-            );
-            if ($destination === null) {
+        foreach ($characterIds as $characterId) {
+            $slots = $slotsByCharacter->get($characterId, collect())->values();
+            $legacyVersionIds = $legacyByCharacter->get($characterId, collect())
+                ->pluck('spell_version_id')
+                ->map(static fn (mixed $id): int => (int) $id)
+                ->unique()
+                ->values();
+            $currentVersionIds = $slots
+                ->pluck('current_spell_version_id')
+                ->filter(static fn (mixed $id): bool => $id !== null)
+                ->map(static fn (mixed $id): int => (int) $id)
+                ->unique()
+                ->values();
+            $combinedVersionIds = $currentVersionIds
+                ->merge($legacyVersionIds)
+                ->unique()
+                ->values()
+                ->all();
+
+            if (count($combinedVersionIds) > $slots->count()) {
                 throw new RuntimeException(
-                    "Legacy Wizard preparation for spell version {$versionId} is not eligible for any preparation slot."
+                    'Combined Wizard preparations exceed available Wizard preparation slot capacity.'
                 );
             }
-            $slotId = (int) data_get($destination, 'id');
-            $claimedSlotIds[] = $slotId;
-            $assignments[$slotId] = $versionId;
+
+            foreach ($legacyVersionIds as $versionId) {
+                if (! $slots->contains(fn (object $slot): bool => $this->slotAllowsSpell($slot, $versionId))) {
+                    throw new RuntimeException(
+                        "Legacy Wizard preparation for spell version {$versionId} is not eligible for any preparation slot."
+                    );
+                }
+            }
+
+            $characterAssignments = $this->assignCombinedPreparations($slots->all(), $combinedVersionIds);
+            if ($characterAssignments === null) {
+                throw new RuntimeException(
+                    'Combined Wizard preparations cannot be assigned to eligible preparation slots.'
+                );
+            }
+            $assignments += $characterAssignments;
         }
 
         return [
             'wizard_slots' => $wizardSlots->values()->all(),
             'assignments' => $assignments,
         ];
+    }
+
+    /**
+     * @param  list<object>  $slots
+     * @param  list<int>  $versionIds
+     * @return array<int, int|null>|null
+     */
+    private function assignCombinedPreparations(array $slots, array $versionIds): ?array
+    {
+        usort($versionIds, function (int $left, int $right) use ($slots): int {
+            $leftCount = count(array_filter($slots, fn (object $slot): bool => $this->slotAllowsSpell($slot, $left)));
+            $rightCount = count(array_filter($slots, fn (object $slot): bool => $this->slotAllowsSpell($slot, $right)));
+
+            return $leftCount <=> $rightCount;
+        });
+
+        $matched = $this->matchPreparations($slots, $versionIds, 0, []);
+        if ($matched === null) {
+            return null;
+        }
+        foreach ($slots as $slot) {
+            $matched[(int) data_get($slot, 'id')] ??= null;
+        }
+
+        return $matched;
+    }
+
+    /**
+     * @param  list<object>  $slots
+     * @param  list<int>  $versionIds
+     * @param  array<int, int>  $assignments
+     * @return array<int, int>|null
+     */
+    private function matchPreparations(array $slots, array $versionIds, int $offset, array $assignments): ?array
+    {
+        if ($offset >= count($versionIds)) {
+            return $assignments;
+        }
+
+        $versionId = $versionIds[$offset];
+        $candidates = array_values(array_filter(
+            $slots,
+            fn (object $slot): bool => ! array_key_exists((int) data_get($slot, 'id'), $assignments)
+                && $this->slotAllowsSpell($slot, $versionId),
+        ));
+        usort($candidates, static fn (object $left, object $right): int => [
+            (int) data_get($left, 'current_spell_version_id') === $versionId ? 0 : 1,
+            (int) data_get($left, 'ordinal'),
+        ] <=> [
+            (int) data_get($right, 'current_spell_version_id') === $versionId ? 0 : 1,
+            (int) data_get($right, 'ordinal'),
+        ]);
+
+        foreach ($candidates as $slot) {
+            $next = $assignments;
+            $next[(int) data_get($slot, 'id')] = $versionId;
+            $matched = $this->matchPreparations($slots, $versionIds, $offset + 1, $next);
+            if ($matched !== null) {
+                return $matched;
+            }
+        }
+
+        return null;
     }
 
     private function slotAllowsSpell(object $slot, int $versionId): bool

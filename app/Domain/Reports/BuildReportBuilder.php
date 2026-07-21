@@ -47,7 +47,7 @@ final readonly class BuildReportBuilder
 
         $routes = $this->access->buildForCharacter($characterId);
         $assessments = $this->duplicates->classify($routes);
-        $maxSlotLevel = (int) array_key_last($slots);
+        $pactMagic = SpellSlots::pactMagic($contributions);
         $maxClassSpellLevel = max(array_map(
             static fn (array $class): int => (int) data_get($class, 'max_preparable_level'),
             $classes,
@@ -71,18 +71,41 @@ final readonly class BuildReportBuilder
             'caster' => [
                 'caster_level' => $casterLevel,
                 'slots' => $slotRows,
-                'pact_magic' => SpellSlots::pactMagic($contributions),
+                'pact_magic' => $pactMagic,
             ],
             'classes' => $classes,
-            'preparation_callout' => sprintf(
-                'This build possesses %s-level slots, but every class can prepare only %s-level spells. Higher-level slots can upcast those lower-level spells; they do not unlock higher-level choices.',
-                $this->ordinal($maxSlotLevel),
-                $this->ordinal($maxClassSpellLevel),
-            ),
+            'preparation_callout' => $this->preparationCallout($slots, $pactMagic, $maxClassSpellLevel),
             'access_routes' => $routes,
             'wizard' => $this->wizardSplit($characterId, $routes),
             'duplicate_assessments' => $assessments,
         ];
+    }
+
+    /** @param array<int, int> $sharedSlots @param array{count: int, level: int}|null $pactMagic */
+    private function preparationCallout(array $sharedSlots, ?array $pactMagic, int $maxClassSpellLevel): string
+    {
+        $sharedLevel = array_key_last($sharedSlots);
+        if ($pactMagic !== null && $sharedLevel !== null) {
+            return sprintf(
+                'This build possesses shared Spellcasting slots through %s level and Pact Magic slots at %s level. Either pool can cast an eligible prepared spell. Class-specific preparation limits reach %s-level spells; a slot from either pool does not unlock higher-level choices for another class.',
+                $this->ordinal((int) $sharedLevel),
+                $this->ordinal((int) data_get($pactMagic, 'level')),
+                $this->ordinal($maxClassSpellLevel),
+            );
+        }
+        if ($pactMagic !== null) {
+            return sprintf(
+                'This build possesses no shared Spellcasting slots and Pact Magic slots at %s level. Pact Magic can cast eligible prepared spells. Class-specific preparation limits reach %s-level spells; slot level does not unlock higher-level choices.',
+                $this->ordinal((int) data_get($pactMagic, 'level')),
+                $this->ordinal($maxClassSpellLevel),
+            );
+        }
+
+        return sprintf(
+            'This build possesses %s-level slots, but every class can prepare only %s-level spells. Higher-level slots can upcast those lower-level spells; they do not unlock higher-level choices.',
+            $this->ordinal((int) $sharedLevel),
+            $this->ordinal($maxClassSpellLevel),
+        );
     }
 
     /**

@@ -22,22 +22,6 @@ function legacyWizardUpgradeFixture(object $test): array
         ->all();
     $migration = require database_path('migrations/2026_07_21_000300_add_spell_selection_eligibility.php');
     $migration->down();
-    DB::table('spell_selection_slots')
-        ->where('character_id', $characterId)
-        ->where('rule_key', 'wizard-prepared')
-        ->update(['current_spell_version_id' => null]);
-    foreach ($legacyVersionIds as $versionId) {
-        $entryId = DB::table('wizard_spellbook_entries')
-            ->where('character_id', $characterId)
-            ->where('spell_version_id', $versionId)
-            ->value('id');
-        DB::table('wizard_prepared_entries')->insert([
-            'character_id' => $characterId,
-            'wizard_spellbook_entry_id' => $entryId,
-            'created_at' => now(),
-            'updated_at' => now(),
-        ]);
-    }
 
     return [
         'migration' => $migration,
@@ -46,12 +30,21 @@ function legacyWizardUpgradeFixture(object $test): array
     ];
 }
 
-it('migrates every populated legacy Wizard preparation into constrained slots before dropping the table', function () {
+it('round-trips every Wizard preparation through down and up without manual reconstruction', function () {
     $fixture = legacyWizardUpgradeFixture($this);
     $migration = data_get($fixture, 'migration');
     $characterId = data_get($fixture, 'character_id');
     $legacyVersionIds = data_get($fixture, 'version_ids');
     expect($legacyVersionIds)->toHaveCount(4);
+    $rolledBackVersionIds = DB::table('wizard_prepared_entries as prepared')
+        ->join('wizard_spellbook_entries as entry', 'entry.id', '=', 'prepared.wizard_spellbook_entry_id')
+        ->where('prepared.character_id', $characterId)
+        ->pluck('entry.spell_version_id')
+        ->map(static fn (mixed $id): int => (int) $id)
+        ->sort()
+        ->values()
+        ->all();
+    expect($rolledBackVersionIds)->toBe(collect($legacyVersionIds)->sort()->values()->all());
 
     $migration->up();
 
@@ -72,6 +65,43 @@ it('migrates every populated legacy Wizard preparation into constrained slots be
         ))->toBeTrue();
 });
 
+it('refuses a divergent union that cannot fit without overwriting an existing preparation', function () {
+    $fixture = legacyWizardUpgradeFixture($this);
+    $characterId = (int) data_get($fixture, 'character_id');
+    $existingVersionIds = data_get($fixture, 'version_ids');
+    $extraEntry = DB::table('wizard_spellbook_entries')
+        ->where('character_id', $characterId)
+        ->whereNotIn('spell_version_id', $existingVersionIds)
+        ->orderBy('id')
+        ->first();
+    expect($extraEntry)->not->toBeNull();
+
+    DB::table('wizard_prepared_entries')->delete();
+    DB::table('wizard_prepared_entries')->insert([
+        'character_id' => $characterId,
+        'wizard_spellbook_entry_id' => data_get($extraEntry, 'id'),
+        'created_at' => now(),
+        'updated_at' => now(),
+    ]);
+
+    expect(fn () => data_get($fixture, 'migration')->up())->toThrow(
+        RuntimeException::class,
+        'Combined Wizard preparations exceed available Wizard preparation slot capacity.',
+    );
+
+    $slotsAfterFailure = DB::table('spell_selection_slots')
+        ->where('character_id', $characterId)
+        ->where('rule_key', 'wizard-prepared')
+        ->orderBy('ordinal')
+        ->pluck('current_spell_version_id')
+        ->map(static fn (mixed $id): int => (int) $id)
+        ->all();
+    expect($slotsAfterFailure)->toBe($existingVersionIds)
+        ->and(DB::table('wizard_prepared_entries')->pluck('wizard_spellbook_entry_id')->all())
+        ->toBe([(int) data_get($extraEntry, 'id')])
+        ->and(Schema::hasColumn('spell_selection_slots', 'selection_collection'))->toBeFalse();
+});
+
 it('refuses to drop legacy preparations when Wizard slot capacity is insufficient', function () {
     $fixture = legacyWizardUpgradeFixture($this);
     DB::table('spell_selection_slots')
@@ -83,7 +113,7 @@ it('refuses to drop legacy preparations when Wizard slot capacity is insufficien
 
     expect(fn () => data_get($fixture, 'migration')->up())->toThrow(
         RuntimeException::class,
-        'Legacy Wizard preparations exceed available Wizard preparation slot capacity.',
+        'Combined Wizard preparations exceed available Wizard preparation slot capacity.',
     );
     expect(Schema::hasTable('wizard_prepared_entries'))->toBeTrue()
         ->and(Schema::hasColumn('spell_selection_slots', 'selection_collection'))->toBeFalse();

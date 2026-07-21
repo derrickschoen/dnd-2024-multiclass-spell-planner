@@ -134,6 +134,56 @@ it('builds the golden read-only report values and duplicate classifications', fu
         ->and(data_get($detectMagic, 'counts_against_limit'))->toBeFalse();
 });
 
+it('describes Pact Magic slots without inventing zero-level shared slots', function () {
+    $warlockId = DB::table('class_definitions')->where('name', 'Warlock')->value('id');
+    $characterId = DB::table('characters')->insertGetId([
+        'name' => 'Warlock 5', 'created_at' => now(), 'updated_at' => now(),
+    ]);
+    DB::table('character_class_levels')->insert([
+        'character_id' => $characterId,
+        'class_definition_id' => $warlockId,
+        'level' => 5,
+        'created_at' => now(),
+        'updated_at' => now(),
+    ]);
+
+    $report = app(BuildReportBuilder::class)->build($characterId);
+    expect(data_get($report, 'caster.slots'))->toBe([])
+        ->and(data_get($report, 'caster.pact_magic'))->toBe(['count' => 2, 'level' => 3])
+        ->and(data_get($report, 'preparation_callout'))->toContain(
+            'no shared Spellcasting slots and Pact Magic slots at 3rd level',
+        )
+        ->and(data_get($report, 'preparation_callout'))->not->toContain('0th-level slots');
+});
+
+it('describes shared and Pact Magic slot pools together', function () {
+    $wizardId = DB::table('class_definitions')->where('name', 'Wizard')->value('id');
+    $warlockId = DB::table('class_definitions')->where('name', 'Warlock')->value('id');
+    $characterId = DB::table('characters')->insertGetId([
+        'name' => 'Wizard 1 Warlock 5', 'created_at' => now(), 'updated_at' => now(),
+    ]);
+    DB::table('character_class_levels')->insert([
+        [
+            'character_id' => $characterId, 'class_definition_id' => $wizardId, 'level' => 1,
+            'created_at' => now(), 'updated_at' => now(),
+        ],
+        [
+            'character_id' => $characterId, 'class_definition_id' => $warlockId, 'level' => 5,
+            'created_at' => now(), 'updated_at' => now(),
+        ],
+    ]);
+
+    $report = app(BuildReportBuilder::class)->build($characterId);
+    expect(data_get($report, 'caster.slots'))->toBe([['level' => 1, 'count' => 2]])
+        ->and(data_get($report, 'caster.pact_magic'))->toBe(['count' => 2, 'level' => 3])
+        ->and(data_get($report, 'preparation_callout'))->toContain(
+            'shared Spellcasting slots through 1st level and Pact Magic slots at 3rd level',
+        )
+        ->and(data_get($report, 'preparation_callout'))->toContain(
+            'Either pool can cast an eligible prepared spell',
+        );
+});
+
 it('serves the typed Inertia build report page as read-only data', function () {
     $this->get('/build-report')
         ->assertOk()
