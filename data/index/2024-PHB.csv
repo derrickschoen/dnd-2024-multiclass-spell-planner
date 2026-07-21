@@ -1,0 +1,7 @@
+identityKey,versionKey,name,edition,level,school,castingTime,range,components,duration,concentration,ritual,attackModes,saveAbilities,effectReliabilityCategory,spellLists,sourceBook,sourcePage,sourceSlug
+acid-splash,2024:acid-splash,Acid Splash,2024,0,Evocation,Action,60 feet,"V, S",Instantaneous,false,false,,dexterity,saving_throw,Artificer;Sorcerer;Wizard,Player's Handbook (2024),,acid-splash
+blade-ward,2024:blade-ward,Blade Ward,2024,0,Abjuration,Action,Self,"V, S","C, up to 1 minute",false,false,,,fixed_effect,Bard;Sorcerer;Warlock;Wizard,Player's Handbook (2024),,blade-ward
+chill-touch,2024:chill-touch,Chill Touch,2024,0,Necromancy,Action,Touch,"V, S",Instantaneous,false,false,melee_spell,,attack_roll,Sorcerer;Warlock;Wizard,Player's Handbook (2024),,chill-touch
+dancing-lights,2024:dancing-lights,Dancing Lights,2024,0,Illusion,Action,120 feet,"V, S, M","C, up to 1 minute",false,false,,,fixed_effect,Artificer;Bard;Sorcerer;Wizard,Player's Handbook (2024),,dancing-lights
+druidcraft,2024:druidcraft,Druidcraft,2024,0,Transmutation,Action,30 feet,"V, S",Instantaneous,false,false,,,fixed_effect,Druid,Player's Handbook (2024),,druidcraft
+eldritch-blast,2024:eldritch-blast,Eldritch Blast,2024,0,Evocation,Action,120 feet,"V, S",Instantaneous,false,false,ranged_spell,,attack_roll,Warlock,Player's Handbook (2024),,eldritch-blast

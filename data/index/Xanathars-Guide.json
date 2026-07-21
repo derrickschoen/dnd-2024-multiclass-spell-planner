@@ -1,0 +1,46 @@
+[
+  {
+    "identityKey": "control-flames",
+    "versionKey": "2014:control-flames",
+    "name": "Control Flames",
+    "edition": "2014",
+    "level": 0,
+    "school": "Transmutation",
+    "castingTime": "1 Action",
+    "range": "60 Feet",
+    "components": "S",
+    "duration": "Instantaneous or 1 hour",
+    "concentration": false,
+    "ritual": false,
+    "attackModes": [],
+    "saveAbilities": [],
+    "effectReliabilityCategory": "fixed_effect",
+    "spellLists": [],
+    "sourceBook": "Xanathar's Guide to Everything",
+    "sourcePage": null,
+    "sourceSlug": "control-flames"
+  },
+  {
+    "identityKey": "create-bonfire",
+    "versionKey": "2014:create-bonfire",
+    "name": "Create Bonfire",
+    "edition": "2014",
+    "level": 0,
+    "school": "Conjuration",
+    "castingTime": "1 Action",
+    "range": "60 Feet",
+    "components": "V, S",
+    "duration": "Concentration, up to 1 minute",
+    "concentration": true,
+    "ritual": false,
+    "attackModes": [],
+    "saveAbilities": [
+      "dexterity"
+    ],
+    "effectReliabilityCategory": "saving_throw",
+    "spellLists": [],
+    "sourceBook": "Xanathar's Guide to Everything",
+    "sourcePage": null,
+    "sourceSlug": "create-bonfire"
+  }
+]

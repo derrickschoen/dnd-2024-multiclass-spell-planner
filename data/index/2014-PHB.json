@@ -1,0 +1,69 @@
+[
+  {
+    "identityKey": "acid-splash",
+    "versionKey": "2014:acid-splash",
+    "name": "Acid Splash",
+    "edition": "2014",
+    "level": 0,
+    "school": "Conjuration",
+    "castingTime": "1 Action",
+    "range": "60 Feet",
+    "components": "V, S",
+    "duration": "Instantaneous",
+    "concentration": false,
+    "ritual": false,
+    "attackModes": [],
+    "saveAbilities": [
+      "dexterity"
+    ],
+    "effectReliabilityCategory": "saving_throw",
+    "spellLists": [],
+    "sourceBook": "Player's Handbook",
+    "sourcePage": null,
+    "sourceSlug": "acid-splash"
+  },
+  {
+    "identityKey": "blade-ward",
+    "versionKey": "2014:blade-ward",
+    "name": "Blade Ward",
+    "edition": "2014",
+    "level": 0,
+    "school": "Abjuration",
+    "castingTime": "1 Action",
+    "range": "Self",
+    "components": "V, S",
+    "duration": "1 round",
+    "concentration": false,
+    "ritual": false,
+    "attackModes": [],
+    "saveAbilities": [],
+    "effectReliabilityCategory": "fixed_effect",
+    "spellLists": [],
+    "sourceBook": "Player's Handbook",
+    "sourcePage": null,
+    "sourceSlug": "blade-ward"
+  },
+  {
+    "identityKey": "chill-touch",
+    "versionKey": "2014:chill-touch",
+    "name": "Chill Touch",
+    "edition": "2014",
+    "level": 0,
+    "school": "Necromancy",
+    "castingTime": "1 Action",
+    "range": "120 feet",
+    "components": "V, S",
+    "duration": "1 round",
+    "concentration": false,
+    "ritual": false,
+    "attackModes": [
+      "ranged_spell"
+    ],
+    "saveAbilities": [],
+    "effectReliabilityCategory": "attack_roll",
+    "spellLists": [],
+    "sourceBook": "Player's Handbook",
+    "sourcePage": null,
+    "sourceSlug": "chill-touch"
+  }
+]

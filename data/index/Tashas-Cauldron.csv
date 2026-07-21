@@ -1,0 +1,2 @@
+identityKey,versionKey,name,edition,level,school,castingTime,range,components,duration,concentration,ritual,attackModes,saveAbilities,effectReliabilityCategory,spellLists,sourceBook,sourcePage,sourceSlug
+booming-blade,2014:booming-blade,Booming Blade,2014,0,Evocation,1 Action,Self (5-foot radius),"S, M",1 round,false,false,,,fixed_effect,,Tasha's Cauldron of Everything,,booming-blade

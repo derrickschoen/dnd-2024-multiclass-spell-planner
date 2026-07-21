@@ -1,0 +1,4 @@
+identityKey,versionKey,name,edition,level,school,castingTime,range,components,duration,concentration,ritual,attackModes,saveAbilities,effectReliabilityCategory,spellLists,sourceBook,sourcePage,sourceSlug
+acid-splash,2014:acid-splash,Acid Splash,2014,0,Conjuration,1 Action,60 Feet,"V, S",Instantaneous,false,false,,dexterity,saving_throw,,Player's Handbook,,acid-splash
+blade-ward,2014:blade-ward,Blade Ward,2014,0,Abjuration,1 Action,Self,"V, S",1 round,false,false,,,fixed_effect,,Player's Handbook,,blade-ward
+chill-touch,2014:chill-touch,Chill Touch,2014,0,Necromancy,1 Action,120 feet,"V, S",1 round,false,false,ranged_spell,,attack_roll,,Player's Handbook,,chill-touch

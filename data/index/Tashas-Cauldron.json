@@ -1,0 +1,23 @@
+[
+  {
+    "identityKey": "booming-blade",
+    "versionKey": "2014:booming-blade",
+    "name": "Booming Blade",
+    "edition": "2014",
+    "level": 0,
+    "school": "Evocation",
+    "castingTime": "1 Action",
+    "range": "Self (5-foot radius)",
+    "components": "S, M",
+    "duration": "1 round",
+    "concentration": false,
+    "ritual": false,
+    "attackModes": [],
+    "saveAbilities": [],
+    "effectReliabilityCategory": "fixed_effect",
+    "spellLists": [],
+    "sourceBook": "Tasha's Cauldron of Everything",
+    "sourcePage": null,
+    "sourceSlug": "booming-blade"
+  }
+]

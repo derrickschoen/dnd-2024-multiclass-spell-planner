@@ -1,0 +1,156 @@
+[
+  {
+    "identityKey": "acid-splash",
+    "versionKey": "2024:acid-splash",
+    "name": "Acid Splash",
+    "edition": "2024",
+    "level": 0,
+    "school": "Evocation",
+    "castingTime": "Action",
+    "range": "60 feet",
+    "components": "V, S",
+    "duration": "Instantaneous",
+    "concentration": false,
+    "ritual": false,
+    "attackModes": [],
+    "saveAbilities": [
+      "dexterity"
+    ],
+    "effectReliabilityCategory": "saving_throw",
+    "spellLists": [
+      "Artificer",
+      "Sorcerer",
+      "Wizard"
+    ],
+    "sourceBook": "Player's Handbook (2024)",
+    "sourcePage": null,
+    "sourceSlug": "acid-splash"
+  },
+  {
+    "identityKey": "blade-ward",
+    "versionKey": "2024:blade-ward",
+    "name": "Blade Ward",
+    "edition": "2024",
+    "level": 0,
+    "school": "Abjuration",
+    "castingTime": "Action",
+    "range": "Self",
+    "components": "V, S",
+    "duration": "C, up to 1 minute",
+    "concentration": false,
+    "ritual": false,
+    "attackModes": [],
+    "saveAbilities": [],
+    "effectReliabilityCategory": "fixed_effect",
+    "spellLists": [
+      "Bard",
+      "Sorcerer",
+      "Warlock",
+      "Wizard"
+    ],
+    "sourceBook": "Player's Handbook (2024)",
+    "sourcePage": null,
+    "sourceSlug": "blade-ward"
+  },
+  {
+    "identityKey": "chill-touch",
+    "versionKey": "2024:chill-touch",
+    "name": "Chill Touch",
+    "edition": "2024",
+    "level": 0,
+    "school": "Necromancy",
+    "castingTime": "Action",
+    "range": "Touch",
+    "components": "V, S",
+    "duration": "Instantaneous",
+    "concentration": false,
+    "ritual": false,
+    "attackModes": [
+      "melee_spell"
+    ],
+    "saveAbilities": [],
+    "effectReliabilityCategory": "attack_roll",
+    "spellLists": [
+      "Sorcerer",
+      "Warlock",
+      "Wizard"
+    ],
+    "sourceBook": "Player's Handbook (2024)",
+    "sourcePage": null,
+    "sourceSlug": "chill-touch"
+  },
+  {
+    "identityKey": "dancing-lights",
+    "versionKey": "2024:dancing-lights",
+    "name": "Dancing Lights",
+    "edition": "2024",
+    "level": 0,
+    "school": "Illusion",
+    "castingTime": "Action",
+    "range": "120 feet",
+    "components": "V, S, M",
+    "duration": "C, up to 1 minute",
+    "concentration": false,
+    "ritual": false,
+    "attackModes": [],
+    "saveAbilities": [],
+    "effectReliabilityCategory": "fixed_effect",
+    "spellLists": [
+      "Artificer",
+      "Bard",
+      "Sorcerer",
+      "Wizard"
+    ],
+    "sourceBook": "Player's Handbook (2024)",
+    "sourcePage": null,
+    "sourceSlug": "dancing-lights"
+  },
+  {
+    "identityKey": "druidcraft",
+    "versionKey": "2024:druidcraft",
+    "name": "Druidcraft",
+    "edition": "2024",
+    "level": 0,
+    "school": "Transmutation",
+    "castingTime": "Action",
+    "range": "30 feet",
+    "components": "V, S",
+    "duration": "Instantaneous",
+    "concentration": false,
+    "ritual": false,
+    "attackModes": [],
+    "saveAbilities": [],
+    "effectReliabilityCategory": "fixed_effect",
+    "spellLists": [
+      "Druid"
+    ],
+    "sourceBook": "Player's Handbook (2024)",
+    "sourcePage": null,
+    "sourceSlug": "druidcraft"
+  },
+  {
+    "identityKey": "eldritch-blast",
+    "versionKey": "2024:eldritch-blast",
+    "name": "Eldritch Blast",
+    "edition": "2024",
+    "level": 0,
+    "school": "Evocation",
+    "castingTime": "Action",
+    "range": "120 feet",
+    "components": "V, S",
+    "duration": "Instantaneous",
+    "concentration": false,
+    "ritual": false,
+    "attackModes": [
+      "ranged_spell"
+    ],
+    "saveAbilities": [],
+    "effectReliabilityCategory": "attack_roll",
+    "spellLists": [
+      "Warlock"
+    ],
+    "sourceBook": "Player's Handbook (2024)",
+    "sourcePage": null,
+    "sourceSlug": "eldritch-blast"
+  }
+]
