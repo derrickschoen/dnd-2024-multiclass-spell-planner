@@ -1,0 +1,97 @@
+<?php
+
+declare(strict_types=1);
+
+namespace App\Domain\Characters;
+
+use App\Domain\Spells\SpellSelectionEligibility;
+use Illuminate\Support\Facades\DB;
+
+final readonly class EligibleSpellSearch
+{
+    public function __construct(private SpellSelectionEligibility $eligibility) {}
+
+    /** @return list<array<string, mixed>> */
+    public function search(int $characterId, int $slotId, string $query): array
+    {
+        $slot = DB::table('spell_selection_slots')
+            ->where('character_id', $characterId)
+            ->where('id', $slotId)
+            ->first();
+        abort_if($slot === null, 404);
+
+        $lists = $this->jsonList(data_get($slot, 'allowed_spell_lists'));
+        $schools = $this->jsonList(data_get($slot, 'allowed_schools'));
+        $tags = $this->jsonList(data_get($slot, 'allowed_tags'));
+
+        $candidates = DB::table('spell_versions')
+            ->where('is_active', true)
+            ->whereBetween('level', [
+                (int) data_get($slot, 'spell_level_min'),
+                (int) data_get($slot, 'spell_level_max'),
+            ])
+            ->when($query !== '', function ($builder) use ($query): void {
+                $builder->where('display_name', 'like', '%'.str_replace(['%', '_'], ['\\%', '\\_'], $query).'%');
+            })
+            ->when($lists !== [], function ($builder) use ($lists): void {
+                $builder->whereExists(function ($membership) use ($lists): void {
+                    $membership->selectRaw('1')
+                        ->from('spell_list_memberships')
+                        ->whereColumn('spell_list_memberships.spell_version_id', 'spell_versions.id')
+                        ->whereIn('spell_list_memberships.spell_list_key', $lists);
+                });
+            })
+            ->when($schools !== [], fn ($builder) => $builder->whereIn('school', $schools))
+            ->when(data_get($slot, 'selection_collection') === 'wizard_spellbook', function ($builder) use ($characterId): void {
+                $builder->whereExists(function ($entry) use ($characterId): void {
+                    $entry->selectRaw('1')
+                        ->from('wizard_spellbook_entries')
+                        ->whereColumn('wizard_spellbook_entries.spell_version_id', 'spell_versions.id')
+                        ->where('wizard_spellbook_entries.character_id', $characterId);
+                });
+            })
+            ->when($tags !== [], function ($builder) use ($tags): void {
+                foreach ($tags as $tag) {
+                    $builder->whereExists(function ($tagQuery) use ($tag): void {
+                        $tagQuery->selectRaw('1')
+                            ->from('spell_version_tags')
+                            ->whereColumn('spell_version_tags.spell_version_id', 'spell_versions.id')
+                            ->where('spell_version_tags.tag', $tag);
+                    });
+                }
+            })
+            ->orderBy('level')
+            ->orderBy('display_name')
+            ->limit(50)
+            ->get()
+            ->filter(fn (object $version): bool => data_get(
+                $this->eligibility->evaluate($slot, (int) data_get($version, 'id')),
+                'status',
+            ) === 'valid')
+            ->take(50);
+
+        return $candidates->map(static fn (object $version): array => [
+            'id' => (int) data_get($version, 'id'),
+            'name' => (string) data_get($version, 'display_name'),
+            'level' => (int) data_get($version, 'level'),
+            'school' => (string) data_get($version, 'school'),
+            'ritual' => (bool) data_get($version, 'ritual'),
+            'concentration' => (bool) data_get($version, 'concentration'),
+            'edition' => (string) data_get($version, 'rules_edition'),
+        ])->values()->all();
+    }
+
+    /** @return list<string> */
+    private function jsonList(mixed $value): array
+    {
+        if ($value === null || $value === '') {
+            return [];
+        }
+        if (is_array($value)) {
+            return array_values($value);
+        }
+        $decoded = json_decode((string) $value, true, 512, JSON_THROW_ON_ERROR);
+
+        return is_array($decoded) ? array_values($decoded) : [];
+    }
+}

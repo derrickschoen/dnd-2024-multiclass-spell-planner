@@ -1,0 +1,157 @@
+<?php
+
+declare(strict_types=1);
+
+namespace App\Domain\Characters;
+
+use App\Domain\Reports\BuildReportBuilder;
+use Illuminate\Support\Facades\DB;
+
+final readonly class CharacterWorkspaceBuilder
+{
+    public function __construct(private BuildReportBuilder $reports) {}
+
+    /** @return array<string, mixed> */
+    public function build(int $characterId): array
+    {
+        $report = $this->reports->build($characterId);
+        $routesBySlot = collect(data_get($report, 'access_routes'))->whereNotNull('slot_id')->keyBy('slot_id');
+        $duplicatesByIdentity = collect(data_get($report, 'duplicate_assessments'))->keyBy('spell_identity_id');
+        $classes = DB::table('character_class_levels as level')
+            ->join('class_definitions as class', 'class.id', '=', 'level.class_definition_id')
+            ->leftJoin('subclass_definitions as subclass', 'subclass.id', '=', 'level.subclass_definition_id')
+            ->where('level.character_id', $characterId)
+            ->orderBy('class.name')
+            ->select([
+                'level.id', 'level.class_definition_id', 'level.subclass_definition_id', 'level.level',
+                'class.name', 'subclass.name as subclass_name',
+            ])
+            ->get()
+            ->map(fn (object $row): array => [
+                'id' => (int) data_get($row, 'id'),
+                'class_definition_id' => (int) data_get($row, 'class_definition_id'),
+                'subclass_definition_id' => data_get($row, 'subclass_definition_id') === null
+                    ? null : (int) data_get($row, 'subclass_definition_id'),
+                'level' => (int) data_get($row, 'level'),
+                'name' => (string) data_get($row, 'name'),
+                'subclass_name' => data_get($row, 'subclass_name'),
+                'subclasses' => $this->subclasses((int) data_get($row, 'class_definition_id')),
+            ])
+            ->all();
+
+        $slots = DB::table('spell_selection_slots as slot')
+            ->join('character_source_instances as source', 'source.id', '=', 'slot.source_instance_id')
+            ->leftJoin('spell_versions as selected', 'selected.id', '=', DB::raw('COALESCE(slot.fixed_spell_version_id, slot.current_spell_version_id)'))
+            ->where('slot.character_id', $characterId)
+            ->whereIn('slot.state', ['active', 'orphaned', 'kept_override'])
+            ->select([
+                'slot.*', 'source.display_name as source_name', 'source.source_type', 'source.config as source_config',
+                'selected.display_name as spell_name', 'selected.level as spell_level',
+                'selected.spell_identity_id', 'selected.ritual', 'selected.concentration',
+            ])
+            ->orderBy('source.display_name')
+            ->orderBy('slot.sort_order')
+            ->orderBy('slot.id')
+            ->get()
+            ->map(function (object $slot) use ($report, $routesBySlot, $duplicatesByIdentity): array {
+                $route = $routesBySlot->get(data_get($slot, 'id'));
+                $ability = data_get($route, 'spellcasting_ability') ?? $this->sourceAbility($slot);
+                $modifier = $ability === null ? null : $this->abilityModifier(
+                    (int) data_get($report, "character.abilities.{$ability}", 10),
+                );
+                $proficiency = (int) data_get($report, 'character.proficiency_bonus');
+                $duplicate = $duplicatesByIdentity->get(data_get($slot, 'spell_identity_id'));
+
+                return [
+                    'id' => (int) data_get($slot, 'id'),
+                    'slot_key' => (string) data_get($slot, 'slot_key'),
+                    'source' => (string) data_get($slot, 'source_name'),
+                    'source_type' => (string) data_get($slot, 'source_type'),
+                    'label' => data_get($slot, 'label') ?: $this->slotLabel($slot),
+                    'bucket' => (string) data_get($slot, 'bucket'),
+                    'level_min' => (int) data_get($slot, 'spell_level_min'),
+                    'level_max' => (int) data_get($slot, 'spell_level_max'),
+                    'spell_id' => data_get($slot, 'fixed_spell_version_id') ?? data_get($slot, 'current_spell_version_id'),
+                    'spell_name' => data_get($slot, 'spell_name'),
+                    'spell_level' => data_get($slot, 'spell_level'),
+                    'ability' => $ability,
+                    'attack_bonus' => $modifier === null ? null : $proficiency + $modifier,
+                    'save_dc' => $modifier === null ? null : 8 + $proficiency + $modifier,
+                    'ritual' => (bool) data_get($slot, 'ritual'),
+                    'concentration' => (bool) data_get($slot, 'concentration'),
+                    'duplicate_status' => data_get($duplicate, 'category', 'none'),
+                    'state' => (string) data_get($slot, 'state'),
+                    'eligibility' => (string) data_get($slot, 'selection_eligibility'),
+                    'invalid_reason' => data_get($slot, 'selection_invalid_reason'),
+                    'orphan_reason' => data_get($slot, 'orphan_reason_code'),
+                    'override_note' => data_get($slot, 'override_note'),
+                    'locked' => (bool) data_get($slot, 'is_locked'),
+                ];
+            })
+            ->all();
+
+        $invalid = array_values(array_filter(
+            $slots,
+            static fn (array $slot): bool => data_get($slot, 'eligibility') === 'invalid'
+                || in_array(data_get($slot, 'state'), ['orphaned', 'kept_override'], true),
+        ));
+        $warningAssessments = array_values(array_filter(
+            data_get($report, 'duplicate_assessments'),
+            static fn (array $item): bool => data_get($item, 'category') !== 'none',
+        ));
+        $report['invalid_selections'] = $invalid;
+        $report['summary'] = [
+            'unique_spells' => collect(data_get($report, 'access_routes'))->pluck('spell_identity_id')->unique()->count(),
+            'access_routes' => count(data_get($report, 'access_routes')),
+            'warning_count' => count($warningAssessments) + count($invalid),
+        ];
+
+        return [
+            'revision' => (int) DB::table('characters')->where('id', $characterId)->value('revision'),
+            'report' => $report,
+            'classes' => $classes,
+            'available_classes' => DB::table('class_definitions')->orderBy('name')->get(['id', 'name'])
+                ->map(static fn (object $class): array => [
+                    'id' => (int) data_get($class, 'id'), 'name' => (string) data_get($class, 'name'),
+                ])->all(),
+            'slots' => $slots,
+            'save_points' => DB::table('character_save_points')->where('character_id', $characterId)
+                ->orderByDesc('id')->get(['id', 'label', 'created_at'])
+                ->map(static fn (object $point): array => [
+                    'id' => (int) data_get($point, 'id'),
+                    'label' => (string) data_get($point, 'label'),
+                    'created_at' => (string) data_get($point, 'created_at'),
+                ])->all(),
+        ];
+    }
+
+    /** @return list<array{id: int, name: string}> */
+    private function subclasses(int $classDefinitionId): array
+    {
+        return DB::table('subclass_definitions')->where('class_definition_id', $classDefinitionId)
+            ->orderBy('name')->get(['id', 'name'])
+            ->map(static fn (object $row): array => [
+                'id' => (int) data_get($row, 'id'), 'name' => (string) data_get($row, 'name'),
+            ])->all();
+    }
+
+    private function sourceAbility(object $slot): ?string
+    {
+        $config = data_get($slot, 'source_config');
+        $decoded = ($config === null || $config === '') ? [] : json_decode((string) $config, true, 512, JSON_THROW_ON_ERROR);
+        $ability = data_get($decoded, 'spellcasting_ability');
+
+        return is_string($ability) && $ability !== '' ? strtolower($ability) : null;
+    }
+
+    private function abilityModifier(int $score): int
+    {
+        return (int) floor(($score - 10) / 2);
+    }
+
+    private function slotLabel(object $slot): string
+    {
+        return str((string) data_get($slot, 'bucket'))->replace('_', ' ')->title()
+            .' '.(int) data_get($slot, 'ordinal');
+    }
+}

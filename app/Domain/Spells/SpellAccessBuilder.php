@@ -45,8 +45,12 @@ final readonly class SpellAccessBuilder
             })
             ->join('spell_identities as identity', 'identity.id', '=', 'version.spell_identity_id')
             ->where('slot.character_id', data_get($character, 'id'))
-            ->where('slot.state', 'active')
-            ->where('source.state', 'active')
+            ->where(function ($query): void {
+                $query->where('slot.state', 'kept_override')
+                    ->orWhere(function ($ordinary): void {
+                        $ordinary->where('slot.state', 'active')->where('source.state', 'active');
+                    });
+            })
             ->select([
                 'slot.*',
                 'source.display_name as source_name',
@@ -63,7 +67,8 @@ final readonly class SpellAccessBuilder
 
         $routes = [];
         foreach ($rows as $row) {
-            if (data_get($this->eligibility->evaluate($row), 'status') !== 'valid') {
+            if (data_get($row, 'state') !== 'kept_override'
+                && data_get($this->eligibility->evaluate($row), 'status') !== 'valid') {
                 continue;
             }
             $ability = $this->spellcastingAbility($row);
@@ -104,14 +109,19 @@ final readonly class SpellAccessBuilder
         $preparedVersionIds = DB::table('spell_selection_slots as slot')
             ->join('character_source_instances as source', 'source.id', '=', 'slot.source_instance_id')
             ->where('slot.character_id', data_get($character, 'id'))
-            ->where('slot.state', 'active')
-            ->where('source.state', 'active')
+            ->where(function ($query): void {
+                $query->where('slot.state', 'kept_override')
+                    ->orWhere(function ($ordinary): void {
+                        $ordinary->where('slot.state', 'active')->where('source.state', 'active');
+                    });
+            })
             ->where('slot.bucket', 'prepared')
             ->where('slot.selection_collection', 'wizard_spellbook')
             ->whereNotNull('slot.current_spell_version_id')
             ->select('slot.*')
             ->get()
-            ->filter(fn (object $slot): bool => data_get($this->eligibility->evaluate($slot), 'status') === 'valid')
+            ->filter(fn (object $slot): bool => data_get($slot, 'state') === 'kept_override'
+                || data_get($this->eligibility->evaluate($slot), 'status') === 'valid')
             ->pluck('current_spell_version_id')
             ->map(static fn (mixed $id): int => (int) $id)
             ->all();

@@ -1,15 +1,20 @@
 <?php
 
+use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\DB;
 
-it('serves the Inertia health page with the expected stack', function () {
+uses(RefreshDatabase::class);
+
+beforeEach(function () {
+    $this->seed();
+});
+
+it('serves the character list as the application home page', function () {
     $this->get('/')
         ->assertOk()
         ->assertInertia(fn ($page) => $page
-            ->component('Health')
-            ->where('php', PHP_VERSION)
-            ->has('laravel')
-            ->has('journalMode')
+            ->component('Characters/Index')
+            ->where('characters.0.name', 'A6 Sixfold Spellcaster')
         );
 });
 

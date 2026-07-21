@@ -48,7 +48,7 @@ final readonly class BuildReportBuilder
         $routes = $this->access->buildForCharacter($characterId);
         $assessments = $this->duplicates->classify($routes);
         $pactMagic = SpellSlots::pactMagic($contributions);
-        $maxClassSpellLevel = max(array_map(
+        $maxClassSpellLevel = $classes === [] ? 0 : max(array_map(
             static fn (array $class): int => (int) data_get($class, 'max_preparable_level'),
             $classes,
         ));

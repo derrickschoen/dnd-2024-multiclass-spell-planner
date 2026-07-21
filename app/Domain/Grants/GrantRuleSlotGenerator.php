@@ -407,6 +407,12 @@ final class GrantRuleSlotGenerator
             return;
         }
 
+        // An explicit user override survives unrelated source regeneration. The
+        // slot can be returned to ordinary eligibility only by a slot command.
+        if (data_get($existing, 'state') === 'kept_override') {
+            $attributes['state'] = 'kept_override';
+        }
+
         $changes = [];
         foreach ($attributes as $column => $value) {
             if (data_get($existing, $column) != $value) {
@@ -430,7 +436,7 @@ final class GrantRuleSlotGenerator
     {
         $existing = DB::table('spell_selection_slots')
             ->where('source_instance_id', data_get($source, 'id'))
-            ->where('state', 'active')
+            ->whereIn('state', ['active', 'kept_override'])
             ->get();
 
         foreach ($existing as $slot) {
