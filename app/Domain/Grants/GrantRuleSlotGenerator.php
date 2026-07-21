@@ -158,6 +158,21 @@ final class GrantRuleSlotGenerator
     {
         $classLevel = $this->classLevelForSource($source);
         $byRuleKey = [];
+        $definition = DB::table('subclass_definitions')
+            ->find((int) data_get($source, 'source_definition_id'));
+        if ($definition === null) {
+            throw new RuntimeException(
+                'Definition for subclass source instance '.data_get($source, 'id').' does not exist.'
+            );
+        }
+        foreach ($this->decodeJsonArray(data_get($definition, 'grant_rules')) as $rule) {
+            if (! is_array($rule)) {
+                throw new InvalidArgumentException('Static subclass grant rules must be objects.');
+            }
+            $validated = GrantRule::fromArray($rule);
+            $byRuleKey[$validated->ruleKey] = $rule;
+        }
+
         $progressions = DB::table('subclass_progressions')
             ->where('subclass_definition_id', data_get($source, 'source_definition_id'))
             ->where('class_level', '<=', $classLevel)

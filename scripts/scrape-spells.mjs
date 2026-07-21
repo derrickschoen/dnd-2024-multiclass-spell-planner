@@ -209,19 +209,24 @@ export function classify(description, duration = '', castingTime = '') {
  * @returns 0-9, or -1 when the line could not be understood.
  */
 export function parseSpellLevel(levelLine) {
-    const modern = levelLine.match(/^\s*Level\s+(\d)/i);   // 2024
-    if (modern) return Number(modern[1]);
+    const acceptedLevel = (token) => {
+        const level = Number(token);
+        return Number.isInteger(level) && level >= 0 && level <= 9 ? level : -1;
+    };
 
-    const legacy = levelLine.match(/(\d)(?:st|nd|rd|th)-level/i); // 2014
-    if (legacy) return Number(legacy[1]);
+    const modern = levelLine.match(/^\s*Level\s+(\d+)\b/i);   // 2024
+    if (modern) return acceptedLevel(modern[1]);
+
+    const legacy = levelLine.match(/\b(\d+)(?:st|nd|rd|th)-level/i); // 2014
+    if (legacy) return acceptedLevel(legacy[1]);
 
     // Run-on pages merge the whole stat block into one paragraph, so "Level 8"
     // is no longer at the start. Anchoring on a following school name keeps this
     // from matching description prose like "a spell of level 7 or lower".
     const runOn = levelLine.match(
-        /\bLevel\s+(\d)\s+(?:Abjuration|Conjuration|Divination|Enchantment|Evocation|Illusion|Necromancy|Transmutation)/i
+        /\bLevel\s+(\d+)\s+(?:Abjuration|Conjuration|Divination|Enchantment|Evocation|Illusion|Necromancy|Transmutation)/i
     );
-    if (runOn) return Number(runOn[1]);
+    if (runOn) return acceptedLevel(runOn[1]);
 
     // "cantrip" is common description prose. It only denotes level zero when
     // it appears in the actual School + Cantrip header shape.

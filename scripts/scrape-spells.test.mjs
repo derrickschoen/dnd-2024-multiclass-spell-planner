@@ -136,6 +136,19 @@ describe('parseSpellLevel survives run-on pages', () => {
     });
 });
 
+describe('parseSpellLevel rejects truncated out-of-range numeric tokens', () => {
+    test('rejects exact modern legacy and run-on corrupting cases', () => {
+        assert.equal(parseSpellLevel('Level 10 Evocation (Wizard)'), -1);
+        assert.equal(parseSpellLevel('10th-level evocation'), -1);
+        assert.equal(parseSpellLevel('Source Book Level 90 Evocation (Wizard) Casting Time: Action'), -1);
+    });
+
+    test('accepts the valid upper boundary without truncation', () => {
+        assert.equal(parseSpellLevel('Level 9 Evocation (Wizard)'), 9);
+        assert.equal(parseSpellLevel('9th-level evocation'), 9);
+    });
+});
+
 describe('parseSpellPage extracts only a real level header from run-on content', () => {
     const indexRow = {
         slug: 'run-on-test',

@@ -438,6 +438,57 @@ it('activates a rule below at and above its class-level unlock', function () {
     expect(DB::table('spell_selection_slots')->where('state', 'active')->count())->toBe(1);
 });
 
+it('combines static subclass grant rules with progression grant rules', function () {
+    $characterId = grantCharacter();
+    grantSpell('2024:static-subclass-spell', 'Static Subclass Spell', 1, ['Wizard']);
+    $classId = DB::table('class_definitions')->insertGetId([
+        'content_key' => '2024:class:test-fighter', 'name' => 'Test Fighter',
+        'rules_edition' => '2024', 'progression_type' => 'none',
+        'created_at' => now(), 'updated_at' => now(),
+    ]);
+    $subclassId = DB::table('subclass_definitions')->insertGetId([
+        'class_definition_id' => $classId,
+        'content_key' => '2024:subclass:static-and-progression',
+        'name' => 'Static and Progression', 'rules_edition' => '2024',
+        'spellcasting_ability' => 'intelligence', 'caster_fraction' => '1/3',
+        'caster_rounding' => 'down',
+        'grant_rules' => json_encode([[
+            'kind' => 'fixed_spell', 'rule_key' => 'static-subclass-grant',
+            'bucket' => 'automatic', 'spell_version_key' => '2024:static-subclass-spell',
+        ]], JSON_THROW_ON_ERROR),
+        'created_at' => now(), 'updated_at' => now(),
+    ]);
+    DB::table('subclass_progressions')->insert([
+        'subclass_definition_id' => $subclassId, 'class_level' => 3,
+        'cantrips_known' => 1, 'prepared_count' => 0, 'max_spell_level' => 1,
+        'slots' => json_encode([1 => 2], JSON_THROW_ON_ERROR),
+        'grant_rules' => json_encode([[
+            'kind' => 'choice_from_list', 'rule_key' => 'progression-subclass-grant',
+            'count' => 1, 'bucket' => 'cantrip_known', 'list' => 'Wizard',
+            'level_min' => 0, 'level_max' => 0,
+        ]], JSON_THROW_ON_ERROR),
+        'created_at' => now(), 'updated_at' => now(),
+    ]);
+    DB::table('character_class_levels')->insert([
+        'character_id' => $characterId, 'class_definition_id' => $classId,
+        'subclass_definition_id' => $subclassId, 'level' => 3,
+        'created_at' => now(), 'updated_at' => now(),
+    ]);
+    $sourceId = grantSource($characterId, 'subclass', $subclassId);
+
+    app(GrantRuleSlotGenerator::class)->generateForSource($sourceId);
+
+    $slots = DB::table('spell_selection_slots')
+        ->where('source_instance_id', $sourceId)
+        ->orderBy('rule_key')
+        ->get();
+    expect($slots)->toHaveCount(2)
+        ->and($slots->pluck('rule_key')->all())->toBe([
+            'progression-subclass-grant',
+            'static-subclass-grant',
+        ]);
+});
+
 it('enforces distinct repeatable source configuration by chosen list', function () {
     $characterId = grantCharacter();
     $featId = grantDefinition('feat_definitions', '2024:feat:magic-initiate', 'Magic Initiate', [[

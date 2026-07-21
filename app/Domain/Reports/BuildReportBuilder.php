@@ -26,7 +26,7 @@ final readonly class BuildReportBuilder
             throw new RuntimeException("Character {$characterId} does not exist.");
         }
 
-        [$classes, $contributions] = $this->classesAndContributions($characterId);
+        [$classes, $contributions, $singleClassSlotTables] = $this->classesAndContributions($characterId);
         $characterLevel = array_sum(array_map(
             static fn (array $class): int => (int) data_get($class, 'class_level'),
             $classes,
@@ -36,7 +36,10 @@ final readonly class BuildReportBuilder
             ? SpellSlots::proficiencyBonus($characterLevel)
             : (int) $proficiency;
         $casterLevel = SpellSlots::casterLevel($contributions);
-        $slots = SpellSlots::slotsForCasterLevel($casterLevel);
+        $slots = count($singleClassSlotTables) === 1
+            ? $singleClassSlotTables[0]
+            : SpellSlots::slotsForCasterLevel($casterLevel);
+        ksort($slots);
         $slotRows = [];
         foreach ($slots as $level => $count) {
             $slotRows[] = ['level' => $level, 'count' => $count];
@@ -82,7 +85,13 @@ final readonly class BuildReportBuilder
         ];
     }
 
-    /** @return array{0: list<array<string, mixed>>, 1: list<CasterContribution>} */
+    /**
+     * @return array{
+     *     0: list<array<string, mixed>>,
+     *     1: list<CasterContribution>,
+     *     2: list<array<int, int>>
+     * }
+     */
     private function classesAndContributions(int $characterId): array
     {
         $rows = DB::table('character_class_levels as level')
@@ -107,6 +116,7 @@ final readonly class BuildReportBuilder
 
         $classes = [];
         $contributions = [];
+        $singleClassSlotTables = [];
         foreach ($rows as $row) {
             $progressionType = (string) data_get($row, 'progression_type');
             if (data_get($row, 'subclass_caster_fraction') !== null) {
@@ -121,16 +131,22 @@ final readonly class BuildReportBuilder
                 $progressionType,
             );
             $contributions[] = $contribution;
+            $baseProgression = DB::table('class_progressions')
+                ->where('class_definition_id', data_get($row, 'class_definition_id'))
+                ->where('class_level', data_get($row, 'level'))
+                ->first();
             $subclassProgression = data_get($row, 'selected_subclass_id') === null ? null : DB::table('subclass_progressions')
                 ->where('subclass_definition_id', data_get($row, 'selected_subclass_id'))
                 ->where('class_level', data_get($row, 'level'))
                 ->first();
             $preparedCount = $subclassProgression === null
-                ? DB::table('class_progressions')
-                    ->where('class_definition_id', data_get($row, 'class_definition_id'))
-                    ->where('class_level', data_get($row, 'level'))
-                    ->value('prepared_count')
+                ? data_get($baseProgression, 'prepared_count')
                 : data_get($subclassProgression, 'prepared_count');
+            $ownProgression = $subclassProgression ?? $baseProgression;
+            $ownSlots = $this->decodeSlotTable(data_get($ownProgression, 'slots'));
+            if ($ownSlots !== [] && $progressionType !== CasterContribution::PACT) {
+                $singleClassSlotTables[] = $ownSlots;
+            }
             $classes[] = [
                 'name' => (string) data_get($row, 'class_name'),
                 'subclass' => data_get($row, 'subclass_name'),
@@ -148,7 +164,28 @@ final readonly class BuildReportBuilder
             ];
         }
 
-        return [$classes, $contributions];
+        return [$classes, $contributions, $singleClassSlotTables];
+    }
+
+    /** @return array<int, int> */
+    private function decodeSlotTable(mixed $value): array
+    {
+        if ($value === null || $value === '') {
+            return [];
+        }
+        $decoded = is_array($value)
+            ? $value
+            : json_decode((string) $value, true, 512, JSON_THROW_ON_ERROR);
+        if (! is_array($decoded)) {
+            return [];
+        }
+
+        $slots = [];
+        foreach ($decoded as $level => $count) {
+            $slots[(int) $level] = (int) $count;
+        }
+
+        return $slots;
     }
 
     /** @param list<array<string, mixed>> $routes @return array<string, mixed> */
