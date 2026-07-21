@@ -151,7 +151,7 @@ final class ClassProgressionSeeder extends Seeder
                 9 => $contribution->classLevel >= 17,
             ]))
             : [];
-        $ordinaryPreparedCount = $preparedCount - count($arcanumLevels);
+        $ordinaryPreparedCount = $preparedCount;
         if ($cantripCount > 0) {
             $rules[] = [
                 'kind' => 'choice_from_list',

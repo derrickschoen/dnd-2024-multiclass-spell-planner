@@ -50,6 +50,11 @@ return new class extends Migration
 
     public function down(): void
     {
+        // Resolve and validate every populated slot before recreating the old
+        // authority. Cached eligibility may be stale, so rollback uses the
+        // current catalog, rule predicates and spellbook contents.
+        $prepared = $this->wizardPreparationsForRollback();
+
         Schema::create('wizard_prepared_entries', function (Blueprint $table): void {
             $table->id();
             $table->foreignId('character_id')->constrained()->cascadeOnDelete();
@@ -60,22 +65,6 @@ return new class extends Migration
             $table->unique(['character_id', 'wizard_spellbook_entry_id']);
         });
 
-        $prepared = DB::table('spell_selection_slots as slot')
-            ->join('character_source_instances as source', 'source.id', '=', 'slot.source_instance_id')
-            ->join('class_definitions as class', 'class.id', '=', 'source.source_definition_id')
-            ->join('wizard_spellbook_entries as entry', function ($join): void {
-                $join->on('entry.character_id', '=', 'slot.character_id')
-                    ->on('entry.spell_version_id', '=', 'slot.current_spell_version_id');
-            })
-            ->where('source.source_type', 'class')
-            ->where('class.name', 'Wizard')
-            ->where('slot.bucket', 'prepared')
-            ->where('slot.state', 'active')
-            ->where('slot.selection_collection', 'wizard_spellbook')
-            ->where('slot.selection_eligibility', 'valid')
-            ->select(['slot.character_id', 'entry.id as wizard_spellbook_entry_id'])
-            ->distinct()
-            ->get();
         foreach ($prepared as $entry) {
             DB::table('wizard_prepared_entries')->insert([
                 'character_id' => data_get($entry, 'character_id'),
@@ -93,6 +82,58 @@ return new class extends Migration
                 'selection_invalid_reason',
             ]);
         });
+    }
+
+    /** @return list<array{character_id: int, wizard_spellbook_entry_id: int}> */
+    private function wizardPreparationsForRollback(): array
+    {
+        $slots = DB::table('spell_selection_slots as slot')
+            ->join('character_source_instances as source', 'source.id', '=', 'slot.source_instance_id')
+            ->join('class_definitions as class', 'class.id', '=', 'source.source_definition_id')
+            ->where('source.source_type', 'class')
+            ->where('class.name', 'Wizard')
+            ->where('slot.bucket', 'prepared')
+            ->where('slot.state', 'active')
+            ->whereNotNull('slot.current_spell_version_id')
+            ->select('slot.*')
+            ->orderBy('slot.character_id')
+            ->orderBy('slot.ordinal')
+            ->get();
+
+        $prepared = [];
+        $represented = [];
+        foreach ($slots as $slot) {
+            $slotId = (int) data_get($slot, 'id');
+            $versionId = (int) data_get($slot, 'current_spell_version_id');
+            $entryId = DB::table('wizard_spellbook_entries')
+                ->where('character_id', data_get($slot, 'character_id'))
+                ->where('spell_version_id', $versionId)
+                ->value('id');
+            if ($entryId === null) {
+                throw new RuntimeException(
+                    "Cannot roll back Wizard preparation slot {$slotId}: selected spell has no matching Wizard spellbook entry."
+                );
+            }
+            if (! $this->slotAllowsSpell($slot, $versionId)) {
+                throw new RuntimeException(
+                    "Cannot roll back Wizard preparation slot {$slotId}: selected spell is not currently eligible."
+                );
+            }
+
+            $representationKey = data_get($slot, 'character_id').':'.$entryId;
+            if (isset($represented[$representationKey])) {
+                throw new RuntimeException(
+                    "Cannot roll back Wizard preparation slot {$slotId}: the legacy table cannot represent duplicate preparations."
+                );
+            }
+            $represented[$representationKey] = true;
+            $prepared[] = [
+                'character_id' => (int) data_get($slot, 'character_id'),
+                'wizard_spellbook_entry_id' => (int) $entryId,
+            ];
+        }
+
+        return $prepared;
     }
 
     /** @return array{wizard_slots: list<object>, assignments: array<int, int|null>} */

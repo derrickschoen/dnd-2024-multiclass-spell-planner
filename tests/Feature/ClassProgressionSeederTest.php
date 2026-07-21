@@ -109,17 +109,23 @@ it('takes prepared counts from the class table regardless of ability score', fun
         ->and($lookup->preparedCountForCharacterClass($characters[1], $wizardId))->toBe(4);
 });
 
-it('separates Mystic Arcanum from ordinary Warlock preparations', function (int $level, array $arcanumLevels) {
+it('adds Mystic Arcanum on top of the ordinary Warlock prepared count', function (
+    int $level,
+    int $preparedCount,
+    array $arcanumLevels,
+) {
     $this->seed(ClassProgressionSeeder::class);
-    $rules = DB::table('class_progressions as progression')
+    $progression = DB::table('class_progressions as progression')
         ->join('class_definitions as class', 'class.id', '=', 'progression.class_definition_id')
         ->where('class.name', 'Warlock')
         ->where('progression.class_level', $level)
-        ->value('progression.grant_rules');
-    $rules = collect(json_decode((string) $rules, true, 512, JSON_THROW_ON_ERROR));
+        ->select('progression.*')
+        ->sole();
+    $rules = collect(json_decode((string) data_get($progression, 'grant_rules'), true, 512, JSON_THROW_ON_ERROR));
 
     $ordinary = $rules->firstWhere('rule_key', 'warlock-prepared');
-    expect(data_get($ordinary, 'count'))->toBe(10)
+    expect((int) data_get($progression, 'prepared_count'))->toBe($preparedCount)
+        ->and(data_get($ordinary, 'count'))->toBe($preparedCount)
         ->and(data_get($ordinary, 'level_min'))->toBe(1)
         ->and(data_get($ordinary, 'level_max'))->toBe(5)
         ->and(data_get($ordinary, 'with_slots'))->toBeTrue();
@@ -151,8 +157,14 @@ it('separates Mystic Arcanum from ordinary Warlock preparations', function (int 
         ]);
     }
 })->with([
-    'Warlock 11' => [11, [6]],
-    'Warlock 13' => [13, [6, 7]],
-    'Warlock 15' => [15, [6, 7, 8]],
-    'Warlock 17' => [17, [6, 7, 8, 9]],
+    'Warlock 11' => [11, 11, [6]],
+    'Warlock 12' => [12, 11, [6]],
+    'Warlock 13' => [13, 12, [6, 7]],
+    'Warlock 14' => [14, 12, [6, 7]],
+    'Warlock 15' => [15, 13, [6, 7, 8]],
+    'Warlock 16' => [16, 13, [6, 7, 8]],
+    'Warlock 17' => [17, 14, [6, 7, 8, 9]],
+    'Warlock 18' => [18, 14, [6, 7, 8, 9]],
+    'Warlock 19' => [19, 15, [6, 7, 8, 9]],
+    'Warlock 20' => [20, 15, [6, 7, 8, 9]],
 ]);

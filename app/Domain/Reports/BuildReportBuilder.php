@@ -100,6 +100,9 @@ final readonly class BuildReportBuilder
                 $this->ordinal($maxClassSpellLevel),
             );
         }
+        if ($sharedLevel === null) {
+            return 'This build possesses no Spellcasting or Pact Magic slots.';
+        }
 
         return sprintf(
             'This build possesses %s-level slots, but every class can prepare only %s-level spells. Higher-level slots can upcast those lower-level spells; they do not unlock higher-level choices.',

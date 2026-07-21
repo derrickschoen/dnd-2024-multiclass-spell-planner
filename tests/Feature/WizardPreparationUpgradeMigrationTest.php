@@ -30,6 +30,23 @@ function legacyWizardUpgradeFixture(object $test): array
     ];
 }
 
+/** @return array{migration: object, slot: object} */
+function wizardRollbackFixture(object $test): array
+{
+    $test->seed();
+    $characterId = DB::table('characters')->where('notes', 'seed:a6')->value('id');
+    $slot = DB::table('spell_selection_slots')
+        ->where('character_id', $characterId)
+        ->where('rule_key', 'wizard-prepared')
+        ->orderBy('ordinal')
+        ->first();
+
+    return [
+        'migration' => require database_path('migrations/2026_07_21_000300_add_spell_selection_eligibility.php'),
+        'slot' => $slot,
+    ];
+}
+
 it('round-trips every Wizard preparation through down and up without manual reconstruction', function () {
     $fixture = legacyWizardUpgradeFixture($this);
     $migration = data_get($fixture, 'migration');
@@ -130,4 +147,55 @@ it('refuses to drop a legacy Wizard preparation that is ineligible for every slo
     );
     expect(Schema::hasTable('wizard_prepared_entries'))->toBeTrue()
         ->and(Schema::hasColumn('spell_selection_slots', 'selection_collection'))->toBeFalse();
+});
+
+it('aborts rollback before schema changes when a populated Wizard slot is live-ineligible', function () {
+    $fixture = wizardRollbackFixture($this);
+    $slot = data_get($fixture, 'slot');
+    expect(data_get($slot, 'selection_eligibility'))->toBe('valid');
+    DB::table('spell_versions')
+        ->where('id', data_get($slot, 'current_spell_version_id'))
+        ->update(['level' => 9]);
+
+    expect(fn () => data_get($fixture, 'migration')->down())->toThrow(
+        RuntimeException::class,
+        'Cannot roll back Wizard preparation slot '.data_get($slot, 'id').': selected spell is not currently eligible.',
+    );
+    expect(Schema::hasTable('wizard_prepared_entries'))->toBeFalse()
+        ->and(Schema::hasColumn('spell_selection_slots', 'selection_collection'))->toBeTrue();
+});
+
+it('uses live rollback eligibility instead of discarding a valid selection with stale status', function () {
+    $fixture = wizardRollbackFixture($this);
+    $slot = data_get($fixture, 'slot');
+    DB::table('spell_selection_slots')->where('id', data_get($slot, 'id'))->update([
+        'selection_eligibility' => 'invalid',
+        'selection_invalid_reason' => 'stale cached result',
+    ]);
+
+    data_get($fixture, 'migration')->down();
+
+    $rolledBackVersionIds = DB::table('wizard_prepared_entries as prepared')
+        ->join('wizard_spellbook_entries as entry', 'entry.id', '=', 'prepared.wizard_spellbook_entry_id')
+        ->pluck('entry.spell_version_id')
+        ->map(static fn (mixed $id): int => (int) $id);
+    expect($rolledBackVersionIds)->toHaveCount(4)
+        ->and($rolledBackVersionIds)->toContain((int) data_get($slot, 'current_spell_version_id'))
+        ->and(Schema::hasColumn('spell_selection_slots', 'selection_collection'))->toBeFalse();
+});
+
+it('aborts rollback before schema changes when a selection has no spellbook entry', function () {
+    $fixture = wizardRollbackFixture($this);
+    $slot = data_get($fixture, 'slot');
+    DB::table('wizard_spellbook_entries')
+        ->where('character_id', data_get($slot, 'character_id'))
+        ->where('spell_version_id', data_get($slot, 'current_spell_version_id'))
+        ->delete();
+
+    expect(fn () => data_get($fixture, 'migration')->down())->toThrow(
+        RuntimeException::class,
+        'Cannot roll back Wizard preparation slot '.data_get($slot, 'id').': selected spell has no matching Wizard spellbook entry.',
+    );
+    expect(Schema::hasTable('wizard_prepared_entries'))->toBeFalse()
+        ->and(Schema::hasColumn('spell_selection_slots', 'selection_collection'))->toBeTrue();
 });
