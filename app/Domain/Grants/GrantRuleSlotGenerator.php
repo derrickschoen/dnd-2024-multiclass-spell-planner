@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Domain\Grants;
 
+use App\Domain\Spells\SpellSelectionEligibility;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 use InvalidArgumentException;
@@ -11,6 +12,8 @@ use RuntimeException;
 
 final class GrantRuleSlotGenerator
 {
+    public function __construct(private readonly SpellSelectionEligibility $eligibility) {}
+
     /** @return list<GrantRule> */
     public function activeRulesForSource(int $sourceInstanceId): array
     {
@@ -40,34 +43,47 @@ final class GrantRuleSlotGenerator
                 throw new InvalidArgumentException("Source instance {$sourceInstanceId} does not exist.");
             }
 
+            if (data_get($source, 'state') !== 'active') {
+                $this->deactivateSourceTree($sourceInstanceId);
+
+                return;
+            }
+
+            $desiredSlotKeys = [];
+            $desiredChildMarkers = [];
             foreach ($this->rulesForSource($source) as $ruleData) {
                 $rule = GrantRule::fromArray($ruleData);
                 $this->assertDistinctConfiguration($source, $rule);
                 if ($rule->activeFromClassLevel !== null
                     && $this->classLevelForSource($source) < $rule->activeFromClassLevel) {
-                    $this->orphanSurplus($source, $rule, 0, 'class_level_below_unlock');
-
                     continue;
                 }
                 if ($rule->kind === GrantRule::FIXED_SPELL) {
                     $this->materializeFixedSpell($source, $rule);
-                    $this->orphanSurplus($source, $rule, 1);
+                    $desiredSlotKeys[] = $this->slotKey($source, $rule, 1);
                 }
                 if ($rule->kind === GrantRule::CHOICE_FROM_LIST) {
                     $this->materializeListChoices($source, $rule);
-                    $this->orphanSurplus($source, $rule, (int) $rule->count);
+                    for ($ordinal = 1; $ordinal <= (int) $rule->count; $ordinal++) {
+                        $desiredSlotKeys[] = $this->slotKey($source, $rule, $ordinal);
+                    }
                 }
                 if ($rule->kind === GrantRule::CHOICE_FROM_QUERY) {
                     $this->materializeQueryChoices($source, $rule);
-                    $this->orphanSurplus($source, $rule, (int) $rule->count);
+                    for ($ordinal = 1; $ordinal <= (int) $rule->count; $ordinal++) {
+                        $desiredSlotKeys[] = $this->slotKey($source, $rule, $ordinal);
+                    }
                 }
                 if ($rule->kind === GrantRule::GRANT_SOURCE) {
-                    $this->materializeGrantedSources($source, $rule);
+                    array_push($desiredChildMarkers, ...$this->materializeGrantedSources($source, $rule));
                 }
                 if ($rule->kind === GrantRule::SPELLBOOK_ACQUISITION) {
                     $this->materializeSpellbookAcquisitions($source, $rule);
                 }
             }
+
+            $this->reconcileSlots($source, $desiredSlotKeys);
+            $this->reconcileGrantedChildren($source, $desiredChildMarkers);
         });
     }
 
@@ -76,6 +92,9 @@ final class GrantRuleSlotGenerator
     {
         if (data_get($source, 'source_type') === 'class') {
             return $this->rulesForClassSource($source);
+        }
+        if (data_get($source, 'source_type') === 'subclass') {
+            return $this->rulesForSubclassSource($source);
         }
 
         $table = match (data_get($source, 'source_type')) {
@@ -134,6 +153,29 @@ final class GrantRuleSlotGenerator
         return array_values($byRuleKey);
     }
 
+    /** @return list<array<string, mixed>> */
+    private function rulesForSubclassSource(object $source): array
+    {
+        $classLevel = $this->classLevelForSource($source);
+        $byRuleKey = [];
+        $progressions = DB::table('subclass_progressions')
+            ->where('subclass_definition_id', data_get($source, 'source_definition_id'))
+            ->where('class_level', '<=', $classLevel)
+            ->orderBy('class_level')
+            ->get();
+        foreach ($progressions as $progression) {
+            foreach ($this->decodeJsonArray(data_get($progression, 'grant_rules')) as $rule) {
+                if (! is_array($rule)) {
+                    throw new InvalidArgumentException('Subclass progression grant rules must be objects.');
+                }
+                $validated = GrantRule::fromArray($rule);
+                $byRuleKey[$validated->ruleKey] = $rule;
+            }
+        }
+
+        return array_values($byRuleKey);
+    }
+
     private function materializeFixedSpell(object $source, GrantRule $rule): void
     {
         $data = $rule->toArray();
@@ -157,6 +199,7 @@ final class GrantRuleSlotGenerator
             'allowed_spell_lists' => null,
             'allowed_schools' => null,
             'allowed_tags' => null,
+            'selection_collection' => null,
             'counts_against_limit' => (bool) data_get($data, 'counts_against_limit', false),
             'required' => true,
             'is_locked' => true,
@@ -183,6 +226,7 @@ final class GrantRuleSlotGenerator
                 'allowed_spell_lists' => json_encode([$list], JSON_THROW_ON_ERROR),
                 'allowed_schools' => null,
                 'allowed_tags' => null,
+                'selection_collection' => data_get($data, 'selection_collection'),
                 'counts_against_limit' => (bool) data_get($data, 'counts_against_limit', true),
                 'required' => (bool) data_get($data, 'required', true),
                 'is_locked' => false,
@@ -201,6 +245,7 @@ final class GrantRuleSlotGenerator
                 'allowed_spell_lists' => null,
                 'allowed_schools' => $this->nullableJsonList(data_get($data, 'schools')),
                 'allowed_tags' => $this->nullableJsonList(data_get($data, 'tags')),
+                'selection_collection' => data_get($data, 'selection_collection'),
                 'counts_against_limit' => (bool) data_get($data, 'counts_against_limit', true),
                 'required' => (bool) data_get($data, 'required', true),
                 'is_locked' => false,
@@ -213,7 +258,8 @@ final class GrantRuleSlotGenerator
         return is_array($value) ? json_encode(array_values($value), JSON_THROW_ON_ERROR) : null;
     }
 
-    private function materializeGrantedSources(object $source, GrantRule $rule): void
+    /** @return list<string> */
+    private function materializeGrantedSources(object $source, GrantRule $rule): array
     {
         $data = $rule->toArray();
         $sourceType = (string) data_get($data, 'source_type');
@@ -243,8 +289,10 @@ final class GrantRuleSlotGenerator
             throw new InvalidArgumentException("Grant-source rule '{$rule->ruleKey}' child config must be an object.");
         }
 
+        $markers = [];
         for ($ordinal = 1; $ordinal <= (int) $rule->count; $ordinal++) {
             $marker = 'grant_rule:'.$rule->ruleKey.':'.$ordinal;
+            $markers[] = $marker;
             $child = DB::table('character_source_instances')
                 ->where('parent_source_instance_id', data_get($source, 'id'))
                 ->where('notes', $marker)
@@ -282,6 +330,8 @@ final class GrantRuleSlotGenerator
 
             $this->generateForSource($childId);
         }
+
+        return $markers;
     }
 
     private function definitionTable(string $sourceType): string
@@ -311,7 +361,7 @@ final class GrantRuleSlotGenerator
         $data = $rule->toArray();
         $identity = [
             'character_id' => (int) data_get($source, 'character_id'),
-            'slot_key' => data_get($source, 'instance_uuid').':'.$rule->ruleKey.':'.$ordinal,
+            'slot_key' => $this->slotKey($source, $rule, $ordinal),
         ];
         $attributes = array_merge([
             'source_instance_id' => (int) data_get($source, 'id'),
@@ -331,12 +381,13 @@ final class GrantRuleSlotGenerator
 
         $existing = DB::table('spell_selection_slots')->where($identity)->first();
         if ($existing === null) {
-            DB::table('spell_selection_slots')->insert(array_merge(
+            $slotId = DB::table('spell_selection_slots')->insertGetId(array_merge(
                 $identity,
                 ['current_spell_version_id' => null],
                 $attributes,
                 ['created_at' => now(), 'updated_at' => now()],
             ));
+            $this->eligibility->refresh($slotId);
 
             return;
         }
@@ -351,27 +402,77 @@ final class GrantRuleSlotGenerator
             $changes['updated_at'] = now();
             DB::table('spell_selection_slots')->where('id', data_get($existing, 'id'))->update($changes);
         }
+        $this->eligibility->refresh((int) data_get($existing, 'id'));
     }
 
-    private function orphanSurplus(
-        object $source,
-        GrantRule $rule,
-        int $desiredCount,
-        string $reason = 'rule_count_reduced',
-    ): void {
-        $surplus = DB::table('spell_selection_slots')
+    private function slotKey(object $source, GrantRule $rule, int $ordinal): string
+    {
+        return data_get($source, 'instance_uuid').':'.$rule->ruleKey.':'.$ordinal;
+    }
+
+    /** @param list<string> $desiredSlotKeys */
+    private function reconcileSlots(object $source, array $desiredSlotKeys): void
+    {
+        $existing = DB::table('spell_selection_slots')
             ->where('source_instance_id', data_get($source, 'id'))
-            ->where('rule_key', $rule->ruleKey)
-            ->where('ordinal', '>', $desiredCount)
             ->where('state', 'active')
             ->get();
 
-        foreach ($surplus as $slot) {
+        foreach ($existing as $slot) {
+            if (in_array(data_get($slot, 'slot_key'), $desiredSlotKeys, true)) {
+                continue;
+            }
             DB::table('spell_selection_slots')->where('id', data_get($slot, 'id'))->update([
                 'state' => 'orphaned',
-                'orphan_reason_code' => $reason,
+                'orphan_reason_code' => 'rule_no_longer_active',
                 'orphaned_at' => now(),
                 'prior_config' => data_get($source, 'config'),
+                'updated_at' => now(),
+            ]);
+        }
+    }
+
+    /** @param list<string> $desiredMarkers */
+    private function reconcileGrantedChildren(object $source, array $desiredMarkers): void
+    {
+        $children = DB::table('character_source_instances')
+            ->where('parent_source_instance_id', data_get($source, 'id'))
+            ->where('notes', 'like', 'grant_rule:%')
+            ->get();
+
+        foreach ($children as $child) {
+            if (in_array(data_get($child, 'notes'), $desiredMarkers, true)) {
+                continue;
+            }
+            $this->deactivateSourceTree((int) data_get($child, 'id'));
+        }
+    }
+
+    private function deactivateSourceTree(int $sourceInstanceId): void
+    {
+        $source = DB::table('character_source_instances')->find($sourceInstanceId);
+        if ($source === null) {
+            return;
+        }
+
+        foreach (DB::table('character_source_instances')->where('parent_source_instance_id', $sourceInstanceId)->get() as $child) {
+            $this->deactivateSourceTree((int) data_get($child, 'id'));
+        }
+
+        DB::table('spell_selection_slots')
+            ->where('source_instance_id', $sourceInstanceId)
+            ->where('state', 'active')
+            ->update([
+                'state' => 'orphaned',
+                'orphan_reason_code' => 'parent_rule_removed',
+                'orphaned_at' => now(),
+                'prior_config' => data_get($source, 'config'),
+                'updated_at' => now(),
+            ]);
+
+        if (data_get($source, 'state') !== 'tombstoned') {
+            DB::table('character_source_instances')->where('id', $sourceInstanceId)->update([
+                'state' => 'tombstoned',
                 'updated_at' => now(),
             ]);
         }

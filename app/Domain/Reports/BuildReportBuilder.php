@@ -97,6 +97,8 @@ final readonly class BuildReportBuilder
                 'class.caster_fraction',
                 'class.caster_rounding',
                 'subclass.name as subclass_name',
+                'subclass.id as selected_subclass_id',
+                'subclass.spellcasting_ability as subclass_spellcasting_ability',
                 'subclass.caster_fraction as subclass_caster_fraction',
                 'subclass.caster_rounding as subclass_caster_rounding',
             ])
@@ -119,18 +121,30 @@ final readonly class BuildReportBuilder
                 $progressionType,
             );
             $contributions[] = $contribution;
-            $preparedCount = DB::table('class_progressions')
-                ->where('class_definition_id', data_get($row, 'class_definition_id'))
+            $subclassProgression = data_get($row, 'selected_subclass_id') === null ? null : DB::table('subclass_progressions')
+                ->where('subclass_definition_id', data_get($row, 'selected_subclass_id'))
                 ->where('class_level', data_get($row, 'level'))
-                ->value('prepared_count');
+                ->first();
+            $preparedCount = $subclassProgression === null
+                ? DB::table('class_progressions')
+                    ->where('class_definition_id', data_get($row, 'class_definition_id'))
+                    ->where('class_level', data_get($row, 'level'))
+                    ->value('prepared_count')
+                : data_get($subclassProgression, 'prepared_count');
             $classes[] = [
                 'name' => (string) data_get($row, 'class_name'),
                 'subclass' => data_get($row, 'subclass_name'),
                 'class_level' => (int) data_get($row, 'level'),
-                'spellcasting_ability' => data_get($row, 'spellcasting_ability'),
+                'spellcasting_ability' => data_get(
+                    $row,
+                    'subclass_spellcasting_ability',
+                    data_get($row, 'spellcasting_ability'),
+                ),
                 'progression_type' => $progressionType,
                 'prepared_count' => (int) ($preparedCount ?? 0),
-                'max_preparable_level' => SpellSlots::maxPreparableLevelForClass($contribution),
+                'max_preparable_level' => $subclassProgression === null
+                    ? SpellSlots::maxPreparableLevelForClass($contribution)
+                    : (int) data_get($subclassProgression, 'max_spell_level'),
             ];
         }
 
@@ -140,18 +154,21 @@ final readonly class BuildReportBuilder
     /** @param list<array<string, mixed>> $routes @return array<string, mixed> */
     private function wizardSplit(int $characterId, array $routes): array
     {
+        $preparedVersionIds = array_map(
+            static fn (array $route): int => (int) data_get($route, 'spell_version_id'),
+            array_values(array_filter(
+                $routes,
+                static fn (array $route): bool => data_get($route, 'selection_collection') === 'wizard_spellbook'
+                    && data_get($route, 'casting_mode') === 'with_slots',
+            )),
+        );
         $entries = DB::table('wizard_spellbook_entries as entry')
             ->join('spell_versions as version', 'version.id', '=', 'entry.spell_version_id')
-            ->leftJoin('wizard_prepared_entries as prepared', function ($join): void {
-                $join->on('prepared.wizard_spellbook_entry_id', '=', 'entry.id')
-                    ->on('prepared.character_id', '=', 'entry.character_id');
-            })
             ->where('entry.character_id', $characterId)
             ->orderBy('version.display_name')
             ->select([
                 'entry.id', 'entry.acquisition', 'entry.copy_cost_gp', 'entry.copy_time_hours',
                 'version.id as spell_version_id', 'version.display_name as spell_name', 'version.level',
-                'prepared.id as prepared_entry_id',
             ])
             ->get()
             ->map(static fn (object $entry): array => [
@@ -162,7 +179,7 @@ final readonly class BuildReportBuilder
                 'acquisition' => (string) data_get($entry, 'acquisition'),
                 'copy_cost_gp' => data_get($entry, 'copy_cost_gp'),
                 'copy_time_hours' => data_get($entry, 'copy_time_hours'),
-                'prepared' => data_get($entry, 'prepared_entry_id') !== null,
+                'prepared' => in_array((int) data_get($entry, 'spell_version_id'), $preparedVersionIds, true),
             ])
             ->all();
 

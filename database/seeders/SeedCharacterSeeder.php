@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Database\Seeders;
 
 use App\Domain\Grants\GrantRuleSlotGenerator;
+use App\Domain\Spells\SpellSelectionService;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
@@ -125,21 +126,13 @@ final class SeedCharacterSeeder extends Seeder
                 }
             }
 
-            foreach (['2024:mage-armor', '2024:magic-missile', '2024:sleep', '2024:thunderwave'] as $versionKey) {
-                $entryId = DB::table('wizard_spellbook_entries as entry')
-                    ->join('spell_versions as version', 'version.id', '=', 'entry.spell_version_id')
-                    ->where('entry.character_id', $characterId)
-                    ->where('version.content_key', $versionKey)
-                    ->value('entry.id');
-                if ($entryId === null) {
-                    throw new RuntimeException("Seed spellbook entry {$versionKey} was not generated.");
-                }
-                DB::table('wizard_prepared_entries')->insert([
-                    'character_id' => $characterId,
-                    'wizard_spellbook_entry_id' => $entryId,
-                    'created_at' => now(),
-                    'updated_at' => now(),
-                ]);
+            foreach (['2024:mage-armor', '2024:magic-missile', '2024:sleep', '2024:thunderwave'] as $index => $versionKey) {
+                $this->select(
+                    (int) data_get($classSources, 'Wizard'),
+                    'wizard-prepared',
+                    $index + 1,
+                    $versionKey,
+                );
             }
         });
     }
@@ -177,9 +170,6 @@ final class SeedCharacterSeeder extends Seeder
         if ($versionId === null || $slotId === null) {
             throw new RuntimeException("Unable to seed {$versionKey} into {$ruleKey}:{$ordinal}.");
         }
-        DB::table('spell_selection_slots')->where('id', $slotId)->update([
-            'current_spell_version_id' => $versionId,
-            'updated_at' => now(),
-        ]);
+        app(SpellSelectionService::class)->select((int) $slotId, (int) $versionId);
     }
 }

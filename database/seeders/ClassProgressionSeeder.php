@@ -81,8 +81,14 @@ final class ClassProgressionSeeder extends Seeder
             }
         }
 
-        $this->upsertThirdCaster('Fighter', 'Eldritch Knight', '2024:subclass:eldritch-knight');
-        $this->upsertThirdCaster('Rogue', 'Arcane Trickster', '2024:subclass:arcane-trickster');
+        $eldritchKnightId = $this->upsertThirdCaster('Fighter', 'Eldritch Knight', '2024:subclass:eldritch-knight');
+        $arcaneTricksterId = $this->upsertThirdCaster('Rogue', 'Arcane Trickster', '2024:subclass:arcane-trickster');
+        $this->seedThirdCasterProgression($eldritchKnightId, 'eldritch-knight', [
+            0, 0, 3, 4, 4, 4, 5, 6, 6, 7, 8, 8, 9, 10, 10, 11, 11, 11, 12, 13,
+        ], 2, 3);
+        $this->seedThirdCasterProgression($arcaneTricksterId, 'arcane-trickster', [
+            0, 0, 3, 4, 4, 4, 5, 6, 6, 7, 8, 8, 9, 10, 10, 11, 11, 11, 12, 13,
+        ], 3, 4);
     }
 
     /** @return list<int> */
@@ -160,6 +166,9 @@ final class ClassProgressionSeeder extends Seeder
                 'level_max' => SpellSlots::maxPreparableLevelForClass($contribution),
                 'with_slots' => true,
             ];
+            if ($name === 'Wizard') {
+                $rules[array_key_last($rules)]['selection_collection'] = 'wizard_spellbook';
+            }
         }
         if ($name === 'Wizard') {
             $rules[] = [
@@ -182,7 +191,7 @@ final class ClassProgressionSeeder extends Seeder
         return $rules;
     }
 
-    private function upsertThirdCaster(string $className, string $subclassName, string $contentKey): void
+    private function upsertThirdCaster(string $className, string $subclassName, string $contentKey): int
     {
         $classId = DB::table('class_definitions')->where('name', $className)->value('id');
         DB::table('subclass_definitions')->updateOrInsert(
@@ -198,5 +207,65 @@ final class ClassProgressionSeeder extends Seeder
                 'updated_at' => now(),
             ],
         );
+
+        return (int) DB::table('subclass_definitions')->where('content_key', $contentKey)->value('id');
+    }
+
+    /** @param list<int> $prepared */
+    private function seedThirdCasterProgression(
+        int $subclassId,
+        string $rulePrefix,
+        array $prepared,
+        int $startingCantrips,
+        int $levelTenCantrips,
+    ): void {
+        for ($level = 1; $level <= 20; $level++) {
+            $cantrips = $level < 3 ? 0 : ($level < 10 ? $startingCantrips : $levelTenCantrips);
+            $preparedCount = (int) data_get($prepared, $level - 1, 0);
+            $maxSpellLevel = match (true) {
+                $level < 3 => 0,
+                $level < 7 => 1,
+                $level < 13 => 2,
+                $level < 19 => 3,
+                default => 4,
+            };
+            $slots = match (true) {
+                $level < 3 => [],
+                $level === 3 => [1 => 2],
+                $level < 7 => [1 => 3],
+                $level < 10 => [1 => 4, 2 => 2],
+                $level < 13 => [1 => 4, 2 => 3],
+                $level < 16 => [1 => 4, 2 => 3, 3 => 2],
+                $level < 19 => [1 => 4, 2 => 3, 3 => 3],
+                default => [1 => 4, 2 => 3, 3 => 3, 4 => 1],
+            };
+            $rules = [];
+            if ($cantrips > 0) {
+                $rules[] = [
+                    'kind' => 'choice_from_list', 'rule_key' => "{$rulePrefix}-cantrips",
+                    'count' => $cantrips, 'bucket' => 'cantrip_known', 'list' => 'Wizard',
+                    'level_min' => 0, 'level_max' => 0, 'with_slots' => false,
+                ];
+            }
+            if ($preparedCount > 0) {
+                $rules[] = [
+                    'kind' => 'choice_from_list', 'rule_key' => "{$rulePrefix}-prepared",
+                    'count' => $preparedCount, 'bucket' => 'prepared', 'list' => 'Wizard',
+                    'level_min' => 1, 'level_max' => $maxSpellLevel, 'with_slots' => true,
+                ];
+            }
+            DB::table('subclass_progressions')->updateOrInsert(
+                ['subclass_definition_id' => $subclassId, 'class_level' => $level],
+                [
+                    'cantrips_known' => $cantrips,
+                    'prepared_count' => $preparedCount,
+                    'max_spell_level' => $maxSpellLevel,
+                    'slots' => json_encode($slots, JSON_THROW_ON_ERROR),
+                    'grant_rules' => json_encode($rules, JSON_THROW_ON_ERROR),
+                    'created_at' => now(),
+                    'updated_at' => now(),
+                ],
+            );
+        }
     }
 }

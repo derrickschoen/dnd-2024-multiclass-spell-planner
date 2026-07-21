@@ -1,6 +1,6 @@
 import { test, describe } from 'node:test';
 import assert from 'node:assert/strict';
-import { parseIndex, classify, canonicalSourceBook, parseSpellLevel } from './scrape-spells.mjs';
+import { parseIndex, classify, canonicalSourceBook, parseSpellLevel, parseSpellPage } from './scrape-spells.mjs';
 
 /**
  * These fixtures encode the REAL header layouts, captured from both sites on
@@ -128,5 +128,37 @@ describe('parseSpellLevel survives run-on pages', () => {
     test('does not mistake description prose for a level line', () => {
         // Holy Star of Mystra's own text says "a spell of level 7 or lower".
         assert.equal(parseSpellLevel('if you succeed on a saving throw against a spell of level 7 or lower'), -1);
+    });
+
+    test('prefers an explicit numeric header over later cantrip prose', () => {
+        const runOn = 'Level 8 Evocation (Wizard) Casting Time: Action This spell empowers a cantrip you cast.';
+        assert.equal(parseSpellLevel(runOn), 8);
+    });
+});
+
+describe('parseSpellPage extracts only a real level header from run-on content', () => {
+    const indexRow = {
+        slug: 'run-on-test',
+        duration: 'Instantaneous',
+        castingTime: 'Action',
+    };
+
+    test('keeps a level 8 spell at level 8 when its merged description mentions a cantrip', () => {
+        const html = `<div id="page-content"><p>
+            Source: Heroes of Faerun, page 99
+            Level 8 Evocation (Cleric, Wizard)
+            Casting Time: Action Range: 60 feet Components: V, S Duration: Instantaneous
+            Choose a cantrip you know; this spell magnifies its effect.
+        </p></div>`;
+        assert.equal(parseSpellPage(html, indexRow).level, 8);
+    });
+
+    test('still recognizes a genuine cantrip header in a merged stat block', () => {
+        const html = `<div id="page-content"><p>
+            Source: Player's Handbook
+            Evocation Cantrip (Sorcerer, Wizard)
+            Casting Time: Action Range: 60 feet Components: V, S Duration: Instantaneous
+        </p></div>`;
+        assert.equal(parseSpellPage(html, indexRow).level, 0);
     });
 });

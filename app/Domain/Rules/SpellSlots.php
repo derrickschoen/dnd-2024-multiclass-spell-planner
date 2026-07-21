@@ -138,7 +138,7 @@ final class SpellSlots
                 ? 0
                 : min(5, (int) ceil($level / 4)),
             CasterContribution::THIRD_UP,
-            CasterContribution::THIRD_DOWN => $level < 3 ? 0 : min(4, (int) ceil(($level - 2) / 6) + 0),
+            CasterContribution::THIRD_DOWN => $level < 3 ? 0 : min(4, intdiv($level - 1, 6) + 1),
             CasterContribution::PACT => self::PACT_TABLE[min(max($level, 1), 20)][1],
             default => 0,
         };

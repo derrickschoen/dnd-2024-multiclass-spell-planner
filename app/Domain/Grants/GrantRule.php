@@ -187,6 +187,20 @@ final readonly class GrantRule
             self::nonEmptyString($input, 'list');
         }
 
+        $selectionCollection = data_get($input, 'selection_collection');
+        if ($selectionCollection !== null) {
+            if (! in_array($kind, [self::CHOICE_FROM_LIST, self::CHOICE_FROM_QUERY], true)) {
+                throw new InvalidArgumentException(
+                    "Grant rule '{$ruleKey}' may constrain a selection collection only for a choice rule."
+                );
+            }
+            if ($selectionCollection !== 'wizard_spellbook') {
+                throw new InvalidArgumentException(
+                    "Grant rule '{$ruleKey}' has unsupported selection_collection '{$selectionCollection}'."
+                );
+            }
+        }
+
         if ($kind === self::CHOICE_FROM_QUERY) {
             $hasPredicate = data_get($input, 'schools') !== null
                 || data_get($input, 'tags') !== null

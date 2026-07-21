@@ -5,6 +5,7 @@ declare(strict_types=1);
 use App\Domain\Reports\BuildReportBuilder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Schema;
 
 uses(RefreshDatabase::class);
 
@@ -60,6 +61,30 @@ it('seeds the requested six-class character and generates both Magic Initiates t
             ])
             ->and((bool) data_get($levelOne, 'with_slots'))->toBeTrue();
     }
+
+    $wizardSourceId = DB::table('character_source_instances as source')
+        ->join('class_definitions as class', 'class.id', '=', 'source.source_definition_id')
+        ->where('source.character_id', data_get($character, 'id'))
+        ->where('source.source_type', 'class')
+        ->where('class.name', 'Wizard')
+        ->value('source.id');
+    $wizardPreparedSlots = DB::table('spell_selection_slots')
+        ->where('source_instance_id', $wizardSourceId)
+        ->where('rule_key', 'wizard-prepared')
+        ->orderBy('ordinal')
+        ->get();
+    expect($wizardPreparedSlots)->toHaveCount(4)
+        ->and($wizardPreparedSlots->every(
+            fn (object $slot): bool => data_get($slot, 'selection_collection') === 'wizard_spellbook',
+        ))->toBeTrue()
+        ->and($wizardPreparedSlots->whereNotNull('current_spell_version_id'))->toHaveCount(4)
+        ->and(Schema::hasTable('wizard_prepared_entries'))->toBeFalse();
+    foreach ($wizardPreparedSlots as $slot) {
+        expect(DB::table('wizard_spellbook_entries')
+            ->where('character_id', data_get($character, 'id'))
+            ->where('spell_version_id', data_get($slot, 'current_spell_version_id'))
+            ->exists())->toBeTrue();
+    }
 });
 
 it('builds the golden read-only report values and duplicate classifications', function () {
@@ -102,6 +127,11 @@ it('builds the golden read-only report values and duplicate classifications', fu
         ->and(data_get($report, 'wizard.prepared'))->toHaveCount(4)
         ->and(data_get($report, 'wizard.ritual_only'))->toHaveCount(1)
         ->and(data_get($report, 'wizard.explanation'))->toContain('does not consume preparation capacity');
+    $detectMagic = $routes->firstWhere('spell_name', 'Detect Magic');
+    expect(data_get($detectMagic, 'origin'))->toBe('capability')
+        ->and(data_get($detectMagic, 'casting_mode'))->toBe('ritual_only')
+        ->and(data_get($detectMagic, 'is_selection'))->toBeFalse()
+        ->and(data_get($detectMagic, 'counts_against_limit'))->toBeFalse();
 });
 
 it('serves the typed Inertia build report page as read-only data', function () {

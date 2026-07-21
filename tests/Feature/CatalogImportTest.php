@@ -92,7 +92,7 @@ it('imports the real index into identities versions publications and normalized 
         ->and(DB::table('spell_versions')->orderBy('content_key')->pluck('id', 'content_key')->all())->toBe($versionIds);
 });
 
-it('preserves referenced version rules while tracking aliases tombstones and dry-run diffs', function () {
+it('keeps the entire referenced version snapshot byte-identical through removal and reappearance', function () {
     $directory = writeCatalogFixture([catalogRecord()]);
     $importer = app(CatalogImporter::class);
     $importer->importDirectory($directory);
@@ -112,6 +112,7 @@ it('preserves referenced version rules while tracking aliases tombstones and dry
         'fixed_spell_version_id' => data_get($version, 'id'),
         'created_at' => now(), 'updated_at' => now(),
     ]);
+    $snapshot = (array) DB::table('spell_versions')->where('id', data_get($version, 'id'))->sole();
 
     file_put_contents($directory.'/catalog.json', json_encode([
         catalogRecord([
@@ -121,24 +122,41 @@ it('preserves referenced version rules while tracking aliases tombstones and dry
     ], JSON_THROW_ON_ERROR));
     $importer->importDirectory($directory);
 
-    $preserved = DB::table('spell_versions')->where('id', data_get($version, 'id'))->first();
-    expect(data_get($preserved, 'display_name'))->toBe('Test Spell')
-        ->and(data_get($preserved, 'school'))->toBe('Evocation')
+    $preserved = DB::table('spell_versions')->where('id', data_get($version, 'id'))->sole();
+    expect((array) $preserved)->toBe($snapshot)
         ->and(DB::table('spell_version_attack_modes')->pluck('attack_mode')->all())->toBe(['ranged_spell'])
         ->and(DB::table('spell_identity_aliases')->pluck('alias')->all())->toContain('Test Spell')
         ->and(DB::table('spell_identities')->value('canonical_name'))->toBe('Renamed Spell');
 
     file_put_contents($directory.'/catalog.json', '[]');
     $tombstone = $importer->importDirectory($directory);
-    expect(data_get($tombstone, 'tombstoned'))->toBe(1)
-        ->and((bool) DB::table('spell_versions')->value('is_active'))->toBeFalse();
+    expect(data_get($tombstone, 'tombstoned'))->toBe(0)
+        ->and((array) DB::table('spell_versions')->where('id', data_get($version, 'id'))->sole())->toBe($snapshot);
 
-    file_put_contents($directory.'/catalog.json', json_encode([catalogRecord(['name' => 'Renamed Spell'])], JSON_THROW_ON_ERROR));
+    file_put_contents($directory.'/catalog.json', json_encode([
+        catalogRecord(['name' => 'Returned Again', 'school' => 'Necromancy']),
+    ], JSON_THROW_ON_ERROR));
+    $importer->importDirectory($directory);
+    expect((array) DB::table('spell_versions')->where('id', data_get($version, 'id'))->sole())->toBe($snapshot);
+});
+
+it('tombstones and reactivates unreferenced versions with an accurate dry-run diff', function () {
+    $directory = writeCatalogFixture([catalogRecord()]);
+    $importer = app(CatalogImporter::class);
+    $importer->importDirectory($directory);
+    $versionId = (int) DB::table('spell_versions')->value('id');
+
+    file_put_contents($directory.'/catalog.json', '[]');
+    $tombstone = $importer->importDirectory($directory);
+    expect(data_get($tombstone, 'tombstoned'))->toBe(1)
+        ->and((bool) DB::table('spell_versions')->where('id', $versionId)->value('is_active'))->toBeFalse();
+
+    file_put_contents($directory.'/catalog.json', json_encode([catalogRecord()], JSON_THROW_ON_ERROR));
     $dryRun = $importer->importDirectory($directory, true);
     expect(data_get($dryRun, 'updated'))->toBe(1)
-        ->and((bool) DB::table('spell_versions')->value('is_active'))->toBeFalse();
+        ->and((bool) DB::table('spell_versions')->where('id', $versionId)->value('is_active'))->toBeFalse();
     $importer->importDirectory($directory);
-    expect((bool) DB::table('spell_versions')->value('is_active'))->toBeTrue();
+    expect((bool) DB::table('spell_versions')->where('id', $versionId)->value('is_active'))->toBeTrue();
 });
 
 it('rolls back the whole import when any record is invalid', function () {
@@ -152,6 +170,14 @@ it('rolls back the whole import when any record is invalid', function () {
     expect(DB::table('spell_versions')->count())->toBe(0)
         ->and(DB::table('spell_identities')->count())->toBe(0);
 });
+
+it('rejects spell levels outside the zero through nine catalog boundary', function (int $level) {
+    $directory = writeCatalogFixture([catalogRecord(['level' => $level])]);
+
+    expect(fn () => app(CatalogImporter::class)->importDirectory($directory))
+        ->toThrow(InvalidArgumentException::class, "Catalog field 'level' must be an integer from 0 through 9.");
+    expect(DB::table('spell_versions')->count())->toBe(0);
+})->with([-1, 10]);
 
 it('exposes catalog import as a dry-run artisan command without writing', function () {
     $this->artisan('catalog:import', ['--dry-run' => true])

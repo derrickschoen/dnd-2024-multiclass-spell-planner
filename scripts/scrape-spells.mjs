@@ -26,8 +26,10 @@ import { parse } from 'node-html-parser';
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), '..');
 const CACHE = join(ROOT, 'scripts/.cache');
-const OUT_INDEX = join(ROOT, 'data/index');
-const OUT_LOCAL = join(ROOT, 'data/local');
+// Verification can target a disposable directory so the committed catalog is
+// never rewritten merely to prove cached pages still produce the same dataset.
+const OUT_INDEX = process.env.SPELL_SCRAPER_INDEX_DIR || join(ROOT, 'data/index');
+const OUT_LOCAL = process.env.SPELL_SCRAPER_LOCAL_DIR || join(ROOT, 'data/local');
 
 const USER_AGENT = 'spell-planner-local/1.0 (personal use; contact: local user)';
 const DELAY_MS = 750;
@@ -207,8 +209,6 @@ export function classify(description, duration = '', castingTime = '') {
  * @returns 0-9, or -1 when the line could not be understood.
  */
 export function parseSpellLevel(levelLine) {
-    if (/cantrip/i.test(levelLine)) return 0;
-
     const modern = levelLine.match(/^\s*Level\s+(\d)/i);   // 2024
     if (modern) return Number(modern[1]);
 
@@ -222,6 +222,13 @@ export function parseSpellLevel(levelLine) {
         /\bLevel\s+(\d)\s+(?:Abjuration|Conjuration|Divination|Enchantment|Evocation|Illusion|Necromancy|Transmutation)/i
     );
     if (runOn) return Number(runOn[1]);
+
+    // "cantrip" is common description prose. It only denotes level zero when
+    // it appears in the actual School + Cantrip header shape.
+    const cantrip = levelLine.match(
+        /\b(?:Abjuration|Conjuration|Divination|Enchantment|Evocation|Illusion|Necromancy|Transmutation)\s+Cantrip(?:\s*\(|\b)/i
+    );
+    if (cantrip) return 0;
 
     return -1;
 }
@@ -251,9 +258,7 @@ export function parseSpellPage(htmlText, indexRow) {
     // and is NOT identity, so this splits rather than minting a combined "book".
     const sourceBooks = bookOnly.split('/').map((s) => s.trim()).filter(Boolean);
 
-    const levelLine = paragraphs
-        .slice(0, 3)
-        .find((p) => /cantrip|^\s*Level \d|\d(?:st|nd|rd|th)-level|\bLevel \d\s+[a-z]/i.test(p)) || '';
+    const levelLine = paragraphs.slice(0, 3).find((p) => parseSpellLevel(p) !== -1) || '';
     const level = parseSpellLevel(levelLine);
 
     const description = paragraphs

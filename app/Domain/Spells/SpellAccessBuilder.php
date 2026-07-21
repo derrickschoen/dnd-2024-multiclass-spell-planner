@@ -11,7 +11,10 @@ use Illuminate\Support\Facades\DB;
 
 final readonly class SpellAccessBuilder
 {
-    public function __construct(private GrantRuleSlotGenerator $rules) {}
+    public function __construct(
+        private GrantRuleSlotGenerator $rules,
+        private SpellSelectionEligibility $eligibility,
+    ) {}
 
     /** @return list<array<string, mixed>> */
     public function buildForCharacter(int $characterId): array
@@ -60,6 +63,9 @@ final readonly class SpellAccessBuilder
 
         $routes = [];
         foreach ($rows as $row) {
+            if (data_get($this->eligibility->evaluate($row), 'status') !== 'valid') {
+                continue;
+            }
             $ability = $this->spellcastingAbility($row);
             $freeCast = data_get($row, 'free_cast');
             $withSlots = (bool) data_get($row, 'with_slots');
@@ -81,6 +87,7 @@ final readonly class SpellAccessBuilder
                 'slot_key' => (string) data_get($row, 'slot_key'),
                 'selection_key' => (string) data_get($row, 'slot_key'),
                 'bucket' => (string) data_get($row, 'bucket'),
+                'selection_collection' => data_get($row, 'selection_collection'),
                 'is_selection' => true,
                 'counts_against_limit' => (bool) data_get($row, 'counts_against_limit'),
                 'free_cast' => $freeCast === null ? null : json_decode((string) $freeCast, true, 512, JSON_THROW_ON_ERROR),
@@ -94,27 +101,32 @@ final readonly class SpellAccessBuilder
     /** @return list<array<string, mixed>> */
     private function wizardRoutes(object $character): array
     {
+        $preparedVersionIds = DB::table('spell_selection_slots as slot')
+            ->join('character_source_instances as source', 'source.id', '=', 'slot.source_instance_id')
+            ->where('slot.character_id', data_get($character, 'id'))
+            ->where('slot.state', 'active')
+            ->where('source.state', 'active')
+            ->where('slot.bucket', 'prepared')
+            ->where('slot.selection_collection', 'wizard_spellbook')
+            ->whereNotNull('slot.current_spell_version_id')
+            ->select('slot.*')
+            ->get()
+            ->filter(fn (object $slot): bool => data_get($this->eligibility->evaluate($slot), 'status') === 'valid')
+            ->pluck('current_spell_version_id')
+            ->map(static fn (mixed $id): int => (int) $id)
+            ->all();
+
         $entries = DB::table('wizard_spellbook_entries as entry')
             ->join('spell_versions as version', 'version.id', '=', 'entry.spell_version_id')
             ->join('spell_identities as identity', 'identity.id', '=', 'version.spell_identity_id')
-            ->leftJoin('wizard_prepared_entries as prepared', function ($join): void {
-                $join->on('prepared.wizard_spellbook_entry_id', '=', 'entry.id')
-                    ->on('prepared.character_id', '=', 'entry.character_id');
-            })
-            ->leftJoin('character_source_instances as source', 'source.id', '=', 'entry.source_instance_id')
             ->where('entry.character_id', data_get($character, 'id'))
             ->select([
                 'entry.*',
-                'prepared.id as prepared_entry_id',
                 'version.spell_identity_id',
                 'version.display_name as spell_name',
                 'version.level as spell_level',
                 'version.ritual',
                 'identity.canonical_name as identity_name',
-                'source.display_name as source_name',
-                'source.source_type',
-                'source.source_definition_id',
-                'source.config as source_config',
             ])
             ->orderBy('version.display_name')
             ->get();
@@ -122,40 +134,31 @@ final readonly class SpellAccessBuilder
         $capabilities = $this->ritualCapabilities((int) data_get($character, 'id'));
         $routes = [];
         foreach ($entries as $entry) {
-            $prepared = data_get($entry, 'prepared_entry_id') !== null;
+            $prepared = in_array((int) data_get($entry, 'spell_version_id'), $preparedVersionIds, true);
             $ritual = (bool) data_get($entry, 'ritual') || DB::table('spell_version_tags')
                 ->where('spell_version_id', data_get($entry, 'spell_version_id'))
                 ->where('tag', 'ritual')
                 ->exists();
-            if (! $prepared && (! $ritual || $capabilities === [])) {
+            if ($prepared || ! $ritual || $capabilities === []) {
                 continue;
             }
 
-            $capability = $prepared ? null : $capabilities[0];
-            $sourceName = $prepared
-                ? (string) data_get($entry, 'source_name', 'Wizard spellbook')
-                : (string) data_get($capability, 'source_name');
-            $sourceId = $prepared
-                ? data_get($entry, 'source_instance_id')
-                : data_get($capability, 'source_instance_id');
-            $ability = $prepared
-                ? $this->spellcastingAbility($entry)
-                : (string) data_get($capability, 'spellcasting_ability');
+            $capability = $capabilities[0];
 
             $routes[] = $this->route($character, $entry, [
-                'origin' => $prepared ? 'wizard_prepared' : 'capability',
-                'casting_mode' => $prepared ? 'with_slots' : 'ritual_only',
+                'origin' => 'capability',
+                'casting_mode' => 'ritual_only',
                 'spell_version_id' => (int) data_get($entry, 'spell_version_id'),
-                'source_instance_id' => $sourceId === null ? null : (int) $sourceId,
-                'source_name' => $sourceName,
+                'source_instance_id' => (int) data_get($capability, 'source_instance_id'),
+                'source_name' => (string) data_get($capability, 'source_name'),
                 'slot_id' => null,
                 'slot_key' => null,
-                'selection_key' => $prepared ? 'wizard-prepared:'.data_get($entry, 'id') : null,
-                'bucket' => $prepared ? 'prepared' : null,
-                'is_selection' => $prepared,
-                'counts_against_limit' => $prepared,
+                'selection_key' => null,
+                'bucket' => null,
+                'is_selection' => false,
+                'counts_against_limit' => false,
                 'free_cast' => null,
-                'spellcasting_ability' => $ability,
+                'spellcasting_ability' => (string) data_get($capability, 'spellcasting_ability'),
                 'spellbook_entry_id' => (int) data_get($entry, 'id'),
             ]);
         }

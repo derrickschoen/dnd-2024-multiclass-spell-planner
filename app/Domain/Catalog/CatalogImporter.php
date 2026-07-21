@@ -121,8 +121,9 @@ final class CatalogImporter
                 throw new InvalidArgumentException("Catalog field '{$field}' must be a non-empty string.");
             }
         }
-        if (! is_int(data_get($record, 'level'))) {
-            throw new InvalidArgumentException("Catalog field 'level' must be an integer.");
+        $level = data_get($record, 'level');
+        if (! is_int($level) || $level < 0 || $level > 9) {
+            throw new InvalidArgumentException("Catalog field 'level' must be an integer from 0 through 9.");
         }
         foreach (['concentration', 'ritual'] as $field) {
             if (! is_bool(data_get($record, $field))) {
@@ -179,7 +180,7 @@ final class CatalogImporter
                 $versionId = (int) data_get($version, 'id');
                 $referenced = $this->isReferenced($versionId);
                 $changes = [];
-                if (! (bool) data_get($version, 'is_active')) {
+                if (! $referenced && ! (bool) data_get($version, 'is_active')) {
                     $changes['is_active'] = true;
                 }
                 if (! $referenced) {
@@ -249,6 +250,9 @@ final class CatalogImporter
             )
             ->get();
         foreach ($tombstones as $version) {
+            if ($this->isReferenced((int) data_get($version, 'id'))) {
+                continue;
+            }
             DB::table('spell_versions')->where('id', data_get($version, 'id'))->update([
                 'is_active' => false,
                 'updated_at' => now(),
