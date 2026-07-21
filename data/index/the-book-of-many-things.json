@@ -1,0 +1,75 @@
+[
+  {
+    "identityKey": "spray-of-cards",
+    "versionKey": "2014:spray-of-cards",
+    "name": "Spray Of Cards",
+    "edition": "2014",
+    "level": 2,
+    "school": "Conjuration",
+    "castingTime": "1 Action",
+    "range": "Self (15-foot cone)",
+    "components": "V, S, M",
+    "duration": "Instantaneous",
+    "concentration": false,
+    "ritual": false,
+    "attackModes": [],
+    "saveAbilities": [
+      "dexterity"
+    ],
+    "effectReliabilityCategory": "saving_throw",
+    "spellLists": [],
+    "sourceBooks": [
+      "The Book of Many Things"
+    ],
+    "sourcePage": null,
+    "sourceSlug": "spray-of-cards"
+  },
+  {
+    "identityKey": "antagonize",
+    "versionKey": "2014:antagonize",
+    "name": "Antagonize",
+    "edition": "2014",
+    "level": 3,
+    "school": "Enchantment",
+    "castingTime": "1 Action",
+    "range": "30 feet",
+    "components": "V, S, M",
+    "duration": "Instantaneous",
+    "concentration": false,
+    "ritual": false,
+    "attackModes": [],
+    "saveAbilities": [
+      "wisdom"
+    ],
+    "effectReliabilityCategory": "saving_throw",
+    "spellLists": [],
+    "sourceBooks": [
+      "The Book of Many Things"
+    ],
+    "sourcePage": null,
+    "sourceSlug": "antagonize"
+  },
+  {
+    "identityKey": "spirit-of-death",
+    "versionKey": "2014:spirit-of-death",
+    "name": "Spirit Of Death",
+    "edition": "2014",
+    "level": 4,
+    "school": "Necromancy",
+    "castingTime": "1 Action",
+    "range": "60 feet",
+    "components": "V, S, M",
+    "duration": "Concentration, up to 1 hour",
+    "concentration": true,
+    "ritual": false,
+    "attackModes": [],
+    "saveAbilities": [],
+    "effectReliabilityCategory": "fixed_effect",
+    "spellLists": [],
+    "sourceBooks": [
+      "The Book of Many Things"
+    ],
+    "sourcePage": null,
+    "sourceSlug": "spirit-of-death"
+  }
+]

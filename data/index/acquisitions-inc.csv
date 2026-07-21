@@ -1,0 +1,8 @@
+identityKey,versionKey,name,edition,level,school,castingTime,range,components,duration,concentration,ritual,attackModes,saveAbilities,effectReliabilityCategory,spellLists,sourceBooks,sourcePage,sourceSlug
+distort-value,2014:distort-value,Distort Value,2014,1,Illusion,1 Minute,Touch,V,8 hours,false,false,,,fixed_effect,,Acquisitions Inc.,,distort-value
+jim-s-magic-missile,2014:jim-s-magic-missile,Jim's Magic Missile,2014,1,Evocation,1 Action,120 feet,"V, S, M",Instantaneous,false,false,ranged_spell,,attack_roll,,Acquisitions Inc.,,jims-magic-missile
+gift-of-gab,2014:gift-of-gab,Gift of Gab,2014,2,Enchantment,Reaction,Self,"V, S, M",Instantaneous,false,false,,,fixed_effect,,Acquisitions Inc.,,gift-of-gab
+jim-s-glowing-coin,2014:jim-s-glowing-coin,Jim's Glowing Coin,2014,2,Enchantment,1 Action,60 feet,"S, M",1 minute,false,false,,wisdom,saving_throw,,Acquisitions Inc.,,jims-glowing-coin
+fast-friends,2014:fast-friends,Fast Friends,2014,3,Enchantment,1 Action,30 feet,V,"Concentration, up to 1 hour",true,false,,wisdom,saving_throw,,Acquisitions Inc.,,fast-friends
+incite-greed,2014:incite-greed,Incite Greed,2014,3,Enchantment,1 action,30 feet,"V, S, M","Concentration, up to 1 minute",true,false,,wisdom,saving_throw,,Acquisitions Inc.,,incite-greed
+motivational-speech,2014:motivational-speech,Motivational Speech,2014,3,Enchantment,1 Minute,60 feet,V,1 hour,false,false,,wisdom,saving_throw,,Acquisitions Inc.,,motivational-speech

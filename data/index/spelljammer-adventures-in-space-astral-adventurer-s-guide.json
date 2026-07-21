@@ -1,0 +1,48 @@
+[
+  {
+    "identityKey": "air-bubble",
+    "versionKey": "2014:air-bubble",
+    "name": "Air Bubble",
+    "edition": "2014",
+    "level": 2,
+    "school": "Conjuration",
+    "castingTime": "1 Action",
+    "range": "60 Feet",
+    "components": "S",
+    "duration": "24 hours",
+    "concentration": false,
+    "ritual": false,
+    "attackModes": [],
+    "saveAbilities": [],
+    "effectReliabilityCategory": "fixed_effect",
+    "spellLists": [],
+    "sourceBooks": [
+      "Spelljammer: Adventures in Space - Astral Adventurer's Guide"
+    ],
+    "sourcePage": null,
+    "sourceSlug": "air-bubble"
+  },
+  {
+    "identityKey": "create-spelljamming-helm",
+    "versionKey": "2014:create-spelljamming-helm",
+    "name": "Create Spelljamming Helm",
+    "edition": "2014",
+    "level": 5,
+    "school": "Transmutation",
+    "castingTime": "1 Action",
+    "range": "Touch",
+    "components": "V,S,M",
+    "duration": "Instantaneous",
+    "concentration": false,
+    "ritual": false,
+    "attackModes": [],
+    "saveAbilities": [],
+    "effectReliabilityCategory": "fixed_effect",
+    "spellLists": [],
+    "sourceBooks": [
+      "Spelljammer: Adventures in Space - Astral Adventurer's Guide"
+    ],
+    "sourcePage": null,
+    "sourceSlug": "create-spelljamming-helm"
+  }
+]

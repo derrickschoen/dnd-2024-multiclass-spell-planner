@@ -1,0 +1,26 @@
+[
+  {
+    "identityKey": "green-flame-blade",
+    "versionKey": "2014:green-flame-blade",
+    "name": "Green-Flame Blade",
+    "edition": "2014",
+    "level": 0,
+    "school": "Evocation",
+    "castingTime": "1 Action",
+    "range": "Self (5-foot radius)",
+    "components": "S, M",
+    "duration": "Instantaneous",
+    "concentration": false,
+    "ritual": false,
+    "attackModes": [],
+    "saveAbilities": [],
+    "effectReliabilityCategory": "modifier_scaled",
+    "spellLists": [],
+    "sourceBooks": [
+      "Tasha's Cauldron of Everything",
+      "Sword Coast Adventurer's Guide"
+    ],
+    "sourcePage": null,
+    "sourceSlug": "green-flame-blade"
+  }
+]

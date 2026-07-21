@@ -1,0 +1,16 @@
+identityKey,versionKey,name,edition,level,school,castingTime,range,components,duration,concentration,ritual,attackModes,saveAbilities,effectReliabilityCategory,spellLists,sourceBooks,sourcePage,sourceSlug
+sapping-sting,2014:sapping-sting,Sapping Sting,2014,0,Necromancy D,1 Action,30 feet,"V, S",Instantaneous,false,false,,constitution,saving_throw,,Explorer's Guide to Wildemount,,sapping-sting
+gift-of-alacrity,2014:gift-of-alacrity,Gift of Alacrity,2014,1,Divination DC,1 Minute,Touch,"V, S",8 hours,false,false,,,fixed_effect,,Explorer's Guide to Wildemount,,gift-of-alacrity
+magnify-gravity,2014:magnify-gravity,Magnify Gravity,2014,1,Transmutation DG,1 Action,60 feet,"V, S",1 round,false,false,,constitution,saving_throw,,Explorer's Guide to Wildemount,,magnify-gravity
+fortune-s-favor,2014:fortune-s-favor,Fortune's Favor,2014,2,Divination D,1 Minute,60 feet,"V, S, M",1 hour,false,false,,,fixed_effect,,Explorer's Guide to Wildemount,,fortunes-favor
+immovable-object,2014:immovable-object,Immovable Object,2014,2,Transmutation DG,1 Action,Touch,"V, S, M",1 hour,false,false,,,fixed_effect,,Explorer's Guide to Wildemount,,immovable-object
+wristpocket,2014:wristpocket,Wristpocket,2014,2,Conjuration D,1 Action R,Self,S,"Concentration, up to 1 hour",true,false,,,fixed_effect,,Explorer's Guide to Wildemount,,wristpocket
+pulse-wave,2014:pulse-wave,Pulse Wave,2014,3,Evocation D,1 Action,Self (30-foot cone),"V, S",Instantaneous,false,false,,constitution,saving_throw,,Explorer's Guide to Wildemount,,pulse-wave
+gravity-sinkhole,2014:gravity-sinkhole,Gravity Sinkhole,2014,4,Evocation DG,1 Action,120 feet,"V, S, M",Instantaneous,false,false,,constitution,saving_throw,,Explorer's Guide to Wildemount,,gravity-sinkhole
+temporal-shunt,2014:temporal-shunt,Temporal Shunt,2014,5,Transmutation DC,1 Reaction,120 feet,"V, S",1 round,false,false,,wisdom,saving_throw,,Explorer's Guide to Wildemount,,temporal-shunt
+gravity-fissure,2014:gravity-fissure,Gravity Fissure,2014,6,Evocation DG,1 Action,Self (100-foot line),"V, S, M",Instantaneous,false,false,,constitution,saving_throw,,Explorer's Guide to Wildemount,,gravity-fissure
+tether-essence,2014:tether-essence,Tether Essence,2014,7,Necromancy D,1 Action,60 feet,"V, S, M","Concentration, up to 1 hour",true,false,,constitution,saving_throw,,Explorer's Guide to Wildemount,,tether-essence
+dark-star,2014:dark-star,Dark Star,2014,8,Evocation DG,1 Action,150 Feet,"V, S, M","Concentration, up to 1 minute",true,false,,constitution,saving_throw,,Explorer's Guide to Wildemount,,dark-star
+reality-break,2014:reality-break,Reality Break,2014,8,Conjuration DC,1 Action,60 feet,"V, S, M","Concentration, up to 1 minute",true,false,,wisdom,saving_throw,,Explorer's Guide to Wildemount,,reality-break
+ravenous-void,2014:ravenous-void,Ravenous Void,2014,9,Evocation DG,1 Action,"1,000 feet","V, S, M","Concentration, up to 1 minute",true,false,,strength,saving_throw,,Explorer's Guide to Wildemount,,ravenous-void
+time-ravage,2014:time-ravage,Time Ravage,2014,9,Necromancy DC,1 Action,90 feet,"V, S, M",Instantaneous,false,false,,constitution,saving_throw,,Explorer's Guide to Wildemount,,time-ravage

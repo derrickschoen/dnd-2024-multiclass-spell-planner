@@ -1,0 +1,171 @@
+[
+  {
+    "identityKey": "nathair-s-mischief",
+    "versionKey": "2014:nathair-s-mischief",
+    "name": "Nathair's Mischief",
+    "edition": "2014",
+    "level": 2,
+    "school": "Illusion",
+    "castingTime": "1 Action",
+    "range": "60ft",
+    "components": "S, M",
+    "duration": "Concentration, up to 1 minute",
+    "concentration": true,
+    "ritual": false,
+    "attackModes": [],
+    "saveAbilities": [],
+    "effectReliabilityCategory": "fixed_effect",
+    "spellLists": [],
+    "sourceBooks": [
+      "Fizban's Treasury of Dragons"
+    ],
+    "sourcePage": null,
+    "sourceSlug": "nathairs-mischief"
+  },
+  {
+    "identityKey": "rime-s-binding-ice",
+    "versionKey": "2014:rime-s-binding-ice",
+    "name": "Rime's Binding Ice",
+    "edition": "2014",
+    "level": 2,
+    "school": "Evocation",
+    "castingTime": "1 Action",
+    "range": "Self (30-foot cone)",
+    "components": "S, M",
+    "duration": "Instantaneous",
+    "concentration": false,
+    "ritual": false,
+    "attackModes": [],
+    "saveAbilities": [
+      "constitution"
+    ],
+    "effectReliabilityCategory": "saving_throw",
+    "spellLists": [],
+    "sourceBooks": [
+      "Fizban's Treasury of Dragons"
+    ],
+    "sourcePage": null,
+    "sourceSlug": "rimes-binding-ice"
+  },
+  {
+    "identityKey": "ashardalon-s-stride",
+    "versionKey": "2014:ashardalon-s-stride",
+    "name": "Ashardalon's Stride",
+    "edition": "2014",
+    "level": 3,
+    "school": "Transmutation",
+    "castingTime": "1 Bonus Action",
+    "range": "Self",
+    "components": "V,S",
+    "duration": "Concentration, up to 1 minute",
+    "concentration": true,
+    "ritual": false,
+    "attackModes": [],
+    "saveAbilities": [],
+    "effectReliabilityCategory": "fixed_effect",
+    "spellLists": [],
+    "sourceBooks": [
+      "Fizban's Treasury of Dragons"
+    ],
+    "sourcePage": null,
+    "sourceSlug": "ashardalons-stride"
+  },
+  {
+    "identityKey": "raulothim-s-psychic-lance",
+    "versionKey": "2014:raulothim-s-psychic-lance",
+    "name": "Raulothim's Psychic Lance",
+    "edition": "2014",
+    "level": 4,
+    "school": "Enchantment",
+    "castingTime": "1 Action",
+    "range": "120 feet",
+    "components": "V",
+    "duration": "Instantaneous",
+    "concentration": false,
+    "ritual": false,
+    "attackModes": [],
+    "saveAbilities": [
+      "intelligence"
+    ],
+    "effectReliabilityCategory": "saving_throw",
+    "spellLists": [],
+    "sourceBooks": [
+      "Fizban's Treasury of Dragons"
+    ],
+    "sourcePage": null,
+    "sourceSlug": "raulothims-psychic-lance"
+  },
+  {
+    "identityKey": "summon-draconic-spirit",
+    "versionKey": "2014:summon-draconic-spirit",
+    "name": "Summon Draconic Spirit",
+    "edition": "2014",
+    "level": 5,
+    "school": "Conjuration",
+    "castingTime": "1 Action",
+    "range": "60 feet",
+    "components": "V, S, M",
+    "duration": "Concentration, up to 1 hour",
+    "concentration": true,
+    "ritual": false,
+    "attackModes": [],
+    "saveAbilities": [],
+    "effectReliabilityCategory": "fixed_effect",
+    "spellLists": [],
+    "sourceBooks": [
+      "Fizban's Treasury of Dragons"
+    ],
+    "sourcePage": null,
+    "sourceSlug": "summon-draconic-spirit"
+  },
+  {
+    "identityKey": "fizban-s-platinum-shield",
+    "versionKey": "2014:fizban-s-platinum-shield",
+    "name": "Fizban's Platinum Shield",
+    "edition": "2014",
+    "level": 6,
+    "school": "Abjuration",
+    "castingTime": "1 Bonus Action",
+    "range": "60ft",
+    "components": "V, S, M",
+    "duration": "Concentration, up to 1 minute",
+    "concentration": true,
+    "ritual": false,
+    "attackModes": [],
+    "saveAbilities": [
+      "dexterity"
+    ],
+    "effectReliabilityCategory": "saving_throw",
+    "spellLists": [],
+    "sourceBooks": [
+      "Fizban's Treasury of Dragons"
+    ],
+    "sourcePage": null,
+    "sourceSlug": "fizbans-platinum-shield"
+  },
+  {
+    "identityKey": "draconic-transformation",
+    "versionKey": "2014:draconic-transformation",
+    "name": "Draconic Transformation",
+    "edition": "2014",
+    "level": 7,
+    "school": "Transmutation",
+    "castingTime": "1 Bonus Action",
+    "range": "Self",
+    "components": "V, S, M",
+    "duration": "Concentration, up to 1 minute",
+    "concentration": true,
+    "ritual": false,
+    "attackModes": [],
+    "saveAbilities": [
+      "dexterity"
+    ],
+    "effectReliabilityCategory": "saving_throw",
+    "spellLists": [],
+    "sourceBooks": [
+      "Fizban's Treasury of Dragons"
+    ],
+    "sourcePage": null,
+    "sourceSlug": "draconic-transformation"
+  }
+]

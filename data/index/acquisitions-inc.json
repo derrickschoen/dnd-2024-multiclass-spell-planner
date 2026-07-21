@@ -1,0 +1,173 @@
+[
+  {
+    "identityKey": "distort-value",
+    "versionKey": "2014:distort-value",
+    "name": "Distort Value",
+    "edition": "2014",
+    "level": 1,
+    "school": "Illusion",
+    "castingTime": "1 Minute",
+    "range": "Touch",
+    "components": "V",
+    "duration": "8 hours",
+    "concentration": false,
+    "ritual": false,
+    "attackModes": [],
+    "saveAbilities": [],
+    "effectReliabilityCategory": "fixed_effect",
+    "spellLists": [],
+    "sourceBooks": [
+      "Acquisitions Inc."
+    ],
+    "sourcePage": null,
+    "sourceSlug": "distort-value"
+  },
+  {
+    "identityKey": "jim-s-magic-missile",
+    "versionKey": "2014:jim-s-magic-missile",
+    "name": "Jim's Magic Missile",
+    "edition": "2014",
+    "level": 1,
+    "school": "Evocation",
+    "castingTime": "1 Action",
+    "range": "120 feet",
+    "components": "V, S, M",
+    "duration": "Instantaneous",
+    "concentration": false,
+    "ritual": false,
+    "attackModes": [
+      "ranged_spell"
+    ],
+    "saveAbilities": [],
+    "effectReliabilityCategory": "attack_roll",
+    "spellLists": [],
+    "sourceBooks": [
+      "Acquisitions Inc."
+    ],
+    "sourcePage": null,
+    "sourceSlug": "jims-magic-missile"
+  },
+  {
+    "identityKey": "gift-of-gab",
+    "versionKey": "2014:gift-of-gab",
+    "name": "Gift of Gab",
+    "edition": "2014",
+    "level": 2,
+    "school": "Enchantment",
+    "castingTime": "Reaction",
+    "range": "Self",
+    "components": "V, S, M",
+    "duration": "Instantaneous",
+    "concentration": false,
+    "ritual": false,
+    "attackModes": [],
+    "saveAbilities": [],
+    "effectReliabilityCategory": "fixed_effect",
+    "spellLists": [],
+    "sourceBooks": [
+      "Acquisitions Inc."
+    ],
+    "sourcePage": null,
+    "sourceSlug": "gift-of-gab"
+  },
+  {
+    "identityKey": "jim-s-glowing-coin",
+    "versionKey": "2014:jim-s-glowing-coin",
+    "name": "Jim's Glowing Coin",
+    "edition": "2014",
+    "level": 2,
+    "school": "Enchantment",
+    "castingTime": "1 Action",
+    "range": "60 feet",
+    "components": "S, M",
+    "duration": "1 minute",
+    "concentration": false,
+    "ritual": false,
+    "attackModes": [],
+    "saveAbilities": [
+      "wisdom"
+    ],
+    "effectReliabilityCategory": "saving_throw",
+    "spellLists": [],
+    "sourceBooks": [
+      "Acquisitions Inc."
+    ],
+    "sourcePage": null,
+    "sourceSlug": "jims-glowing-coin"
+  },
+  {
+    "identityKey": "fast-friends",
+    "versionKey": "2014:fast-friends",
+    "name": "Fast Friends",
+    "edition": "2014",
+    "level": 3,
+    "school": "Enchantment",
+    "castingTime": "1 Action",
+    "range": "30 feet",
+    "components": "V",
+    "duration": "Concentration, up to 1 hour",
+    "concentration": true,
+    "ritual": false,
+    "attackModes": [],
+    "saveAbilities": [
+      "wisdom"
+    ],
+    "effectReliabilityCategory": "saving_throw",
+    "spellLists": [],
+    "sourceBooks": [
+      "Acquisitions Inc."
+    ],
+    "sourcePage": null,
+    "sourceSlug": "fast-friends"
+  },
+  {
+    "identityKey": "incite-greed",
+    "versionKey": "2014:incite-greed",
+    "name": "Incite Greed",
+    "edition": "2014",
+    "level": 3,
+    "school": "Enchantment",
+    "castingTime": "1 action",
+    "range": "30 feet",
+    "components": "V, S, M",
+    "duration": "Concentration, up to 1 minute",
+    "concentration": true,
+    "ritual": false,
+    "attackModes": [],
+    "saveAbilities": [
+      "wisdom"
+    ],
+    "effectReliabilityCategory": "saving_throw",
+    "spellLists": [],
+    "sourceBooks": [
+      "Acquisitions Inc."
+    ],
+    "sourcePage": null,
+    "sourceSlug": "incite-greed"
+  },
+  {
+    "identityKey": "motivational-speech",
+    "versionKey": "2014:motivational-speech",
+    "name": "Motivational Speech",
+    "edition": "2014",
+    "level": 3,
+    "school": "Enchantment",
+    "castingTime": "1 Minute",
+    "range": "60 feet",
+    "components": "V",
+    "duration": "1 hour",
+    "concentration": false,
+    "ritual": false,
+    "attackModes": [],
+    "saveAbilities": [
+      "wisdom"
+    ],
+    "effectReliabilityCategory": "saving_throw",
+    "spellLists": [],
+    "sourceBooks": [
+      "Acquisitions Inc."
+    ],
+    "sourcePage": null,
+    "sourceSlug": "motivational-speech"
+  }
+]

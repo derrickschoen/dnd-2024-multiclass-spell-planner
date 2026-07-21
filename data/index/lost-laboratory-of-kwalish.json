@@ -1,0 +1,71 @@
+[
+  {
+    "identityKey": "flock-of-familiars",
+    "versionKey": "2014:flock-of-familiars",
+    "name": "Flock of Familiars",
+    "edition": "2014",
+    "level": 2,
+    "school": "Conjuration",
+    "castingTime": "1 Minute",
+    "range": "Touch",
+    "components": "V, S",
+    "duration": "Concentration, up to 1 hour",
+    "concentration": true,
+    "ritual": false,
+    "attackModes": [],
+    "saveAbilities": [],
+    "effectReliabilityCategory": "fixed_effect",
+    "spellLists": [],
+    "sourceBooks": [
+      "Lost Laboratory of Kwalish"
+    ],
+    "sourcePage": null,
+    "sourceSlug": "flock-of-familiars"
+  },
+  {
+    "identityKey": "galder-s-tower",
+    "versionKey": "2014:galder-s-tower",
+    "name": "Galder's Tower",
+    "edition": "2014",
+    "level": 3,
+    "school": "Conjuration",
+    "castingTime": "10 Minutes",
+    "range": "30 feet",
+    "components": "V, S, M",
+    "duration": "24 hours",
+    "concentration": false,
+    "ritual": false,
+    "attackModes": [],
+    "saveAbilities": [],
+    "effectReliabilityCategory": "fixed_effect",
+    "spellLists": [],
+    "sourceBooks": [
+      "Lost Laboratory of Kwalish"
+    ],
+    "sourcePage": null,
+    "sourceSlug": "galders-tower"
+  },
+  {
+    "identityKey": "galder-s-speedy-courier",
+    "versionKey": "2014:galder-s-speedy-courier",
+    "name": "Galder's Speedy Courier",
+    "edition": "2014",
+    "level": 4,
+    "school": "Conjuration",
+    "castingTime": "1 Action",
+    "range": "10 feet",
+    "components": "V, S, M",
+    "duration": "10 minutes",
+    "concentration": false,
+    "ritual": false,
+    "attackModes": [],
+    "saveAbilities": [],
+    "effectReliabilityCategory": "fixed_effect",
+    "spellLists": [],
+    "sourceBooks": [
+      "Lost Laboratory of Kwalish"
+    ],
+    "sourcePage": null,
+    "sourceSlug": "galders-speedy-courier"
+  }
+]

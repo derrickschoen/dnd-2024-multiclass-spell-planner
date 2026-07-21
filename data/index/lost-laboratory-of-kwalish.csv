@@ -1,0 +1,4 @@
+identityKey,versionKey,name,edition,level,school,castingTime,range,components,duration,concentration,ritual,attackModes,saveAbilities,effectReliabilityCategory,spellLists,sourceBooks,sourcePage,sourceSlug
+flock-of-familiars,2014:flock-of-familiars,Flock of Familiars,2014,2,Conjuration,1 Minute,Touch,"V, S","Concentration, up to 1 hour",true,false,,,fixed_effect,,Lost Laboratory of Kwalish,,flock-of-familiars
+galder-s-tower,2014:galder-s-tower,Galder's Tower,2014,3,Conjuration,10 Minutes,30 feet,"V, S, M",24 hours,false,false,,,fixed_effect,,Lost Laboratory of Kwalish,,galders-tower
+galder-s-speedy-courier,2014:galder-s-speedy-courier,Galder's Speedy Courier,2014,4,Conjuration,1 Action,10 feet,"V, S, M",10 minutes,false,false,,,fixed_effect,,Lost Laboratory of Kwalish,,galders-speedy-courier

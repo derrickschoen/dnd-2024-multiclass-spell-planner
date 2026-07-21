@@ -1,0 +1,3 @@
+identityKey,versionKey,name,edition,level,school,castingTime,range,components,duration,concentration,ritual,attackModes,saveAbilities,effectReliabilityCategory,spellLists,sourceBooks,sourcePage,sourceSlug
+frost-fingers,2014:frost-fingers,Frost Fingers,2014,1,Evocation,1 Action,Self (15-foot cone),"V, S",Instantaneous,false,false,,constitution,saving_throw,,Icewind Dale - Rime of the Frostmaiden,,frost-fingers
+create-magen,2014:create-magen,Create Magen,2014,7,Transmutation,1 Hour,Touch,"V, S, M",Instantaneous,false,false,,,fixed_effect,,Icewind Dale - Rime of the Frostmaiden,,create-magen

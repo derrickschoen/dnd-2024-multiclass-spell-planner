@@ -57,8 +57,18 @@ const HEADER_ALIASES = {
     'duration': 'duration',
 };
 
-/** Only these books are published. Anything else (incl. UA) is skipped unless --allow-ua. */
-const SOURCE_ALLOWLIST = [
+/**
+ * Every source book gets its own output file. This is intentionally NOT an
+ * allowlist: the sites keep publishing new books (Heroes of Faerun, Forge of the
+ * Artificer, the monthly D&D Beyond drops), and refusing to emit them would mean
+ * the dataset silently rots. Instead every source is published and any book not
+ * named below is reported at the end of the run, so new content is visible
+ * rather than either dropped or slipped in unnoticed.
+ *
+ * Unearthed Arcana is the one exception: it is playtest material and is excluded
+ * unless --allow-ua, so it cannot enter normal eligibility by accident.
+ */
+const KNOWN_SOURCES = [
     "Player's Handbook (2024)",
     "Player's Handbook",
     "Xanathar's Guide to Everything",
@@ -194,8 +204,22 @@ export function parseSpellPage(htmlText, indexRow) {
 
     const paragraphs = content.querySelectorAll('p').map(text).filter(Boolean);
     const sourceLine = paragraphs.find((p) => /^Source:/i.test(p)) || '';
-    const sourceBook = sourceLine.replace(/^Source:\s*/i, '').replace(/,?\s*p(age)?\.?\s*\d+.*$/i, '').trim();
+    const rawSource = sourceLine.replace(/^Source:\s*/i, '').replace(/,?\s*p(age)?\.?\s*\d+.*$/i, '').trim();
     const pageMatch = sourceLine.match(/p(?:age)?\.?\s*(\d+)/i);
+
+    // Some pages put the whole stat block in ONE paragraph separated by newlines,
+    // which whitespace-collapsing turns into
+    // "Heroes of Faerun Level 8 Evocation (Cleric, Wizard) Casting Time: ...".
+    // Truncate at the first stat-block marker so the book name is recovered
+    // rather than the spell being dropped or a bogus source file invented.
+    const bookOnly = rawSource
+        .split(/\s+Level \d|\s+(?:Casting Time|Components|Duration|Range):/i)[0]
+        .trim();
+
+    // A spell can be published in more than one book ("Xanathar's Guide to
+    // Everything/Elemental Evil Player's Companion"). Publication is many-to-many
+    // and is NOT identity, so this splits rather than minting a combined "book".
+    const sourceBooks = bookOnly.split('/').map((s) => s.trim()).filter(Boolean);
 
     const levelLine = paragraphs.find((p) => /cantrip|\d(st|nd|rd|th)-level/i.test(p)) || '';
     let level = /cantrip/i.test(levelLine) ? 0 : Number(levelLine.match(/(\d)(?:st|nd|rd|th)-level/i)?.[1] ?? -1);
@@ -206,7 +230,7 @@ export function parseSpellPage(htmlText, indexRow) {
 
     return {
         ...classify(description, indexRow.duration, indexRow.castingTime),
-        sourceBook,
+        sourceBooks,
         sourcePage: pageMatch ? Number(pageMatch[1]) : null,
         level,
         description,
@@ -229,6 +253,7 @@ export async function buildDataset({ editions = ['2024', '2014'], limit = 0, off
 
     const bySource = new Map();
     const failures = [];
+    const newSources = new Set();
 
     for (const ed of editions) {
         const site = SITES[ed];
@@ -247,18 +272,20 @@ export async function buildDataset({ editions = ['2024', '2014'], limit = 0, off
             for (const [j, r] of settled.entries()) {
                 if (r.status === 'rejected') { failures.push(`${ed}/${batch[j].slug}: ${r.reason.message}`); continue; }
                 const { row, detail } = r.value;
-                const sourceBook = canonicalSourceBook(detail.sourceBook, ed);
+                const sourceBooks = detail.sourceBooks.map((b) => canonicalSourceBook(b, ed));
 
-                const isUa = /unearthed arcana/i.test(sourceBook);
-                if (isUa && !allowUa) continue;
-                if (!isUa && sourceBook && !SOURCE_ALLOWLIST.includes(sourceBook)) {
-                    failures.push(`${ed}/${row.slug}: source not allowlisted: "${sourceBook}"`);
+                if (sourceBooks.some((b) => /unearthed arcana/i.test(b))) {
+                    if (!allowUa) continue;
+                }
+                if (!sourceBooks.length) {
+                    // No parseable source line IS a real failure: the record cannot
+                    // be attributed to a book.
+                    failures.push(`${ed}/${row.slug}: no parseable source book on the page`);
                     continue;
                 }
+                sourceBooks.filter((b) => !KNOWN_SOURCES.includes(b)).forEach((b) => newSources.add(b));
 
-                const file = SOURCE_FILENAMES[sourceBook] || slugify(sourceBook || 'unknown');
-                if (!bySource.has(file)) bySource.set(file, []);
-                bySource.get(file).push({
+                const record = {
                     identityKey: slugify(row.name),
                     versionKey: `${ed}:${slugify(row.name)}`,
                     name: row.name,
@@ -275,11 +302,21 @@ export async function buildDataset({ editions = ['2024', '2014'], limit = 0, off
                     saveAbilities: detail.saveAbilities,
                     effectReliabilityCategory: detail.effectReliabilityCategory,
                     spellLists: row.spellLists,
-                    sourceBook,
+                    // All books this version appears in. The importer turns this
+                    // into many-to-many publications rather than duplicate versions.
+                    sourceBooks,
                     sourcePage: detail.sourcePage,
                     sourceSlug: row.slug,
                     _description: detail.description,
-                });
+                };
+
+                // A reprinted spell is listed under each of its books, but keeps one
+                // versionKey so import resolves it to a single version.
+                for (const book of sourceBooks) {
+                    const file = SOURCE_FILENAMES[book] || slugify(book);
+                    if (!bySource.has(file)) bySource.set(file, []);
+                    bySource.get(file).push(record);
+                }
             }
             process.stdout.write(`\r[${ed}] ${Math.min(i + CONCURRENCY, rows.length)}/${rows.length}`);
         }
@@ -305,7 +342,11 @@ export async function buildDataset({ editions = ['2024', '2014'], limit = 0, off
         written.push(`${file} (${records.length})`);
     }
     console.log('Wrote: ' + written.join(', '));
-    return { written, failures };
+    if (newSources.size) {
+        console.log(`\nSource books not in KNOWN_SOURCES (published anyway, listed so new content is never silent):`);
+        [...newSources].sort().forEach((s) => console.log(`  + ${s}`));
+    }
+    return { written, failures, newSources: [...newSources] };
 }
 
 if (import.meta.url === `file://${process.argv[1]}`) {

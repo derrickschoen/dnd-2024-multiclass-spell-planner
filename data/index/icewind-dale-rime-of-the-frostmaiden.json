@@ -1,0 +1,50 @@
+[
+  {
+    "identityKey": "frost-fingers",
+    "versionKey": "2014:frost-fingers",
+    "name": "Frost Fingers",
+    "edition": "2014",
+    "level": 1,
+    "school": "Evocation",
+    "castingTime": "1 Action",
+    "range": "Self (15-foot cone)",
+    "components": "V, S",
+    "duration": "Instantaneous",
+    "concentration": false,
+    "ritual": false,
+    "attackModes": [],
+    "saveAbilities": [
+      "constitution"
+    ],
+    "effectReliabilityCategory": "saving_throw",
+    "spellLists": [],
+    "sourceBooks": [
+      "Icewind Dale - Rime of the Frostmaiden"
+    ],
+    "sourcePage": null,
+    "sourceSlug": "frost-fingers"
+  },
+  {
+    "identityKey": "create-magen",
+    "versionKey": "2014:create-magen",
+    "name": "Create Magen",
+    "edition": "2014",
+    "level": 7,
+    "school": "Transmutation",
+    "castingTime": "1 Hour",
+    "range": "Touch",
+    "components": "V, S, M",
+    "duration": "Instantaneous",
+    "concentration": false,
+    "ritual": false,
+    "attackModes": [],
+    "saveAbilities": [],
+    "effectReliabilityCategory": "fixed_effect",
+    "spellLists": [],
+    "sourceBooks": [
+      "Icewind Dale - Rime of the Frostmaiden"
+    ],
+    "sourcePage": null,
+    "sourceSlug": "create-magen"
+  }
+]

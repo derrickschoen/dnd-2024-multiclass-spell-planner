@@ -16,7 +16,9 @@
     "saveAbilities": [],
     "effectReliabilityCategory": "fixed_effect",
     "spellLists": [],
-    "sourceBook": "Xanathar's Guide to Everything",
+    "sourceBooks": [
+      "Xanathar's Guide to Everything"
+    ],
     "sourcePage": null,
     "sourceSlug": "control-flames"
   },
@@ -39,8 +41,2276 @@
     ],
     "effectReliabilityCategory": "saving_throw",
     "spellLists": [],
-    "sourceBook": "Xanathar's Guide to Everything",
+    "sourceBooks": [
+      "Xanathar's Guide to Everything"
+    ],
     "sourcePage": null,
     "sourceSlug": "create-bonfire"
+  },
+  {
+    "identityKey": "frostbite",
+    "versionKey": "2014:frostbite",
+    "name": "Frostbite",
+    "edition": "2014",
+    "level": 0,
+    "school": "Evocation",
+    "castingTime": "1 Action",
+    "range": "60 feet",
+    "components": "V, S",
+    "duration": "Instantaneous",
+    "concentration": false,
+    "ritual": false,
+    "attackModes": [],
+    "saveAbilities": [
+      "constitution"
+    ],
+    "effectReliabilityCategory": "saving_throw",
+    "spellLists": [],
+    "sourceBooks": [
+      "Xanathar's Guide to Everything"
+    ],
+    "sourcePage": null,
+    "sourceSlug": "frostbite"
+  },
+  {
+    "identityKey": "gust",
+    "versionKey": "2014:gust",
+    "name": "Gust",
+    "edition": "2014",
+    "level": 0,
+    "school": "Transmutation",
+    "castingTime": "1 Action",
+    "range": "30 feet",
+    "components": "V, S",
+    "duration": "Instantaneous",
+    "concentration": false,
+    "ritual": false,
+    "attackModes": [],
+    "saveAbilities": [],
+    "effectReliabilityCategory": "fixed_effect",
+    "spellLists": [],
+    "sourceBooks": [
+      "Xanathar's Guide to Everything"
+    ],
+    "sourcePage": null,
+    "sourceSlug": "gust"
+  },
+  {
+    "identityKey": "infestation",
+    "versionKey": "2014:infestation",
+    "name": "Infestation",
+    "edition": "2014",
+    "level": 0,
+    "school": "Conjuration",
+    "castingTime": "1 Action",
+    "range": "30 feet",
+    "components": "V, S, M",
+    "duration": "Instantaneous",
+    "concentration": false,
+    "ritual": false,
+    "attackModes": [],
+    "saveAbilities": [
+      "constitution"
+    ],
+    "effectReliabilityCategory": "saving_throw",
+    "spellLists": [],
+    "sourceBooks": [
+      "Xanathar's Guide to Everything"
+    ],
+    "sourcePage": null,
+    "sourceSlug": "infestation"
+  },
+  {
+    "identityKey": "magic-stone",
+    "versionKey": "2014:magic-stone",
+    "name": "Magic Stone",
+    "edition": "2014",
+    "level": 0,
+    "school": "Transmutation",
+    "castingTime": "1 Bonus Action",
+    "range": "Touch",
+    "components": "V, S",
+    "duration": "1 minute",
+    "concentration": false,
+    "ritual": false,
+    "attackModes": [
+      "ranged_spell"
+    ],
+    "saveAbilities": [],
+    "effectReliabilityCategory": "attack_roll",
+    "spellLists": [],
+    "sourceBooks": [
+      "Xanathar's Guide to Everything",
+      "Elemental Evil Player's Companion"
+    ],
+    "sourcePage": null,
+    "sourceSlug": "magic-stone"
+  },
+  {
+    "identityKey": "mold-earth",
+    "versionKey": "2014:mold-earth",
+    "name": "Mold Earth",
+    "edition": "2014",
+    "level": 0,
+    "school": "Transmutation",
+    "castingTime": "1 Action",
+    "range": "30 feet",
+    "components": "S",
+    "duration": "Instantaneous or 1 hour",
+    "concentration": false,
+    "ritual": false,
+    "attackModes": [],
+    "saveAbilities": [],
+    "effectReliabilityCategory": "fixed_effect",
+    "spellLists": [],
+    "sourceBooks": [
+      "Xanathar's Guide to Everything"
+    ],
+    "sourcePage": null,
+    "sourceSlug": "mold-earth"
+  },
+  {
+    "identityKey": "primal-savagery",
+    "versionKey": "2014:primal-savagery",
+    "name": "Primal Savagery",
+    "edition": "2014",
+    "level": 0,
+    "school": "Transmutation",
+    "castingTime": "1 Action",
+    "range": "Self",
+    "components": "S",
+    "duration": "Instantaneous",
+    "concentration": false,
+    "ritual": false,
+    "attackModes": [
+      "melee_spell"
+    ],
+    "saveAbilities": [],
+    "effectReliabilityCategory": "attack_roll",
+    "spellLists": [],
+    "sourceBooks": [
+      "Xanathar's Guide to Everything"
+    ],
+    "sourcePage": null,
+    "sourceSlug": "primal-savagery"
+  },
+  {
+    "identityKey": "shape-water",
+    "versionKey": "2014:shape-water",
+    "name": "Shape Water",
+    "edition": "2014",
+    "level": 0,
+    "school": "Transmutation",
+    "castingTime": "1 Action",
+    "range": "30 feet",
+    "components": "S",
+    "duration": "Instantaneous or 1 hour",
+    "concentration": false,
+    "ritual": false,
+    "attackModes": [],
+    "saveAbilities": [],
+    "effectReliabilityCategory": "fixed_effect",
+    "spellLists": [],
+    "sourceBooks": [
+      "Xanathar's Guide to Everything"
+    ],
+    "sourcePage": null,
+    "sourceSlug": "shape-water"
+  },
+  {
+    "identityKey": "thunderclap",
+    "versionKey": "2014:thunderclap",
+    "name": "Thunderclap",
+    "edition": "2014",
+    "level": 0,
+    "school": "Evocation",
+    "castingTime": "1 Action",
+    "range": "Self (5-foot radius)",
+    "components": "S",
+    "duration": "Instantaneous",
+    "concentration": false,
+    "ritual": false,
+    "attackModes": [],
+    "saveAbilities": [
+      "constitution"
+    ],
+    "effectReliabilityCategory": "saving_throw",
+    "spellLists": [],
+    "sourceBooks": [
+      "Xanathar's Guide to Everything"
+    ],
+    "sourcePage": null,
+    "sourceSlug": "thunderclap"
+  },
+  {
+    "identityKey": "toll-the-dead",
+    "versionKey": "2014:toll-the-dead",
+    "name": "Toll the Dead",
+    "edition": "2014",
+    "level": 0,
+    "school": "Necromancy",
+    "castingTime": "1 Action",
+    "range": "60 feet",
+    "components": "V, S",
+    "duration": "Instantaneous",
+    "concentration": false,
+    "ritual": false,
+    "attackModes": [],
+    "saveAbilities": [
+      "wisdom"
+    ],
+    "effectReliabilityCategory": "saving_throw",
+    "spellLists": [],
+    "sourceBooks": [
+      "Xanathar's Guide to Everything"
+    ],
+    "sourcePage": null,
+    "sourceSlug": "toll-the-dead"
+  },
+  {
+    "identityKey": "word-of-radiance",
+    "versionKey": "2014:word-of-radiance",
+    "name": "Word of Radiance",
+    "edition": "2014",
+    "level": 0,
+    "school": "Evocation",
+    "castingTime": "1 Action",
+    "range": "5 feet",
+    "components": "V, M",
+    "duration": "Instantaneous",
+    "concentration": false,
+    "ritual": false,
+    "attackModes": [],
+    "saveAbilities": [
+      "constitution"
+    ],
+    "effectReliabilityCategory": "saving_throw",
+    "spellLists": [],
+    "sourceBooks": [
+      "Xanathar's Guide to Everything"
+    ],
+    "sourcePage": null,
+    "sourceSlug": "word-of-radiance"
+  },
+  {
+    "identityKey": "absorb-elements",
+    "versionKey": "2014:absorb-elements",
+    "name": "Absorb Elements",
+    "edition": "2014",
+    "level": 1,
+    "school": "Abjuration",
+    "castingTime": "1 Reaction",
+    "range": "Self",
+    "components": "S",
+    "duration": "1 round",
+    "concentration": false,
+    "ritual": false,
+    "attackModes": [],
+    "saveAbilities": [],
+    "effectReliabilityCategory": "fixed_effect",
+    "spellLists": [],
+    "sourceBooks": [
+      "Xanathar's Guide to Everything"
+    ],
+    "sourcePage": null,
+    "sourceSlug": "absorb-elements"
+  },
+  {
+    "identityKey": "beast-bond",
+    "versionKey": "2014:beast-bond",
+    "name": "Beast Bond",
+    "edition": "2014",
+    "level": 1,
+    "school": "Divination",
+    "castingTime": "1 Action",
+    "range": "Touch",
+    "components": "V, S, M",
+    "duration": "Concentration, up to 10 minutes",
+    "concentration": true,
+    "ritual": false,
+    "attackModes": [],
+    "saveAbilities": [],
+    "effectReliabilityCategory": "fixed_effect",
+    "spellLists": [],
+    "sourceBooks": [
+      "Xanathar's Guide to Everything"
+    ],
+    "sourcePage": null,
+    "sourceSlug": "beast-bond"
+  },
+  {
+    "identityKey": "catapult",
+    "versionKey": "2014:catapult",
+    "name": "Catapult",
+    "edition": "2014",
+    "level": 1,
+    "school": "Transmutation",
+    "castingTime": "1 Action",
+    "range": "60 feet",
+    "components": "S",
+    "duration": "Instantaneous",
+    "concentration": false,
+    "ritual": false,
+    "attackModes": [],
+    "saveAbilities": [
+      "dexterity"
+    ],
+    "effectReliabilityCategory": "saving_throw",
+    "spellLists": [],
+    "sourceBooks": [
+      "Xanathar's Guide to Everything"
+    ],
+    "sourcePage": null,
+    "sourceSlug": "catapult"
+  },
+  {
+    "identityKey": "cause-fear",
+    "versionKey": "2014:cause-fear",
+    "name": "Cause Fear",
+    "edition": "2014",
+    "level": 1,
+    "school": "Necromancy",
+    "castingTime": "1 Action",
+    "range": "60 feet",
+    "components": "V, S",
+    "duration": "Concentration, up to 1 minute",
+    "concentration": true,
+    "ritual": false,
+    "attackModes": [],
+    "saveAbilities": [
+      "wisdom"
+    ],
+    "effectReliabilityCategory": "saving_throw",
+    "spellLists": [],
+    "sourceBooks": [
+      "Xanathar's Guide to Everything"
+    ],
+    "sourcePage": null,
+    "sourceSlug": "cause-fear"
+  },
+  {
+    "identityKey": "ceremony",
+    "versionKey": "2014:ceremony",
+    "name": "Ceremony",
+    "edition": "2014",
+    "level": 1,
+    "school": "Abjuration",
+    "castingTime": "1 Action R",
+    "range": "Touch",
+    "components": "V, S, M",
+    "duration": "Instantaneous",
+    "concentration": false,
+    "ritual": false,
+    "attackModes": [],
+    "saveAbilities": [],
+    "effectReliabilityCategory": "fixed_effect",
+    "spellLists": [],
+    "sourceBooks": [
+      "Xanathar's Guide to Everything"
+    ],
+    "sourcePage": null,
+    "sourceSlug": "ceremony"
+  },
+  {
+    "identityKey": "chaos-bolt",
+    "versionKey": "2014:chaos-bolt",
+    "name": "Chaos Bolt",
+    "edition": "2014",
+    "level": 1,
+    "school": "Evocation",
+    "castingTime": "1 Action",
+    "range": "120 feet",
+    "components": "V, S",
+    "duration": "Instantaneous",
+    "concentration": false,
+    "ritual": false,
+    "attackModes": [
+      "ranged_spell"
+    ],
+    "saveAbilities": [],
+    "effectReliabilityCategory": "attack_roll",
+    "spellLists": [],
+    "sourceBooks": [
+      "Xanathar's Guide to Everything"
+    ],
+    "sourcePage": null,
+    "sourceSlug": "chaos-bolt"
+  },
+  {
+    "identityKey": "earth-tremor",
+    "versionKey": "2014:earth-tremor",
+    "name": "Earth Tremor",
+    "edition": "2014",
+    "level": 1,
+    "school": "Evocation",
+    "castingTime": "1 Action",
+    "range": "Self (10-foot radius)",
+    "components": "V, S",
+    "duration": "Instantaneous",
+    "concentration": false,
+    "ritual": false,
+    "attackModes": [],
+    "saveAbilities": [
+      "dexterity"
+    ],
+    "effectReliabilityCategory": "saving_throw",
+    "spellLists": [],
+    "sourceBooks": [
+      "Xanathar's Guide to Everything",
+      "Elemental Evil Player's Companion"
+    ],
+    "sourcePage": null,
+    "sourceSlug": "earth-tremor"
+  },
+  {
+    "identityKey": "ice-knife",
+    "versionKey": "2014:ice-knife",
+    "name": "Ice Knife",
+    "edition": "2014",
+    "level": 1,
+    "school": "Conjuration",
+    "castingTime": "1 Action",
+    "range": "60 feet",
+    "components": "S, M",
+    "duration": "Instantaneous",
+    "concentration": false,
+    "ritual": false,
+    "attackModes": [
+      "ranged_spell"
+    ],
+    "saveAbilities": [
+      "dexterity"
+    ],
+    "effectReliabilityCategory": "mixed",
+    "spellLists": [],
+    "sourceBooks": [
+      "Xanathar's Guide to Everything"
+    ],
+    "sourcePage": null,
+    "sourceSlug": "ice-knife"
+  },
+  {
+    "identityKey": "snare",
+    "versionKey": "2014:snare",
+    "name": "Snare",
+    "edition": "2014",
+    "level": 1,
+    "school": "Abjuration",
+    "castingTime": "1 Minute",
+    "range": "Touch",
+    "components": "S, M",
+    "duration": "8 hours",
+    "concentration": false,
+    "ritual": false,
+    "attackModes": [],
+    "saveAbilities": [
+      "dexterity"
+    ],
+    "effectReliabilityCategory": "saving_throw",
+    "spellLists": [],
+    "sourceBooks": [
+      "Xanathar's Guide to Everything"
+    ],
+    "sourcePage": null,
+    "sourceSlug": "snare"
+  },
+  {
+    "identityKey": "zephyr-strike",
+    "versionKey": "2014:zephyr-strike",
+    "name": "Zephyr Strike",
+    "edition": "2014",
+    "level": 1,
+    "school": "Transmutation",
+    "castingTime": "1 Bonus Action",
+    "range": "Self",
+    "components": "V",
+    "duration": "Concentration, up to 1 minute",
+    "concentration": true,
+    "ritual": false,
+    "attackModes": [],
+    "saveAbilities": [],
+    "effectReliabilityCategory": "fixed_effect",
+    "spellLists": [],
+    "sourceBooks": [
+      "Xanathar's Guide to Everything"
+    ],
+    "sourcePage": null,
+    "sourceSlug": "zephyr-strike"
+  },
+  {
+    "identityKey": "aganazzar-s-scorcher",
+    "versionKey": "2014:aganazzar-s-scorcher",
+    "name": "Aganazzar's Scorcher",
+    "edition": "2014",
+    "level": 2,
+    "school": "Evocation",
+    "castingTime": "1 Action",
+    "range": "30 Feet",
+    "components": "V, S, M",
+    "duration": "Instantaneous",
+    "concentration": false,
+    "ritual": false,
+    "attackModes": [],
+    "saveAbilities": [
+      "dexterity"
+    ],
+    "effectReliabilityCategory": "saving_throw",
+    "spellLists": [],
+    "sourceBooks": [
+      "Xanathar's Guide to Everything"
+    ],
+    "sourcePage": null,
+    "sourceSlug": "aganazzars-scorcher"
+  },
+  {
+    "identityKey": "dragon-s-breath",
+    "versionKey": "2014:dragon-s-breath",
+    "name": "Dragon's Breath",
+    "edition": "2014",
+    "level": 2,
+    "school": "Transmutation",
+    "castingTime": "1 Bonus Action",
+    "range": "Touch",
+    "components": "V, S, M",
+    "duration": "Concentration, up to 1 minute",
+    "concentration": true,
+    "ritual": false,
+    "attackModes": [],
+    "saveAbilities": [
+      "dexterity"
+    ],
+    "effectReliabilityCategory": "saving_throw",
+    "spellLists": [],
+    "sourceBooks": [
+      "Xanathar's Guide to Everything"
+    ],
+    "sourcePage": null,
+    "sourceSlug": "dragons-breath"
+  },
+  {
+    "identityKey": "dust-devil",
+    "versionKey": "2014:dust-devil",
+    "name": "Dust Devil",
+    "edition": "2014",
+    "level": 2,
+    "school": "Conjuration",
+    "castingTime": "1 Action",
+    "range": "60 feet",
+    "components": "V, S, M",
+    "duration": "Concentration, up to 1 minute",
+    "concentration": true,
+    "ritual": false,
+    "attackModes": [],
+    "saveAbilities": [
+      "strength"
+    ],
+    "effectReliabilityCategory": "saving_throw",
+    "spellLists": [],
+    "sourceBooks": [
+      "Xanathar's Guide to Everything"
+    ],
+    "sourcePage": null,
+    "sourceSlug": "dust-devil"
+  },
+  {
+    "identityKey": "earthbind",
+    "versionKey": "2014:earthbind",
+    "name": "Earthbind",
+    "edition": "2014",
+    "level": 2,
+    "school": "Transmutation",
+    "castingTime": "1 Action",
+    "range": "300 feet",
+    "components": "V",
+    "duration": "Concentration, up to 1 minute",
+    "concentration": true,
+    "ritual": false,
+    "attackModes": [],
+    "saveAbilities": [
+      "strength"
+    ],
+    "effectReliabilityCategory": "saving_throw",
+    "spellLists": [],
+    "sourceBooks": [
+      "Xanathar's Guide to Everything"
+    ],
+    "sourcePage": null,
+    "sourceSlug": "earthbind"
+  },
+  {
+    "identityKey": "healing-spirit",
+    "versionKey": "2014:healing-spirit",
+    "name": "Healing Spirit",
+    "edition": "2014",
+    "level": 2,
+    "school": "Conjuration",
+    "castingTime": "1 Bonus Action",
+    "range": "60 feet",
+    "components": "V, S",
+    "duration": "Concentration, up to 1 minute",
+    "concentration": true,
+    "ritual": false,
+    "attackModes": [],
+    "saveAbilities": [],
+    "effectReliabilityCategory": "modifier_scaled",
+    "spellLists": [],
+    "sourceBooks": [
+      "Xanathar's Guide to Everything"
+    ],
+    "sourcePage": null,
+    "sourceSlug": "healing-spirit"
+  },
+  {
+    "identityKey": "maximillian-s-earthen-grasp",
+    "versionKey": "2014:maximillian-s-earthen-grasp",
+    "name": "Maximillian's Earthen Grasp",
+    "edition": "2014",
+    "level": 2,
+    "school": "Transmutation",
+    "castingTime": "1 Action",
+    "range": "30 feet",
+    "components": "V, S, M",
+    "duration": "Concentration, up to 1 minute",
+    "concentration": true,
+    "ritual": false,
+    "attackModes": [],
+    "saveAbilities": [
+      "strength"
+    ],
+    "effectReliabilityCategory": "saving_throw",
+    "spellLists": [],
+    "sourceBooks": [
+      "Xanathar's Guide to Everything"
+    ],
+    "sourcePage": null,
+    "sourceSlug": "maximillians-earthen-grasp"
+  },
+  {
+    "identityKey": "mind-spike",
+    "versionKey": "2014:mind-spike",
+    "name": "Mind Spike",
+    "edition": "2014",
+    "level": 2,
+    "school": "Divination",
+    "castingTime": "1 Action",
+    "range": "60 feet",
+    "components": "S",
+    "duration": "Concentration, up to 1 hour",
+    "concentration": true,
+    "ritual": false,
+    "attackModes": [],
+    "saveAbilities": [
+      "wisdom"
+    ],
+    "effectReliabilityCategory": "saving_throw",
+    "spellLists": [],
+    "sourceBooks": [
+      "Xanathar's Guide to Everything"
+    ],
+    "sourcePage": null,
+    "sourceSlug": "mind-spike"
+  },
+  {
+    "identityKey": "pyrotechnics",
+    "versionKey": "2014:pyrotechnics",
+    "name": "Pyrotechnics",
+    "edition": "2014",
+    "level": 2,
+    "school": "Transmutation",
+    "castingTime": "1 Action",
+    "range": "60 feet",
+    "components": "V, S",
+    "duration": "Instantaneous",
+    "concentration": false,
+    "ritual": false,
+    "attackModes": [],
+    "saveAbilities": [
+      "constitution"
+    ],
+    "effectReliabilityCategory": "saving_throw",
+    "spellLists": [],
+    "sourceBooks": [
+      "Xanathar's Guide to Everything"
+    ],
+    "sourcePage": null,
+    "sourceSlug": "pyrotechnics"
+  },
+  {
+    "identityKey": "shadow-blade",
+    "versionKey": "2014:shadow-blade",
+    "name": "Shadow Blade",
+    "edition": "2014",
+    "level": 2,
+    "school": "Illusion",
+    "castingTime": "1 Bonus Action",
+    "range": "Self",
+    "components": "V, S",
+    "duration": "Concentration, up to 1 minute",
+    "concentration": true,
+    "ritual": false,
+    "attackModes": [],
+    "saveAbilities": [],
+    "effectReliabilityCategory": "fixed_effect",
+    "spellLists": [],
+    "sourceBooks": [
+      "Xanathar's Guide to Everything"
+    ],
+    "sourcePage": null,
+    "sourceSlug": "shadow-blade"
+  },
+  {
+    "identityKey": "skywrite",
+    "versionKey": "2014:skywrite",
+    "name": "Skywrite",
+    "edition": "2014",
+    "level": 2,
+    "school": "Transmutation",
+    "castingTime": "1 Action R",
+    "range": "Sight",
+    "components": "V, S",
+    "duration": "Concentration, up to 1 day",
+    "concentration": true,
+    "ritual": false,
+    "attackModes": [],
+    "saveAbilities": [],
+    "effectReliabilityCategory": "fixed_effect",
+    "spellLists": [],
+    "sourceBooks": [
+      "Xanathar's Guide to Everything"
+    ],
+    "sourcePage": null,
+    "sourceSlug": "skywrite"
+  },
+  {
+    "identityKey": "snilloc-s-snowball-swarm",
+    "versionKey": "2014:snilloc-s-snowball-swarm",
+    "name": "Snilloc's Snowball Swarm",
+    "edition": "2014",
+    "level": 2,
+    "school": "Evocation",
+    "castingTime": "1 Action",
+    "range": "90 feet",
+    "components": "V, S, M",
+    "duration": "Instantaneous",
+    "concentration": false,
+    "ritual": false,
+    "attackModes": [],
+    "saveAbilities": [
+      "dexterity"
+    ],
+    "effectReliabilityCategory": "saving_throw",
+    "spellLists": [],
+    "sourceBooks": [
+      "Xanathar's Guide to Everything"
+    ],
+    "sourcePage": null,
+    "sourceSlug": "snillocs-snowball-swarm"
+  },
+  {
+    "identityKey": "warding-wind",
+    "versionKey": "2014:warding-wind",
+    "name": "Warding Wind",
+    "edition": "2014",
+    "level": 2,
+    "school": "Evocation",
+    "castingTime": "1 Action",
+    "range": "Self",
+    "components": "V",
+    "duration": "Concentration, up to 10 minutes",
+    "concentration": true,
+    "ritual": false,
+    "attackModes": [],
+    "saveAbilities": [],
+    "effectReliabilityCategory": "fixed_effect",
+    "spellLists": [],
+    "sourceBooks": [
+      "Xanathar's Guide to Everything"
+    ],
+    "sourcePage": null,
+    "sourceSlug": "warding-wind"
+  },
+  {
+    "identityKey": "catnap",
+    "versionKey": "2014:catnap",
+    "name": "Catnap",
+    "edition": "2014",
+    "level": 3,
+    "school": "Enchantment",
+    "castingTime": "1 Action",
+    "range": "30 feet",
+    "components": "S, M",
+    "duration": "10 minutes",
+    "concentration": false,
+    "ritual": false,
+    "attackModes": [],
+    "saveAbilities": [],
+    "effectReliabilityCategory": "fixed_effect",
+    "spellLists": [],
+    "sourceBooks": [
+      "Xanathar's Guide to Everything"
+    ],
+    "sourcePage": null,
+    "sourceSlug": "catnap"
+  },
+  {
+    "identityKey": "enemies-abound",
+    "versionKey": "2014:enemies-abound",
+    "name": "Enemies Abound",
+    "edition": "2014",
+    "level": 3,
+    "school": "Enchantment",
+    "castingTime": "1 Action",
+    "range": "120 feet",
+    "components": "V, S",
+    "duration": "Concentration, up to 1 minute",
+    "concentration": true,
+    "ritual": false,
+    "attackModes": [],
+    "saveAbilities": [
+      "intelligence"
+    ],
+    "effectReliabilityCategory": "saving_throw",
+    "spellLists": [],
+    "sourceBooks": [
+      "Xanathar's Guide to Everything"
+    ],
+    "sourcePage": null,
+    "sourceSlug": "enemies-abound"
+  },
+  {
+    "identityKey": "erupting-earth",
+    "versionKey": "2014:erupting-earth",
+    "name": "Erupting Earth",
+    "edition": "2014",
+    "level": 3,
+    "school": "Transmutation",
+    "castingTime": "1 Action",
+    "range": "120 feet",
+    "components": "V, S, M",
+    "duration": "Instantaneous",
+    "concentration": false,
+    "ritual": false,
+    "attackModes": [],
+    "saveAbilities": [
+      "dexterity"
+    ],
+    "effectReliabilityCategory": "saving_throw",
+    "spellLists": [],
+    "sourceBooks": [
+      "Xanathar's Guide to Everything",
+      "Elemental Evil Player's Companion"
+    ],
+    "sourcePage": null,
+    "sourceSlug": "erupting-earth"
+  },
+  {
+    "identityKey": "flame-arrows",
+    "versionKey": "2014:flame-arrows",
+    "name": "Flame Arrows",
+    "edition": "2014",
+    "level": 3,
+    "school": "Transmutation",
+    "castingTime": "1 Action",
+    "range": "Touch",
+    "components": "V, S",
+    "duration": "Concentration, up to 1 hour",
+    "concentration": true,
+    "ritual": false,
+    "attackModes": [],
+    "saveAbilities": [],
+    "effectReliabilityCategory": "fixed_effect",
+    "spellLists": [],
+    "sourceBooks": [
+      "Xanathar's Guide to Everything"
+    ],
+    "sourcePage": null,
+    "sourceSlug": "flame-arrows"
+  },
+  {
+    "identityKey": "life-transference",
+    "versionKey": "2014:life-transference",
+    "name": "Life Transference",
+    "edition": "2014",
+    "level": 3,
+    "school": "Necromancy",
+    "castingTime": "1 Action",
+    "range": "30 feet",
+    "components": "V, S",
+    "duration": "Instantaneous",
+    "concentration": false,
+    "ritual": false,
+    "attackModes": [],
+    "saveAbilities": [],
+    "effectReliabilityCategory": "fixed_effect",
+    "spellLists": [],
+    "sourceBooks": [
+      "Xanathar's Guide to Everything"
+    ],
+    "sourcePage": null,
+    "sourceSlug": "life-transference"
+  },
+  {
+    "identityKey": "melf-s-minute-meteors",
+    "versionKey": "2014:melf-s-minute-meteors",
+    "name": "Melf's Minute Meteors",
+    "edition": "2014",
+    "level": 3,
+    "school": "Evocation",
+    "castingTime": "1 Action",
+    "range": "Self (120 feet)",
+    "components": "V, S, M",
+    "duration": "Concentration, up to 10 minutes",
+    "concentration": true,
+    "ritual": false,
+    "attackModes": [],
+    "saveAbilities": [
+      "dexterity"
+    ],
+    "effectReliabilityCategory": "saving_throw",
+    "spellLists": [],
+    "sourceBooks": [
+      "Xanathar's Guide to Everything"
+    ],
+    "sourcePage": null,
+    "sourceSlug": "melfs-minute-meteors"
+  },
+  {
+    "identityKey": "summon-lesser-demons",
+    "versionKey": "2014:summon-lesser-demons",
+    "name": "Summon Lesser Demons",
+    "edition": "2014",
+    "level": 3,
+    "school": "Conjuration",
+    "castingTime": "1 Action",
+    "range": "60 Feet",
+    "components": "V, S, M",
+    "duration": "Concentration, up to 1 hour",
+    "concentration": true,
+    "ritual": false,
+    "attackModes": [],
+    "saveAbilities": [],
+    "effectReliabilityCategory": "fixed_effect",
+    "spellLists": [],
+    "sourceBooks": [
+      "Xanathar's Guide to Everything"
+    ],
+    "sourcePage": null,
+    "sourceSlug": "summon-lesser-demons"
+  },
+  {
+    "identityKey": "thunder-step",
+    "versionKey": "2014:thunder-step",
+    "name": "Thunder Step",
+    "edition": "2014",
+    "level": 3,
+    "school": "Conjuration",
+    "castingTime": "1 Action",
+    "range": "90 feet",
+    "components": "V",
+    "duration": "Instantaneous",
+    "concentration": false,
+    "ritual": false,
+    "attackModes": [],
+    "saveAbilities": [
+      "constitution"
+    ],
+    "effectReliabilityCategory": "saving_throw",
+    "spellLists": [],
+    "sourceBooks": [
+      "Xanathar's Guide to Everything"
+    ],
+    "sourcePage": null,
+    "sourceSlug": "thunder-step"
+  },
+  {
+    "identityKey": "tidal-wave",
+    "versionKey": "2014:tidal-wave",
+    "name": "Tidal Wave",
+    "edition": "2014",
+    "level": 3,
+    "school": "Conjuration",
+    "castingTime": "1 Action",
+    "range": "120 feet",
+    "components": "V, S, M",
+    "duration": "Instantaneous",
+    "concentration": false,
+    "ritual": false,
+    "attackModes": [],
+    "saveAbilities": [
+      "dexterity"
+    ],
+    "effectReliabilityCategory": "saving_throw",
+    "spellLists": [],
+    "sourceBooks": [
+      "Xanathar's Guide to Everything"
+    ],
+    "sourcePage": null,
+    "sourceSlug": "tidal-wave"
+  },
+  {
+    "identityKey": "tiny-servant",
+    "versionKey": "2014:tiny-servant",
+    "name": "Tiny Servant",
+    "edition": "2014",
+    "level": 3,
+    "school": "Transmutation",
+    "castingTime": "1 Minute",
+    "range": "Touch",
+    "components": "V, S",
+    "duration": "8 hours",
+    "concentration": false,
+    "ritual": false,
+    "attackModes": [],
+    "saveAbilities": [],
+    "effectReliabilityCategory": "fixed_effect",
+    "spellLists": [],
+    "sourceBooks": [
+      "Xanathar's Guide to Everything"
+    ],
+    "sourcePage": null,
+    "sourceSlug": "tiny-servant"
+  },
+  {
+    "identityKey": "wall-of-sand",
+    "versionKey": "2014:wall-of-sand",
+    "name": "Wall of Sand",
+    "edition": "2014",
+    "level": 3,
+    "school": "Evocation",
+    "castingTime": "1 Action",
+    "range": "90 feet",
+    "components": "V, S, M",
+    "duration": "Concentration, up to 10 minutes",
+    "concentration": true,
+    "ritual": false,
+    "attackModes": [],
+    "saveAbilities": [],
+    "effectReliabilityCategory": "fixed_effect",
+    "spellLists": [],
+    "sourceBooks": [
+      "Xanathar's Guide to Everything"
+    ],
+    "sourcePage": null,
+    "sourceSlug": "wall-of-sand"
+  },
+  {
+    "identityKey": "wall-of-water",
+    "versionKey": "2014:wall-of-water",
+    "name": "Wall of Water",
+    "edition": "2014",
+    "level": 3,
+    "school": "Evocation",
+    "castingTime": "1 Action",
+    "range": "60 feet",
+    "components": "V, S, M",
+    "duration": "Concentration, up to 10 minutes",
+    "concentration": true,
+    "ritual": false,
+    "attackModes": [],
+    "saveAbilities": [],
+    "effectReliabilityCategory": "fixed_effect",
+    "spellLists": [],
+    "sourceBooks": [
+      "Xanathar's Guide to Everything"
+    ],
+    "sourcePage": null,
+    "sourceSlug": "wall-of-water"
+  },
+  {
+    "identityKey": "charm-monster",
+    "versionKey": "2014:charm-monster",
+    "name": "Charm Monster",
+    "edition": "2014",
+    "level": 4,
+    "school": "Enchantment",
+    "castingTime": "1 Action",
+    "range": "30 feet",
+    "components": "V, S",
+    "duration": "1 hour",
+    "concentration": false,
+    "ritual": false,
+    "attackModes": [],
+    "saveAbilities": [
+      "wisdom"
+    ],
+    "effectReliabilityCategory": "saving_throw",
+    "spellLists": [],
+    "sourceBooks": [
+      "Xanathar's Guide to Everything"
+    ],
+    "sourcePage": null,
+    "sourceSlug": "charm-monster"
+  },
+  {
+    "identityKey": "elemental-bane",
+    "versionKey": "2014:elemental-bane",
+    "name": "Elemental Bane",
+    "edition": "2014",
+    "level": 4,
+    "school": "Transmutation",
+    "castingTime": "1 Action",
+    "range": "90 feet",
+    "components": "V, S",
+    "duration": "Concentration, up to 1 minute",
+    "concentration": true,
+    "ritual": false,
+    "attackModes": [],
+    "saveAbilities": [
+      "constitution"
+    ],
+    "effectReliabilityCategory": "saving_throw",
+    "spellLists": [],
+    "sourceBooks": [
+      "Xanathar's Guide to Everything"
+    ],
+    "sourcePage": null,
+    "sourceSlug": "elemental-bane"
+  },
+  {
+    "identityKey": "find-greater-steed",
+    "versionKey": "2014:find-greater-steed",
+    "name": "Find Greater Steed",
+    "edition": "2014",
+    "level": 4,
+    "school": "Conjuration",
+    "castingTime": "10 Minutes",
+    "range": "30 feet",
+    "components": "V, S",
+    "duration": "Instantaneous",
+    "concentration": false,
+    "ritual": false,
+    "attackModes": [],
+    "saveAbilities": [],
+    "effectReliabilityCategory": "fixed_effect",
+    "spellLists": [],
+    "sourceBooks": [
+      "Xanathar's Guide to Everything"
+    ],
+    "sourcePage": null,
+    "sourceSlug": "find-greater-steed"
+  },
+  {
+    "identityKey": "guardian-of-nature",
+    "versionKey": "2014:guardian-of-nature",
+    "name": "Guardian of Nature",
+    "edition": "2014",
+    "level": 4,
+    "school": "Transmutation",
+    "castingTime": "1 Bonus Action",
+    "range": "Self",
+    "components": "V",
+    "duration": "Concentration, up to 1 minute",
+    "concentration": true,
+    "ritual": false,
+    "attackModes": [],
+    "saveAbilities": [],
+    "effectReliabilityCategory": "fixed_effect",
+    "spellLists": [],
+    "sourceBooks": [
+      "Xanathar's Guide to Everything"
+    ],
+    "sourcePage": null,
+    "sourceSlug": "guardian-of-nature"
+  },
+  {
+    "identityKey": "shadow-of-moil",
+    "versionKey": "2014:shadow-of-moil",
+    "name": "Shadow Of Moil",
+    "edition": "2014",
+    "level": 4,
+    "school": "Necromancy",
+    "castingTime": "1 Action",
+    "range": "Self",
+    "components": "V, S, M",
+    "duration": "Concentration, up to 1 minute",
+    "concentration": true,
+    "ritual": false,
+    "attackModes": [],
+    "saveAbilities": [],
+    "effectReliabilityCategory": "fixed_effect",
+    "spellLists": [],
+    "sourceBooks": [
+      "Xanathar's Guide to Everything"
+    ],
+    "sourcePage": null,
+    "sourceSlug": "shadow-of-moil"
+  },
+  {
+    "identityKey": "sickening-radiance",
+    "versionKey": "2014:sickening-radiance",
+    "name": "Sickening Radiance",
+    "edition": "2014",
+    "level": 4,
+    "school": "Evocation",
+    "castingTime": "1 Action",
+    "range": "120 Feet",
+    "components": "V, S",
+    "duration": "Concentration, up to 10 minutes",
+    "concentration": true,
+    "ritual": false,
+    "attackModes": [],
+    "saveAbilities": [
+      "constitution"
+    ],
+    "effectReliabilityCategory": "saving_throw",
+    "spellLists": [],
+    "sourceBooks": [
+      "Xanathar's Guide to Everything"
+    ],
+    "sourcePage": null,
+    "sourceSlug": "sickening-radiance"
+  },
+  {
+    "identityKey": "storm-sphere",
+    "versionKey": "2014:storm-sphere",
+    "name": "Storm Sphere",
+    "edition": "2014",
+    "level": 4,
+    "school": "Evocation",
+    "castingTime": "1 Action",
+    "range": "150 feet",
+    "components": "V, S",
+    "duration": "Concentration, up to 1 minute",
+    "concentration": true,
+    "ritual": false,
+    "attackModes": [
+      "ranged_spell"
+    ],
+    "saveAbilities": [
+      "strength"
+    ],
+    "effectReliabilityCategory": "mixed",
+    "spellLists": [],
+    "sourceBooks": [
+      "Xanathar's Guide to Everything"
+    ],
+    "sourcePage": null,
+    "sourceSlug": "storm-sphere"
+  },
+  {
+    "identityKey": "summon-greater-demon",
+    "versionKey": "2014:summon-greater-demon",
+    "name": "Summon Greater Demon",
+    "edition": "2014",
+    "level": 4,
+    "school": "Conjuration",
+    "castingTime": "1 Action",
+    "range": "60 Feet",
+    "components": "V, S, M",
+    "duration": "Concentration, up to 1 hour",
+    "concentration": true,
+    "ritual": false,
+    "attackModes": [],
+    "saveAbilities": [
+      "charisma"
+    ],
+    "effectReliabilityCategory": "saving_throw",
+    "spellLists": [],
+    "sourceBooks": [
+      "Xanathar's Guide to Everything"
+    ],
+    "sourcePage": null,
+    "sourceSlug": "summon-greater-demon"
+  },
+  {
+    "identityKey": "vitriolic-sphere",
+    "versionKey": "2014:vitriolic-sphere",
+    "name": "Vitriolic Sphere",
+    "edition": "2014",
+    "level": 4,
+    "school": "Evocation",
+    "castingTime": "1 Action",
+    "range": "150 feet",
+    "components": "V, S, M",
+    "duration": "Instantaneous",
+    "concentration": false,
+    "ritual": false,
+    "attackModes": [],
+    "saveAbilities": [
+      "dexterity"
+    ],
+    "effectReliabilityCategory": "saving_throw",
+    "spellLists": [],
+    "sourceBooks": [
+      "Xanathar's Guide to Everything"
+    ],
+    "sourcePage": null,
+    "sourceSlug": "vitriolic-sphere"
+  },
+  {
+    "identityKey": "watery-sphere",
+    "versionKey": "2014:watery-sphere",
+    "name": "Watery Sphere",
+    "edition": "2014",
+    "level": 4,
+    "school": "Conjuration",
+    "castingTime": "1 Action",
+    "range": "90 feet",
+    "components": "V, S, M",
+    "duration": "Concentration, up to 1 minute",
+    "concentration": true,
+    "ritual": false,
+    "attackModes": [],
+    "saveAbilities": [
+      "strength"
+    ],
+    "effectReliabilityCategory": "saving_throw",
+    "spellLists": [],
+    "sourceBooks": [
+      "Xanathar's Guide to Everything"
+    ],
+    "sourcePage": null,
+    "sourceSlug": "watery-sphere"
+  },
+  {
+    "identityKey": "control-winds",
+    "versionKey": "2014:control-winds",
+    "name": "Control Winds",
+    "edition": "2014",
+    "level": 5,
+    "school": "Transmutation",
+    "castingTime": "1 Action",
+    "range": "300 feet",
+    "components": "V, S",
+    "duration": "Concentration, up to 1 hour",
+    "concentration": true,
+    "ritual": false,
+    "attackModes": [],
+    "saveAbilities": [],
+    "effectReliabilityCategory": "fixed_effect",
+    "spellLists": [],
+    "sourceBooks": [
+      "Xanathar's Guide to Everything"
+    ],
+    "sourcePage": null,
+    "sourceSlug": "control-winds"
+  },
+  {
+    "identityKey": "danse-macabre",
+    "versionKey": "2014:danse-macabre",
+    "name": "Danse Macabre",
+    "edition": "2014",
+    "level": 5,
+    "school": "Necromancy",
+    "castingTime": "1 Action",
+    "range": "60 Feet",
+    "components": "V, S",
+    "duration": "Concentration, up to 1 hour",
+    "concentration": true,
+    "ritual": false,
+    "attackModes": [],
+    "saveAbilities": [],
+    "effectReliabilityCategory": "modifier_scaled",
+    "spellLists": [],
+    "sourceBooks": [
+      "Xanathar's Guide to Everything"
+    ],
+    "sourcePage": null,
+    "sourceSlug": "danse-macabre"
+  },
+  {
+    "identityKey": "dawn",
+    "versionKey": "2014:dawn",
+    "name": "Dawn",
+    "edition": "2014",
+    "level": 5,
+    "school": "Evocation",
+    "castingTime": "1 Action",
+    "range": "60 Feet",
+    "components": "V, S, M",
+    "duration": "Concentration, up to 1 minute",
+    "concentration": true,
+    "ritual": false,
+    "attackModes": [],
+    "saveAbilities": [
+      "constitution"
+    ],
+    "effectReliabilityCategory": "saving_throw",
+    "spellLists": [],
+    "sourceBooks": [
+      "Xanathar's Guide to Everything"
+    ],
+    "sourcePage": null,
+    "sourceSlug": "dawn"
+  },
+  {
+    "identityKey": "enervation",
+    "versionKey": "2014:enervation",
+    "name": "Enervation",
+    "edition": "2014",
+    "level": 5,
+    "school": "Necromancy",
+    "castingTime": "1 Action",
+    "range": "60 feet",
+    "components": "V, S",
+    "duration": "Concentration, up to 1 minute",
+    "concentration": true,
+    "ritual": false,
+    "attackModes": [],
+    "saveAbilities": [
+      "dexterity"
+    ],
+    "effectReliabilityCategory": "saving_throw",
+    "spellLists": [],
+    "sourceBooks": [
+      "Xanathar's Guide to Everything"
+    ],
+    "sourcePage": null,
+    "sourceSlug": "enervation"
+  },
+  {
+    "identityKey": "far-step",
+    "versionKey": "2014:far-step",
+    "name": "Far Step",
+    "edition": "2014",
+    "level": 5,
+    "school": "Conjuration",
+    "castingTime": "1 Bonus Action",
+    "range": "Self",
+    "components": "V",
+    "duration": "Concentration, up to 1 minute",
+    "concentration": true,
+    "ritual": false,
+    "attackModes": [],
+    "saveAbilities": [],
+    "effectReliabilityCategory": "fixed_effect",
+    "spellLists": [],
+    "sourceBooks": [
+      "Xanathar's Guide to Everything"
+    ],
+    "sourcePage": null,
+    "sourceSlug": "far-step"
+  },
+  {
+    "identityKey": "holy-weapon",
+    "versionKey": "2014:holy-weapon",
+    "name": "Holy Weapon",
+    "edition": "2014",
+    "level": 5,
+    "school": "Evocation",
+    "castingTime": "1 Bonus Action",
+    "range": "Touch",
+    "components": "V, S",
+    "duration": "Concentration, up to 1 hour",
+    "concentration": true,
+    "ritual": false,
+    "attackModes": [],
+    "saveAbilities": [
+      "constitution"
+    ],
+    "effectReliabilityCategory": "saving_throw",
+    "spellLists": [],
+    "sourceBooks": [
+      "Xanathar's Guide to Everything"
+    ],
+    "sourcePage": null,
+    "sourceSlug": "holy-weapon"
+  },
+  {
+    "identityKey": "immolation",
+    "versionKey": "2014:immolation",
+    "name": "Immolation",
+    "edition": "2014",
+    "level": 5,
+    "school": "Evocation",
+    "castingTime": "1 Action",
+    "range": "90 feet",
+    "components": "V",
+    "duration": "Concentration, up to 1 minute",
+    "concentration": true,
+    "ritual": false,
+    "attackModes": [],
+    "saveAbilities": [
+      "dexterity"
+    ],
+    "effectReliabilityCategory": "saving_throw",
+    "spellLists": [],
+    "sourceBooks": [
+      "Xanathar's Guide to Everything"
+    ],
+    "sourcePage": null,
+    "sourceSlug": "immolation"
+  },
+  {
+    "identityKey": "infernal-calling",
+    "versionKey": "2014:infernal-calling",
+    "name": "Infernal Calling",
+    "edition": "2014",
+    "level": 5,
+    "school": "Conjuration",
+    "castingTime": "1 Minute",
+    "range": "90 feet",
+    "components": "V, S, M",
+    "duration": "Concentration, up to 1 hour",
+    "concentration": true,
+    "ritual": false,
+    "attackModes": [],
+    "saveAbilities": [],
+    "effectReliabilityCategory": "fixed_effect",
+    "spellLists": [],
+    "sourceBooks": [
+      "Xanathar's Guide to Everything"
+    ],
+    "sourcePage": null,
+    "sourceSlug": "infernal-calling"
+  },
+  {
+    "identityKey": "maelstrom",
+    "versionKey": "2014:maelstrom",
+    "name": "Maelstrom",
+    "edition": "2014",
+    "level": 5,
+    "school": "Evocation",
+    "castingTime": "1 Action",
+    "range": "120 feet",
+    "components": "V, S, M",
+    "duration": "Concentration, up to 1 minute",
+    "concentration": true,
+    "ritual": false,
+    "attackModes": [],
+    "saveAbilities": [
+      "strength"
+    ],
+    "effectReliabilityCategory": "saving_throw",
+    "spellLists": [],
+    "sourceBooks": [
+      "Xanathar's Guide to Everything"
+    ],
+    "sourcePage": null,
+    "sourceSlug": "maelstrom"
+  },
+  {
+    "identityKey": "negative-energy-flood",
+    "versionKey": "2014:negative-energy-flood",
+    "name": "Negative Energy Flood",
+    "edition": "2014",
+    "level": 5,
+    "school": "Necromancy",
+    "castingTime": "1 Action",
+    "range": "60 feet",
+    "components": "V, M",
+    "duration": "Instantaneous",
+    "concentration": false,
+    "ritual": false,
+    "attackModes": [],
+    "saveAbilities": [
+      "constitution"
+    ],
+    "effectReliabilityCategory": "saving_throw",
+    "spellLists": [],
+    "sourceBooks": [
+      "Xanathar's Guide to Everything"
+    ],
+    "sourcePage": null,
+    "sourceSlug": "negative-energy-flood"
+  },
+  {
+    "identityKey": "skill-empowerment",
+    "versionKey": "2014:skill-empowerment",
+    "name": "Skill Empowerment",
+    "edition": "2014",
+    "level": 5,
+    "school": "Transmutation",
+    "castingTime": "1 Action",
+    "range": "Touch",
+    "components": "V, S",
+    "duration": "Concentration, up to 1 hour",
+    "concentration": true,
+    "ritual": false,
+    "attackModes": [],
+    "saveAbilities": [],
+    "effectReliabilityCategory": "fixed_effect",
+    "spellLists": [],
+    "sourceBooks": [
+      "Xanathar's Guide to Everything"
+    ],
+    "sourcePage": null,
+    "sourceSlug": "skill-empowerment"
+  },
+  {
+    "identityKey": "steel-wind-strike",
+    "versionKey": "2014:steel-wind-strike",
+    "name": "Steel Wind Strike",
+    "edition": "2014",
+    "level": 5,
+    "school": "Conjuration",
+    "castingTime": "1 Action",
+    "range": "30 feet",
+    "components": "S, M",
+    "duration": "Instantaneous",
+    "concentration": false,
+    "ritual": false,
+    "attackModes": [
+      "melee_spell"
+    ],
+    "saveAbilities": [],
+    "effectReliabilityCategory": "attack_roll",
+    "spellLists": [],
+    "sourceBooks": [
+      "Xanathar's Guide to Everything"
+    ],
+    "sourcePage": null,
+    "sourceSlug": "steel-wind-strike"
+  },
+  {
+    "identityKey": "synaptic-static",
+    "versionKey": "2014:synaptic-static",
+    "name": "Synaptic Static",
+    "edition": "2014",
+    "level": 5,
+    "school": "Enchantment",
+    "castingTime": "1 Action",
+    "range": "120 feet",
+    "components": "V, S",
+    "duration": "Instantaneous",
+    "concentration": false,
+    "ritual": false,
+    "attackModes": [],
+    "saveAbilities": [
+      "intelligence",
+      "constitution"
+    ],
+    "effectReliabilityCategory": "saving_throw",
+    "spellLists": [],
+    "sourceBooks": [
+      "Xanathar's Guide to Everything"
+    ],
+    "sourcePage": null,
+    "sourceSlug": "synaptic-static"
+  },
+  {
+    "identityKey": "transmute-rock",
+    "versionKey": "2014:transmute-rock",
+    "name": "Transmute Rock",
+    "edition": "2014",
+    "level": 5,
+    "school": "Transmutation",
+    "castingTime": "1 Action",
+    "range": "120 feet",
+    "components": "V, S, M",
+    "duration": "Instantaneous",
+    "concentration": false,
+    "ritual": false,
+    "attackModes": [],
+    "saveAbilities": [],
+    "effectReliabilityCategory": "fixed_effect",
+    "spellLists": [],
+    "sourceBooks": [
+      "Xanathar's Guide to Everything"
+    ],
+    "sourcePage": null,
+    "sourceSlug": "transmute-rock"
+  },
+  {
+    "identityKey": "wall-of-light",
+    "versionKey": "2014:wall-of-light",
+    "name": "Wall of Light",
+    "edition": "2014",
+    "level": 5,
+    "school": "Evocation",
+    "castingTime": "1 Action",
+    "range": "120 feet",
+    "components": "V, S, M",
+    "duration": "Concentration, up to 10 minutes",
+    "concentration": true,
+    "ritual": false,
+    "attackModes": [
+      "ranged_spell"
+    ],
+    "saveAbilities": [
+      "constitution"
+    ],
+    "effectReliabilityCategory": "mixed",
+    "spellLists": [],
+    "sourceBooks": [
+      "Xanathar's Guide to Everything"
+    ],
+    "sourcePage": null,
+    "sourceSlug": "wall-of-light"
+  },
+  {
+    "identityKey": "wrath-of-nature",
+    "versionKey": "2014:wrath-of-nature",
+    "name": "Wrath Of Nature",
+    "edition": "2014",
+    "level": 5,
+    "school": "Evocation",
+    "castingTime": "1 Action",
+    "range": "120 feet",
+    "components": "V, S",
+    "duration": "Concentration, up to 1 minute",
+    "concentration": true,
+    "ritual": false,
+    "attackModes": [
+      "ranged_spell"
+    ],
+    "saveAbilities": [
+      "dexterity",
+      "strength"
+    ],
+    "effectReliabilityCategory": "mixed",
+    "spellLists": [],
+    "sourceBooks": [
+      "Xanathar's Guide to Everything"
+    ],
+    "sourcePage": null,
+    "sourceSlug": "wrath-of-nature"
+  },
+  {
+    "identityKey": "bones-of-the-earth",
+    "versionKey": "2014:bones-of-the-earth",
+    "name": "Bones of the Earth",
+    "edition": "2014",
+    "level": 6,
+    "school": "Transmutation",
+    "castingTime": "1 Action",
+    "range": "120 feet",
+    "components": "V, S",
+    "duration": "Instantaneous",
+    "concentration": false,
+    "ritual": false,
+    "attackModes": [],
+    "saveAbilities": [
+      "dexterity"
+    ],
+    "effectReliabilityCategory": "saving_throw",
+    "spellLists": [],
+    "sourceBooks": [
+      "Xanathar's Guide to Everything"
+    ],
+    "sourcePage": null,
+    "sourceSlug": "bones-of-the-earth"
+  },
+  {
+    "identityKey": "create-homunculus",
+    "versionKey": "2014:create-homunculus",
+    "name": "Create Homunculus",
+    "edition": "2014",
+    "level": 6,
+    "school": "Transmutation",
+    "castingTime": "1 Hour",
+    "range": "120 feet",
+    "components": "V, S, M",
+    "duration": "Instantaneous",
+    "concentration": false,
+    "ritual": false,
+    "attackModes": [],
+    "saveAbilities": [],
+    "effectReliabilityCategory": "fixed_effect",
+    "spellLists": [],
+    "sourceBooks": [
+      "Xanathar's Guide to Everything"
+    ],
+    "sourcePage": null,
+    "sourceSlug": "create-homunculus"
+  },
+  {
+    "identityKey": "druid-grove",
+    "versionKey": "2014:druid-grove",
+    "name": "Druid Grove",
+    "edition": "2014",
+    "level": 6,
+    "school": "Abjuration",
+    "castingTime": "10 Minutes",
+    "range": "Touch",
+    "components": "V, S, M",
+    "duration": "24 hours",
+    "concentration": false,
+    "ritual": false,
+    "attackModes": [],
+    "saveAbilities": [],
+    "effectReliabilityCategory": "fixed_effect",
+    "spellLists": [],
+    "sourceBooks": [
+      "Xanathar's Guide to Everything"
+    ],
+    "sourcePage": null,
+    "sourceSlug": "druid-grove"
+  },
+  {
+    "identityKey": "investiture-of-flame",
+    "versionKey": "2014:investiture-of-flame",
+    "name": "Investiture of Flame",
+    "edition": "2014",
+    "level": 6,
+    "school": "Transmutation",
+    "castingTime": "1 Action",
+    "range": "Self",
+    "components": "V, S",
+    "duration": "Concentration, up to 10 minutes",
+    "concentration": true,
+    "ritual": false,
+    "attackModes": [],
+    "saveAbilities": [],
+    "effectReliabilityCategory": "fixed_effect",
+    "spellLists": [],
+    "sourceBooks": [
+      "Xanathar's Guide to Everything"
+    ],
+    "sourcePage": null,
+    "sourceSlug": "investiture-of-flame"
+  },
+  {
+    "identityKey": "investiture-of-ice",
+    "versionKey": "2014:investiture-of-ice",
+    "name": "Investiture of Ice",
+    "edition": "2014",
+    "level": 6,
+    "school": "Transmutation",
+    "castingTime": "1 Action",
+    "range": "Self",
+    "components": "V, S",
+    "duration": "Concentration, up to 10 minutes",
+    "concentration": true,
+    "ritual": false,
+    "attackModes": [],
+    "saveAbilities": [],
+    "effectReliabilityCategory": "fixed_effect",
+    "spellLists": [],
+    "sourceBooks": [
+      "Xanathar's Guide to Everything"
+    ],
+    "sourcePage": null,
+    "sourceSlug": "investiture-of-ice"
+  },
+  {
+    "identityKey": "investiture-of-stone",
+    "versionKey": "2014:investiture-of-stone",
+    "name": "Investiture of Stone",
+    "edition": "2014",
+    "level": 6,
+    "school": "Transmutation",
+    "castingTime": "1 Action",
+    "range": "Self",
+    "components": "V, S",
+    "duration": "Concentration, up to 10 minutes",
+    "concentration": true,
+    "ritual": false,
+    "attackModes": [],
+    "saveAbilities": [],
+    "effectReliabilityCategory": "fixed_effect",
+    "spellLists": [],
+    "sourceBooks": [
+      "Xanathar's Guide to Everything"
+    ],
+    "sourcePage": null,
+    "sourceSlug": "investiture-of-stone"
+  },
+  {
+    "identityKey": "investiture-of-wind",
+    "versionKey": "2014:investiture-of-wind",
+    "name": "Investiture of Wind",
+    "edition": "2014",
+    "level": 6,
+    "school": "Transmutation",
+    "castingTime": "1 Action",
+    "range": "Self",
+    "components": "V, S",
+    "duration": "Concentration, up to 10 minutes",
+    "concentration": true,
+    "ritual": false,
+    "attackModes": [],
+    "saveAbilities": [],
+    "effectReliabilityCategory": "fixed_effect",
+    "spellLists": [],
+    "sourceBooks": [
+      "Xanathar's Guide to Everything"
+    ],
+    "sourcePage": null,
+    "sourceSlug": "investiture-of-wind"
+  },
+  {
+    "identityKey": "mental-prison",
+    "versionKey": "2014:mental-prison",
+    "name": "Mental Prison",
+    "edition": "2014",
+    "level": 6,
+    "school": "Illusion",
+    "castingTime": "1 Action",
+    "range": "60 feet",
+    "components": "S",
+    "duration": "Concentration, up to 1 minute",
+    "concentration": true,
+    "ritual": false,
+    "attackModes": [],
+    "saveAbilities": [
+      "intelligence"
+    ],
+    "effectReliabilityCategory": "saving_throw",
+    "spellLists": [],
+    "sourceBooks": [
+      "Xanathar's Guide to Everything"
+    ],
+    "sourcePage": null,
+    "sourceSlug": "mental-prison"
+  },
+  {
+    "identityKey": "primordial-ward",
+    "versionKey": "2014:primordial-ward",
+    "name": "Primordial Ward",
+    "edition": "2014",
+    "level": 6,
+    "school": "Abjuration",
+    "castingTime": "1 Action",
+    "range": "Self",
+    "components": "V, S",
+    "duration": "Concentration, up to 1 minute",
+    "concentration": true,
+    "ritual": false,
+    "attackModes": [],
+    "saveAbilities": [],
+    "effectReliabilityCategory": "fixed_effect",
+    "spellLists": [],
+    "sourceBooks": [
+      "Xanathar's Guide to Everything"
+    ],
+    "sourcePage": null,
+    "sourceSlug": "primordial-ward"
+  },
+  {
+    "identityKey": "scatter",
+    "versionKey": "2014:scatter",
+    "name": "Scatter",
+    "edition": "2014",
+    "level": 6,
+    "school": "Conjuration",
+    "castingTime": "1 Action",
+    "range": "30 feet",
+    "components": "V",
+    "duration": "Instantaneous",
+    "concentration": false,
+    "ritual": false,
+    "attackModes": [],
+    "saveAbilities": [
+      "wisdom"
+    ],
+    "effectReliabilityCategory": "saving_throw",
+    "spellLists": [],
+    "sourceBooks": [
+      "Xanathar's Guide to Everything"
+    ],
+    "sourcePage": null,
+    "sourceSlug": "scatter"
+  },
+  {
+    "identityKey": "soul-cage",
+    "versionKey": "2014:soul-cage",
+    "name": "Soul Cage",
+    "edition": "2014",
+    "level": 6,
+    "school": "Necromancy",
+    "castingTime": "Special",
+    "range": "60 feet",
+    "components": "V, S, M",
+    "duration": "8 hours",
+    "concentration": false,
+    "ritual": false,
+    "attackModes": [],
+    "saveAbilities": [],
+    "effectReliabilityCategory": "fixed_effect",
+    "spellLists": [],
+    "sourceBooks": [
+      "Xanathar's Guide to Everything"
+    ],
+    "sourcePage": null,
+    "sourceSlug": "soul-cage"
+  },
+  {
+    "identityKey": "tenser-s-transformation",
+    "versionKey": "2014:tenser-s-transformation",
+    "name": "Tenser's Transformation",
+    "edition": "2014",
+    "level": 6,
+    "school": "Transmutation",
+    "castingTime": "1 Action",
+    "range": "Self",
+    "components": "V, S, M",
+    "duration": "Concentration, up to 10 minutes",
+    "concentration": true,
+    "ritual": false,
+    "attackModes": [],
+    "saveAbilities": [
+      "constitution"
+    ],
+    "effectReliabilityCategory": "saving_throw",
+    "spellLists": [],
+    "sourceBooks": [
+      "Xanathar's Guide to Everything"
+    ],
+    "sourcePage": null,
+    "sourceSlug": "tensers-transformation"
+  },
+  {
+    "identityKey": "crown-of-stars",
+    "versionKey": "2014:crown-of-stars",
+    "name": "Crown of Stars",
+    "edition": "2014",
+    "level": 7,
+    "school": "Evocation",
+    "castingTime": "1 Action",
+    "range": "Self",
+    "components": "V, S",
+    "duration": "1 hour",
+    "concentration": false,
+    "ritual": false,
+    "attackModes": [
+      "ranged_spell"
+    ],
+    "saveAbilities": [],
+    "effectReliabilityCategory": "attack_roll",
+    "spellLists": [],
+    "sourceBooks": [
+      "Xanathar's Guide to Everything"
+    ],
+    "sourcePage": null,
+    "sourceSlug": "crown-of-stars"
+  },
+  {
+    "identityKey": "power-word-pain",
+    "versionKey": "2014:power-word-pain",
+    "name": "Power Word: Pain",
+    "edition": "2014",
+    "level": 7,
+    "school": "Enchantment",
+    "castingTime": "1 Action",
+    "range": "60 feet",
+    "components": "V",
+    "duration": "Instantaneous",
+    "concentration": false,
+    "ritual": false,
+    "attackModes": [],
+    "saveAbilities": [
+      "constitution"
+    ],
+    "effectReliabilityCategory": "saving_throw",
+    "spellLists": [],
+    "sourceBooks": [
+      "Xanathar's Guide to Everything"
+    ],
+    "sourcePage": null,
+    "sourceSlug": "power-word-pain"
+  },
+  {
+    "identityKey": "temple-of-the-gods",
+    "versionKey": "2014:temple-of-the-gods",
+    "name": "Temple of the Gods",
+    "edition": "2014",
+    "level": 7,
+    "school": "Conjuration",
+    "castingTime": "1 hour",
+    "range": "120 feet",
+    "components": "V, S, M",
+    "duration": "24 hours",
+    "concentration": false,
+    "ritual": false,
+    "attackModes": [],
+    "saveAbilities": [
+      "charisma"
+    ],
+    "effectReliabilityCategory": "saving_throw",
+    "spellLists": [],
+    "sourceBooks": [
+      "Xanathar's Guide to Everything"
+    ],
+    "sourcePage": null,
+    "sourceSlug": "temple-of-the-gods"
+  },
+  {
+    "identityKey": "whirlwind",
+    "versionKey": "2014:whirlwind",
+    "name": "Whirlwind",
+    "edition": "2014",
+    "level": 7,
+    "school": "Evocation",
+    "castingTime": "1 Action",
+    "range": "300 feet",
+    "components": "V, M",
+    "duration": "Concentration, up to 1 minute",
+    "concentration": true,
+    "ritual": false,
+    "attackModes": [],
+    "saveAbilities": [
+      "dexterity",
+      "strength"
+    ],
+    "effectReliabilityCategory": "saving_throw",
+    "spellLists": [],
+    "sourceBooks": [
+      "Xanathar's Guide to Everything"
+    ],
+    "sourcePage": null,
+    "sourceSlug": "whirlwind"
+  },
+  {
+    "identityKey": "abi-dalzim-s-horrid-wilting",
+    "versionKey": "2014:abi-dalzim-s-horrid-wilting",
+    "name": "Abi-Dalzim's Horrid Wilting",
+    "edition": "2014",
+    "level": 8,
+    "school": "Necromancy",
+    "castingTime": "1 Action",
+    "range": "150 feet",
+    "components": "V, S, M",
+    "duration": "Instantaneous",
+    "concentration": false,
+    "ritual": false,
+    "attackModes": [],
+    "saveAbilities": [
+      "constitution"
+    ],
+    "effectReliabilityCategory": "saving_throw",
+    "spellLists": [],
+    "sourceBooks": [
+      "Xanathar's Guide to Everything"
+    ],
+    "sourcePage": null,
+    "sourceSlug": "abi-dalzims-horrid-wilting"
+  },
+  {
+    "identityKey": "illusory-dragon",
+    "versionKey": "2014:illusory-dragon",
+    "name": "Illusory Dragon",
+    "edition": "2014",
+    "level": 8,
+    "school": "Illusion",
+    "castingTime": "1 Action",
+    "range": "120 feet",
+    "components": "S",
+    "duration": "Concentration, up to 1 minute",
+    "concentration": true,
+    "ritual": false,
+    "attackModes": [],
+    "saveAbilities": [
+      "wisdom",
+      "intelligence"
+    ],
+    "effectReliabilityCategory": "saving_throw",
+    "spellLists": [],
+    "sourceBooks": [
+      "Xanathar's Guide to Everything"
+    ],
+    "sourcePage": null,
+    "sourceSlug": "illusory-dragon"
+  },
+  {
+    "identityKey": "maddening-darkness",
+    "versionKey": "2014:maddening-darkness",
+    "name": "Maddening Darkness",
+    "edition": "2014",
+    "level": 8,
+    "school": "Evocation",
+    "castingTime": "1 Action",
+    "range": "150 feet",
+    "components": "V, M",
+    "duration": "Concentration, up to 10 minutes",
+    "concentration": true,
+    "ritual": false,
+    "attackModes": [],
+    "saveAbilities": [
+      "wisdom"
+    ],
+    "effectReliabilityCategory": "saving_throw",
+    "spellLists": [],
+    "sourceBooks": [
+      "Xanathar's Guide to Everything"
+    ],
+    "sourcePage": null,
+    "sourceSlug": "maddening-darkness"
+  },
+  {
+    "identityKey": "mighty-fortress",
+    "versionKey": "2014:mighty-fortress",
+    "name": "Mighty Fortress",
+    "edition": "2014",
+    "level": 8,
+    "school": "Conjuration",
+    "castingTime": "1 Minute",
+    "range": "1 mile",
+    "components": "V, S, M",
+    "duration": "Instantaneous",
+    "concentration": false,
+    "ritual": false,
+    "attackModes": [],
+    "saveAbilities": [],
+    "effectReliabilityCategory": "fixed_effect",
+    "spellLists": [],
+    "sourceBooks": [
+      "Xanathar's Guide to Everything"
+    ],
+    "sourcePage": null,
+    "sourceSlug": "mighty-fortress"
+  },
+  {
+    "identityKey": "invulnerability",
+    "versionKey": "2014:invulnerability",
+    "name": "Invulnerability",
+    "edition": "2014",
+    "level": 9,
+    "school": "Abjuration",
+    "castingTime": "1 Action",
+    "range": "Self",
+    "components": "V, S, M",
+    "duration": "Concentration, up to 10 minutes",
+    "concentration": true,
+    "ritual": false,
+    "attackModes": [],
+    "saveAbilities": [],
+    "effectReliabilityCategory": "fixed_effect",
+    "spellLists": [],
+    "sourceBooks": [
+      "Xanathar's Guide to Everything"
+    ],
+    "sourcePage": null,
+    "sourceSlug": "invulnerability"
+  },
+  {
+    "identityKey": "mass-polymorph",
+    "versionKey": "2014:mass-polymorph",
+    "name": "Mass Polymorph",
+    "edition": "2014",
+    "level": 9,
+    "school": "Transmutation",
+    "castingTime": "1 Action",
+    "range": "120 feet",
+    "components": "V, S, M",
+    "duration": "Concentration, up to 1 hour",
+    "concentration": true,
+    "ritual": false,
+    "attackModes": [],
+    "saveAbilities": [
+      "wisdom"
+    ],
+    "effectReliabilityCategory": "saving_throw",
+    "spellLists": [],
+    "sourceBooks": [
+      "Xanathar's Guide to Everything"
+    ],
+    "sourcePage": null,
+    "sourceSlug": "mass-polymorph"
+  },
+  {
+    "identityKey": "psychic-scream",
+    "versionKey": "2014:psychic-scream",
+    "name": "Psychic Scream",
+    "edition": "2014",
+    "level": 9,
+    "school": "Enchantment",
+    "castingTime": "1 Action",
+    "range": "90 feet",
+    "components": "S",
+    "duration": "Instantaneous",
+    "concentration": false,
+    "ritual": false,
+    "attackModes": [],
+    "saveAbilities": [
+      "intelligence"
+    ],
+    "effectReliabilityCategory": "saving_throw",
+    "spellLists": [],
+    "sourceBooks": [
+      "Xanathar's Guide to Everything"
+    ],
+    "sourcePage": null,
+    "sourceSlug": "psychic-scream"
   }
 ]

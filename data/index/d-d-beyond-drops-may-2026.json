@@ -1,0 +1,148 @@
+[
+  {
+    "identityKey": "astral-flood",
+    "versionKey": "2024:astral-flood",
+    "name": "Astral Flood",
+    "edition": "2024",
+    "level": -1,
+    "school": "Evocation",
+    "castingTime": "Action",
+    "range": "Self",
+    "components": "V, S, M",
+    "duration": "Instantaneous",
+    "concentration": false,
+    "ritual": false,
+    "attackModes": [],
+    "saveAbilities": [
+      "dexterity"
+    ],
+    "effectReliabilityCategory": "saving_throw",
+    "spellLists": [
+      "Bard",
+      "Cleric",
+      "Sorcerer",
+      "Wizard"
+    ],
+    "sourceBooks": [
+      "D&D Beyond Drops - May 2026"
+    ],
+    "sourcePage": null,
+    "sourceSlug": "astral-flood"
+  },
+  {
+    "identityKey": "buzzing-bee",
+    "versionKey": "2024:buzzing-bee",
+    "name": "Buzzing Bee",
+    "edition": "2024",
+    "level": -1,
+    "school": "Conjuration",
+    "castingTime": "Action",
+    "range": "120 feet.",
+    "components": "V, S, M",
+    "duration": "C, up to 1 minute",
+    "concentration": false,
+    "ritual": false,
+    "attackModes": [],
+    "saveAbilities": [
+      "constitution"
+    ],
+    "effectReliabilityCategory": "saving_throw",
+    "spellLists": [
+      "Druid",
+      "Ranger",
+      "Sorcerer",
+      "Wizard"
+    ],
+    "sourceBooks": [
+      "D&D Beyond Drops - May 2026"
+    ],
+    "sourcePage": null,
+    "sourceSlug": "buzzing-bee"
+  },
+  {
+    "identityKey": "insidious-rhythm",
+    "versionKey": "2024:insidious-rhythm",
+    "name": "Insidious Rhythm",
+    "edition": "2024",
+    "level": -1,
+    "school": "Enchantment",
+    "castingTime": "Action",
+    "range": "120 feet.",
+    "components": "V, S",
+    "duration": "C, up to 1 minute",
+    "concentration": false,
+    "ritual": false,
+    "attackModes": [],
+    "saveAbilities": [
+      "wisdom",
+      "constitution"
+    ],
+    "effectReliabilityCategory": "saving_throw",
+    "spellLists": [
+      "Bard"
+    ],
+    "sourceBooks": [
+      "D&D Beyond Drops - May 2026"
+    ],
+    "sourcePage": null,
+    "sourceSlug": "insidious-rhythm"
+  },
+  {
+    "identityKey": "leomund-s-lamentable-belaborment",
+    "versionKey": "2024:leomund-s-lamentable-belaborment",
+    "name": "Leomund's Lamentable Belaborment",
+    "edition": "2024",
+    "level": -1,
+    "school": "Enchantment",
+    "castingTime": "Action",
+    "range": "30 feet",
+    "components": "V",
+    "duration": "1 Minute",
+    "concentration": false,
+    "ritual": false,
+    "attackModes": [],
+    "saveAbilities": [
+      "intelligence"
+    ],
+    "effectReliabilityCategory": "saving_throw",
+    "spellLists": [
+      "Bard",
+      "Sorcerer",
+      "Wizard"
+    ],
+    "sourceBooks": [
+      "D&D Beyond Drops - May 2026"
+    ],
+    "sourcePage": null,
+    "sourceSlug": "leomund-s-lamentable-belaborment"
+  },
+  {
+    "identityKey": "sticks-to-snakes",
+    "versionKey": "2024:sticks-to-snakes",
+    "name": "Sticks to Snakes",
+    "edition": "2024",
+    "level": -1,
+    "school": "Transmutation",
+    "castingTime": "Action",
+    "range": "90 feet",
+    "components": "V, S, M",
+    "duration": "C, up to 1 minute",
+    "concentration": false,
+    "ritual": false,
+    "attackModes": [],
+    "saveAbilities": [
+      "charisma"
+    ],
+    "effectReliabilityCategory": "saving_throw",
+    "spellLists": [
+      "Cleric",
+      "Druid",
+      "Ranger"
+    ],
+    "sourceBooks": [
+      "D&D Beyond Drops - May 2026"
+    ],
+    "sourcePage": null,
+    "sourceSlug": "sticks-to-snakes"
+  }
+]

@@ -1,0 +1,27 @@
+[
+  {
+    "identityKey": "homunculus-servant",
+    "versionKey": "2024:homunculus-servant",
+    "name": "Homunculus Servant",
+    "edition": "2024",
+    "level": -1,
+    "school": "Conjuration",
+    "castingTime": "1 hour or R",
+    "range": "10 feet",
+    "components": "V, S, M(C)",
+    "duration": "Instantaneous",
+    "concentration": false,
+    "ritual": true,
+    "attackModes": [],
+    "saveAbilities": [],
+    "effectReliabilityCategory": "ritual_utility",
+    "spellLists": [
+      "Artificer"
+    ],
+    "sourceBooks": [
+      "Eberron - Forge of the Artificer"
+    ],
+    "sourcePage": null,
+    "sourceSlug": "homunculus-servant"
+  }
+]

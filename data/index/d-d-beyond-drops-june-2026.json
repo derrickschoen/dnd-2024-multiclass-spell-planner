@@ -1,0 +1,87 @@
+[
+  {
+    "identityKey": "searing-orb",
+    "versionKey": "2024:searing-orb",
+    "name": "Searing Orb",
+    "edition": "2024",
+    "level": -1,
+    "school": "Evocation",
+    "castingTime": "Action",
+    "range": "60 feet",
+    "components": "S, M",
+    "duration": "Instantaneous",
+    "concentration": false,
+    "ritual": false,
+    "attackModes": [
+      "ranged_spell"
+    ],
+    "saveAbilities": [
+      "constitution"
+    ],
+    "effectReliabilityCategory": "mixed",
+    "spellLists": [
+      "Cleric",
+      "Paladin"
+    ],
+    "sourceBooks": [
+      "D&D Beyond Drops - June 2026"
+    ],
+    "sourcePage": null,
+    "sourceSlug": "searing-orb"
+  },
+  {
+    "identityKey": "tortoise-shell",
+    "versionKey": "2024:tortoise-shell",
+    "name": "Tortoise Shell",
+    "edition": "2024",
+    "level": -1,
+    "school": "Abjuration",
+    "castingTime": "Action",
+    "range": "Touch",
+    "components": "V, S",
+    "duration": "C, up to 1 minute",
+    "concentration": false,
+    "ritual": false,
+    "attackModes": [],
+    "saveAbilities": [],
+    "effectReliabilityCategory": "fixed_effect",
+    "spellLists": [
+      "Artificer",
+      "Druid",
+      "Ranger"
+    ],
+    "sourceBooks": [
+      "D&D Beyond Drops - June 2026"
+    ],
+    "sourcePage": null,
+    "sourceSlug": "tortoise-shell"
+  },
+  {
+    "identityKey": "void-star",
+    "versionKey": "2024:void-star",
+    "name": "Void Star",
+    "edition": "2024",
+    "level": -1,
+    "school": "Necromancy",
+    "castingTime": "Action",
+    "range": "120 feet",
+    "components": "V, S, M",
+    "duration": "Instantaneous",
+    "concentration": false,
+    "ritual": false,
+    "attackModes": [
+      "ranged_spell"
+    ],
+    "saveAbilities": [],
+    "effectReliabilityCategory": "attack_roll",
+    "spellLists": [
+      "Warlock",
+      "Wizard"
+    ],
+    "sourceBooks": [
+      "D&D Beyond Drops - June 2026"
+    ],
+    "sourcePage": null,
+    "sourceSlug": "void-star"
+  }
+]

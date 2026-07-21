@@ -1,0 +1,369 @@
+[
+  {
+    "identityKey": "sapping-sting",
+    "versionKey": "2014:sapping-sting",
+    "name": "Sapping Sting",
+    "edition": "2014",
+    "level": 0,
+    "school": "Necromancy D",
+    "castingTime": "1 Action",
+    "range": "30 feet",
+    "components": "V, S",
+    "duration": "Instantaneous",
+    "concentration": false,
+    "ritual": false,
+    "attackModes": [],
+    "saveAbilities": [
+      "constitution"
+    ],
+    "effectReliabilityCategory": "saving_throw",
+    "spellLists": [],
+    "sourceBooks": [
+      "Explorer's Guide to Wildemount"
+    ],
+    "sourcePage": null,
+    "sourceSlug": "sapping-sting"
+  },
+  {
+    "identityKey": "gift-of-alacrity",
+    "versionKey": "2014:gift-of-alacrity",
+    "name": "Gift of Alacrity",
+    "edition": "2014",
+    "level": 1,
+    "school": "Divination DC",
+    "castingTime": "1 Minute",
+    "range": "Touch",
+    "components": "V, S",
+    "duration": "8 hours",
+    "concentration": false,
+    "ritual": false,
+    "attackModes": [],
+    "saveAbilities": [],
+    "effectReliabilityCategory": "fixed_effect",
+    "spellLists": [],
+    "sourceBooks": [
+      "Explorer's Guide to Wildemount"
+    ],
+    "sourcePage": null,
+    "sourceSlug": "gift-of-alacrity"
+  },
+  {
+    "identityKey": "magnify-gravity",
+    "versionKey": "2014:magnify-gravity",
+    "name": "Magnify Gravity",
+    "edition": "2014",
+    "level": 1,
+    "school": "Transmutation DG",
+    "castingTime": "1 Action",
+    "range": "60 feet",
+    "components": "V, S",
+    "duration": "1 round",
+    "concentration": false,
+    "ritual": false,
+    "attackModes": [],
+    "saveAbilities": [
+      "constitution"
+    ],
+    "effectReliabilityCategory": "saving_throw",
+    "spellLists": [],
+    "sourceBooks": [
+      "Explorer's Guide to Wildemount"
+    ],
+    "sourcePage": null,
+    "sourceSlug": "magnify-gravity"
+  },
+  {
+    "identityKey": "fortune-s-favor",
+    "versionKey": "2014:fortune-s-favor",
+    "name": "Fortune's Favor",
+    "edition": "2014",
+    "level": 2,
+    "school": "Divination D",
+    "castingTime": "1 Minute",
+    "range": "60 feet",
+    "components": "V, S, M",
+    "duration": "1 hour",
+    "concentration": false,
+    "ritual": false,
+    "attackModes": [],
+    "saveAbilities": [],
+    "effectReliabilityCategory": "fixed_effect",
+    "spellLists": [],
+    "sourceBooks": [
+      "Explorer's Guide to Wildemount"
+    ],
+    "sourcePage": null,
+    "sourceSlug": "fortunes-favor"
+  },
+  {
+    "identityKey": "immovable-object",
+    "versionKey": "2014:immovable-object",
+    "name": "Immovable Object",
+    "edition": "2014",
+    "level": 2,
+    "school": "Transmutation DG",
+    "castingTime": "1 Action",
+    "range": "Touch",
+    "components": "V, S, M",
+    "duration": "1 hour",
+    "concentration": false,
+    "ritual": false,
+    "attackModes": [],
+    "saveAbilities": [],
+    "effectReliabilityCategory": "fixed_effect",
+    "spellLists": [],
+    "sourceBooks": [
+      "Explorer's Guide to Wildemount"
+    ],
+    "sourcePage": null,
+    "sourceSlug": "immovable-object"
+  },
+  {
+    "identityKey": "wristpocket",
+    "versionKey": "2014:wristpocket",
+    "name": "Wristpocket",
+    "edition": "2014",
+    "level": 2,
+    "school": "Conjuration D",
+    "castingTime": "1 Action R",
+    "range": "Self",
+    "components": "S",
+    "duration": "Concentration, up to 1 hour",
+    "concentration": true,
+    "ritual": false,
+    "attackModes": [],
+    "saveAbilities": [],
+    "effectReliabilityCategory": "fixed_effect",
+    "spellLists": [],
+    "sourceBooks": [
+      "Explorer's Guide to Wildemount"
+    ],
+    "sourcePage": null,
+    "sourceSlug": "wristpocket"
+  },
+  {
+    "identityKey": "pulse-wave",
+    "versionKey": "2014:pulse-wave",
+    "name": "Pulse Wave",
+    "edition": "2014",
+    "level": 3,
+    "school": "Evocation D",
+    "castingTime": "1 Action",
+    "range": "Self (30-foot cone)",
+    "components": "V, S",
+    "duration": "Instantaneous",
+    "concentration": false,
+    "ritual": false,
+    "attackModes": [],
+    "saveAbilities": [
+      "constitution"
+    ],
+    "effectReliabilityCategory": "saving_throw",
+    "spellLists": [],
+    "sourceBooks": [
+      "Explorer's Guide to Wildemount"
+    ],
+    "sourcePage": null,
+    "sourceSlug": "pulse-wave"
+  },
+  {
+    "identityKey": "gravity-sinkhole",
+    "versionKey": "2014:gravity-sinkhole",
+    "name": "Gravity Sinkhole",
+    "edition": "2014",
+    "level": 4,
+    "school": "Evocation DG",
+    "castingTime": "1 Action",
+    "range": "120 feet",
+    "components": "V, S, M",
+    "duration": "Instantaneous",
+    "concentration": false,
+    "ritual": false,
+    "attackModes": [],
+    "saveAbilities": [
+      "constitution"
+    ],
+    "effectReliabilityCategory": "saving_throw",
+    "spellLists": [],
+    "sourceBooks": [
+      "Explorer's Guide to Wildemount"
+    ],
+    "sourcePage": null,
+    "sourceSlug": "gravity-sinkhole"
+  },
+  {
+    "identityKey": "temporal-shunt",
+    "versionKey": "2014:temporal-shunt",
+    "name": "Temporal Shunt",
+    "edition": "2014",
+    "level": 5,
+    "school": "Transmutation DC",
+    "castingTime": "1 Reaction",
+    "range": "120 feet",
+    "components": "V, S",
+    "duration": "1 round",
+    "concentration": false,
+    "ritual": false,
+    "attackModes": [],
+    "saveAbilities": [
+      "wisdom"
+    ],
+    "effectReliabilityCategory": "saving_throw",
+    "spellLists": [],
+    "sourceBooks": [
+      "Explorer's Guide to Wildemount"
+    ],
+    "sourcePage": null,
+    "sourceSlug": "temporal-shunt"
+  },
+  {
+    "identityKey": "gravity-fissure",
+    "versionKey": "2014:gravity-fissure",
+    "name": "Gravity Fissure",
+    "edition": "2014",
+    "level": 6,
+    "school": "Evocation DG",
+    "castingTime": "1 Action",
+    "range": "Self (100-foot line)",
+    "components": "V, S, M",
+    "duration": "Instantaneous",
+    "concentration": false,
+    "ritual": false,
+    "attackModes": [],
+    "saveAbilities": [
+      "constitution"
+    ],
+    "effectReliabilityCategory": "saving_throw",
+    "spellLists": [],
+    "sourceBooks": [
+      "Explorer's Guide to Wildemount"
+    ],
+    "sourcePage": null,
+    "sourceSlug": "gravity-fissure"
+  },
+  {
+    "identityKey": "tether-essence",
+    "versionKey": "2014:tether-essence",
+    "name": "Tether Essence",
+    "edition": "2014",
+    "level": 7,
+    "school": "Necromancy D",
+    "castingTime": "1 Action",
+    "range": "60 feet",
+    "components": "V, S, M",
+    "duration": "Concentration, up to 1 hour",
+    "concentration": true,
+    "ritual": false,
+    "attackModes": [],
+    "saveAbilities": [
+      "constitution"
+    ],
+    "effectReliabilityCategory": "saving_throw",
+    "spellLists": [],
+    "sourceBooks": [
+      "Explorer's Guide to Wildemount"
+    ],
+    "sourcePage": null,
+    "sourceSlug": "tether-essence"
+  },
+  {
+    "identityKey": "dark-star",
+    "versionKey": "2014:dark-star",
+    "name": "Dark Star",
+    "edition": "2014",
+    "level": 8,
+    "school": "Evocation DG",
+    "castingTime": "1 Action",
+    "range": "150 Feet",
+    "components": "V, S, M",
+    "duration": "Concentration, up to 1 minute",
+    "concentration": true,
+    "ritual": false,
+    "attackModes": [],
+    "saveAbilities": [
+      "constitution"
+    ],
+    "effectReliabilityCategory": "saving_throw",
+    "spellLists": [],
+    "sourceBooks": [
+      "Explorer's Guide to Wildemount"
+    ],
+    "sourcePage": null,
+    "sourceSlug": "dark-star"
+  },
+  {
+    "identityKey": "reality-break",
+    "versionKey": "2014:reality-break",
+    "name": "Reality Break",
+    "edition": "2014",
+    "level": 8,
+    "school": "Conjuration DC",
+    "castingTime": "1 Action",
+    "range": "60 feet",
+    "components": "V, S, M",
+    "duration": "Concentration, up to 1 minute",
+    "concentration": true,
+    "ritual": false,
+    "attackModes": [],
+    "saveAbilities": [
+      "wisdom"
+    ],
+    "effectReliabilityCategory": "saving_throw",
+    "spellLists": [],
+    "sourceBooks": [
+      "Explorer's Guide to Wildemount"
+    ],
+    "sourcePage": null,
+    "sourceSlug": "reality-break"
+  },
+  {
+    "identityKey": "ravenous-void",
+    "versionKey": "2014:ravenous-void",
+    "name": "Ravenous Void",
+    "edition": "2014",
+    "level": 9,
+    "school": "Evocation DG",
+    "castingTime": "1 Action",
+    "range": "1,000 feet",
+    "components": "V, S, M",
+    "duration": "Concentration, up to 1 minute",
+    "concentration": true,
+    "ritual": false,
+    "attackModes": [],
+    "saveAbilities": [
+      "strength"
+    ],
+    "effectReliabilityCategory": "saving_throw",
+    "spellLists": [],
+    "sourceBooks": [
+      "Explorer's Guide to Wildemount"
+    ],
+    "sourcePage": null,
+    "sourceSlug": "ravenous-void"
+  },
+  {
+    "identityKey": "time-ravage",
+    "versionKey": "2014:time-ravage",
+    "name": "Time Ravage",
+    "edition": "2014",
+    "level": 9,
+    "school": "Necromancy DC",
+    "castingTime": "1 Action",
+    "range": "90 feet",
+    "components": "V, S, M",
+    "duration": "Instantaneous",
+    "concentration": false,
+    "ritual": false,
+    "attackModes": [],
+    "saveAbilities": [
+      "constitution"
+    ],
+    "effectReliabilityCategory": "saving_throw",
+    "spellLists": [],
+    "sourceBooks": [
+      "Explorer's Guide to Wildemount"
+    ],
+    "sourcePage": null,
+    "sourceSlug": "time-ravage"
+  }
+]
