@@ -8,6 +8,7 @@
         "typecheck": "vue-tsc --noEmit",
         "test:e2e": "playwright test",
         "scrape": "node scripts/scrape-spells.mjs",
+        "analyse": "ddev exec vendor/bin/phpstan analyse --memory-limit=1G",
         "test:scripts": "node --test 'scripts/*.test.mjs'"
     },
     "devDependencies": {
