@@ -1,10 +1,17 @@
-import { expect, test, type Locator, type Page } from '@playwright/test';
+import { expect, test, type Locator, type Page, type Response } from '@playwright/test';
 import {
     auditLog,
     character,
+    classLevel,
+    persistedCharacterState,
+    removeMagicInitiateWizardSource,
     resetDatabase,
+    restoreMagicInitiateWizardSource,
+    savePointSnapshot,
     slotFixtures,
     slots,
+    source,
+    spellVersionId,
     type SlotFixture,
 } from './support/database';
 
@@ -24,6 +31,15 @@ interface MutationBody {
                 spell_name: string;
                 category: string;
                 explanation: string;
+                selection_count: number;
+            }>;
+            access_routes: Array<{
+                spell_name: string;
+                source_name: string;
+                origin: string;
+                casting_mode: string;
+                is_selection: boolean;
+                counts_against_limit: boolean;
             }>;
         };
     };
@@ -47,7 +63,7 @@ test('S1: editing one slot leaves every other database row byte-identical', asyn
 
     const after = slots();
     const changedTarget = requireSlot(after.find((slot) => slot.id === target.id), 'the edited slot after save');
-    expect(changedTarget.current_spell_version_id).not.toBeNull();
+    expect(changedTarget.current_spell_version_id).toBe(spellVersionId('2024:fire-bolt'));
 
     expect(after.filter((slot) => slot.id !== target.id)).toEqual(
         before.filter((slot) => slot.id !== target.id),
@@ -106,7 +122,7 @@ test('S3: undo is persisted by the server and redo is discarded by a hard reload
 
     await selectSpell(page, target.id, 'Fire Bolt');
     expect(requireSlot(slots().find((slot) => slot.id === target.id), 'the edited slot').current_spell_version_id)
-        .not.toBeNull();
+        .toBe(spellVersionId('2024:fire-bolt'));
 
     const undoResponse = page.waitForResponse(isMutationResponse);
     await page.getByRole('button', { name: /Undo/ }).click();
@@ -134,6 +150,51 @@ test('S3: undo is persisted by the server and redo is discarded by a hard reload
     expect(auditLog()).toEqual(auditAfterUndo);
 });
 
+test('S4: removing and restoring Magic Initiate: Wizard preserves its orphaned slot identities and selections', async ({ page }) => {
+    const magicInitiateSource = source('Magic Initiate: Wizard');
+    const sourceId = magicInitiateSource.id;
+    const before = slots().filter((slot) => slot.source_instance_id === sourceId);
+    const otherSlotsBefore = slots().filter((slot) => slot.source_instance_id !== sourceId);
+    const druidSourceBefore = source('Magic Initiate: Druid');
+
+    expect(magicInitiateSource.state).toBe('active');
+    expect(before).toHaveLength(3);
+    expect(before.every((slot) => slot.state === 'active' && slot.current_spell_version_id !== null)).toBe(true);
+
+    const removal = removeMagicInitiateWizardSource();
+    expect(removal.source.state).toBe('tombstoned');
+    const orphaned = slots().filter((slot) => slot.source_instance_id === sourceId);
+
+    expect(orphaned).toHaveLength(3);
+    expect(orphaned.map(preservedSlotIdentity)).toEqual(before.map(preservedSlotIdentity));
+    expect(orphaned.every((slot) => slot.state === 'orphaned')).toBe(true);
+    expect(orphaned.every((slot) => slot.orphan_reason_code === 'parent_rule_removed')).toBe(true);
+    expect(orphaned.every((slot) => slot.orphaned_at !== null)).toBe(true);
+    expect(slots().filter((slot) => slot.source_instance_id !== sourceId)).toEqual(otherSlotsBefore);
+    expect(source('Magic Initiate: Druid')).toEqual(druidSourceBefore);
+
+    await page.reload();
+    for (const slot of orphaned) {
+        await expect(slotRow(page, slot.id).locator('td').nth(10)).toHaveText(/Orphaned/);
+    }
+
+    const restoration = restoreMagicInitiateWizardSource(removal.previous_grant_rules);
+    expect(restoration.source.state).toBe('active');
+    const restored = slots().filter((slot) => slot.source_instance_id === sourceId);
+
+    expect(restored).toHaveLength(3);
+    expect(restored.map(preservedSlotIdentity)).toEqual(before.map(preservedSlotIdentity));
+    expect(restored.every((slot) => slot.state === 'active')).toBe(true);
+    expect(restored.every((slot) => slot.orphan_reason_code === null && slot.orphaned_at === null)).toBe(true);
+    expect(slots().filter((slot) => slot.source_instance_id !== sourceId)).toEqual(otherSlotsBefore);
+    expect(source('Magic Initiate: Druid')).toEqual(druidSourceBefore);
+
+    await page.reload();
+    for (const slot of restored) {
+        await expect(slotRow(page, slot.id).locator('td').nth(10)).toHaveText(/Valid/);
+    }
+});
+
 test('S5: INT changes propagate to every INT route in both directions without moving WIS or CHA', async ({ page }) => {
     const initial = await castingRows(page);
     const initialInt = rowsFor(initial, 'INT');
@@ -150,8 +211,9 @@ test('S5: INT changes propagate to every INT route in both directions without mo
     await setAbility(page, 'INT', 20);
 
     const raised = await castingRows(page);
-    expect(rowsFor(raised, 'INT').map((row) => ({ ...row, numbers: '+4 / 12' }))).toEqual(initialInt);
-    expect(rowsFor(raised, 'INT').every((row) => row.numbers === '+8 / 16')).toBe(true);
+    const raisedInt = rowsFor(raised, 'INT');
+    expect(raisedInt.map(withoutCastingNumbers)).toEqual(initialInt.map(withoutCastingNumbers));
+    expect(raisedInt.every((row) => row.numbers === '+8 / 16')).toBe(true);
     expect(rowsFor(raised, 'WIS')).toEqual(initialWis);
     expect(rowsFor(raised, 'CHA')).toEqual(initialCha);
     expect(character().intelligence).toBe(20);
@@ -165,6 +227,110 @@ test('S5: INT changes propagate to every INT route in both directions without mo
     expect(character().intelligence).toBe(13);
 });
 
+test('S6: Wizard spellbook shows prepared, ritual-only, and unprepared non-ritual states', async ({ page }) => {
+    const wizardPanel = wizardSpellbookPanel(page);
+    const spellbook = wizardList(wizardPanel, 'Spellbook · 6');
+    const prepared = wizardList(wizardPanel, 'Prepared · 4');
+    const ritualOnly = wizardList(wizardPanel, 'Ritual-only · 1');
+    const explanation = wizardPanel.locator('p').first();
+
+    await expect(spellbook).toHaveText([
+        'Detect Magic',
+        'Feather Fall',
+        'Mage Armor',
+        'Magic Missile',
+        'Sleep',
+        'Thunderwave',
+    ]);
+    await expect(prepared).toHaveText(['Mage Armor', 'Magic Missile', 'Sleep', 'Thunderwave']);
+    await expect(ritualOnly).toHaveText(['Detect Magic']);
+    await expect(prepared.filter({ hasText: 'Mage Armor' })).toHaveCount(1);
+    await expect(prepared.filter({ hasText: 'Detect Magic' })).toHaveCount(0);
+    await expect(prepared.filter({ hasText: 'Feather Fall' })).toHaveCount(0);
+    await expect(ritualOnly.filter({ hasText: 'Feather Fall' })).toHaveCount(0);
+    await expect(explanation).toContainText('Prepared spellbook spells can use spell slots.');
+    await expect(explanation).toContainText('ritual-only access');
+    await expect(explanation).toContainText('that route is not a selection');
+    await expect(explanation).toContainText('does not consume preparation capacity');
+    await expect(explanation).toContainText('ignored by duplicate-waste checks');
+    await expect(explanation).toContainText('Unprepared non-ritual spells are not castable.');
+
+    const initiateSlot = requireSlot(
+        slotFixtures().find((slot) => slot.source_name === 'Magic Initiate: Wizard'
+            && slot.rule_key === 'magic-initiate-level-one'),
+        'the Magic Initiate: Wizard level-one slot',
+    );
+    const overlap = await selectSpell(page, initiateSlot.id, 'Detect Magic');
+    const routes = overlap.workspace.report.access_routes.filter((route) => route.spell_name === 'Detect Magic');
+    const capability = routes.find((route) => route.casting_mode === 'ritual_only');
+    const assessment = overlap.workspace.report.duplicate_assessments
+        .find((item) => item.spell_name === 'Detect Magic');
+
+    expect(routes).toHaveLength(2);
+    expect(capability).toEqual(expect.objectContaining({
+        origin: 'capability',
+        casting_mode: 'ritual_only',
+        is_selection: false,
+        counts_against_limit: false,
+    }));
+    expect(routes.filter((route) => route.is_selection)).toHaveLength(1);
+    expect(assessment).toEqual(expect.objectContaining({ category: 'none', selection_count: 1 }));
+    await expect(duplicateCell(page, initiateSlot.id)).toHaveText(/None/);
+    await expect(duplicateWarning(page, 'Detect Magic')).toHaveCount(0);
+});
+
+test('S7: a save point restores the complete persisted character state after destructive edits', async ({ page }) => {
+    const label = 'Before destructive E2E edits';
+    const savePoints = page.locator('section').filter({ has: page.getByRole('heading', { name: 'Save points' }) });
+    const before = persistedCharacterState();
+    const createResponse = page.waitForResponse((response) => response.request().method() === 'POST'
+        && response.url().endsWith('/characters/1/save-points'));
+    await savePoints.getByLabel('Save point name').fill(label);
+    await savePoints.getByRole('button', { name: 'Save snapshot' }).click();
+    expect((await createResponse).status()).toBe(201);
+    await expect(savePoints.getByText(label, { exact: true })).toBeVisible();
+    expect(savePointSnapshot(label)).toEqual(before);
+
+    const wizardCantrip = requireSlot(
+        slotFixtures().find((slot) => slot.rule_key === 'wizard-cantrips' && slot.ordinal === 1),
+        'the selected Wizard cantrip slot',
+    );
+    const initiateSpell = requireSlot(
+        slotFixtures().find((slot) => slot.source_name === 'Magic Initiate: Wizard'
+            && slot.rule_key === 'magic-initiate-level-one'),
+        'the selected Magic Initiate: Wizard level-one slot',
+    );
+    await selectSpell(page, wizardCantrip.id, 'Fire Bolt');
+    await selectSpell(page, initiateSpell.id, 'Detect Magic');
+    await setAbility(page, 'INT', 20);
+    await setClassLevel(page, 'Wizard', 2);
+
+    const changed = persistedCharacterState();
+    expect(changed).not.toEqual(before);
+    expect(requireSlot(slots().find((slot) => slot.id === wizardCantrip.id), 'changed Wizard cantrip')
+        .current_spell_version_id).toBe(spellVersionId('2024:fire-bolt'));
+    expect(requireSlot(slots().find((slot) => slot.id === initiateSpell.id), 'changed Magic Initiate spell')
+        .current_spell_version_id).toBe(spellVersionId('2024:detect-magic'));
+    expect(character().intelligence).toBe(20);
+    expect(classLevel('Wizard')).toBe(2);
+
+    let restoreDialogMessage: string | undefined;
+    page.once('dialog', async (dialog) => {
+        restoreDialogMessage = dialog.message();
+        await dialog.accept();
+    });
+    const restoreResponse = page.waitForResponse(isMutationResponse);
+    await savePoints.getByRole('button', { name: 'Restore' }).click();
+    const response = await restoreResponse;
+    expect(response.status()).toBe(200);
+    const body = await response.json() as { revision: number };
+    await expect(page.getByText(new RegExp(`revision ${body.revision}$`))).toBeVisible();
+    expect(restoreDialogMessage).toContain(`Restore “${label}”?`);
+
+    expect(persistedCharacterState()).toEqual(savePointSnapshot(label));
+    expect(persistedCharacterState()).toEqual(before);
+});
+
 function requireSlot<T extends SlotFixture | ReturnType<typeof slots>[number]>(
     slot: T | undefined,
     description: string,
@@ -176,19 +342,34 @@ function requireSlot<T extends SlotFixture | ReturnType<typeof slots>[number]>(
 
 async function selectSpell(page: Page, slotId: number, spellName: string): Promise<MutationBody> {
     const combobox = page.getByRole('combobox', { name: `Spell selection for slot ${slotId}` });
-    await combobox.fill(spellName);
-    const option = page.getByRole('option').filter({ hasText: spellName });
+    const option = page.locator(`[id="spell-options-${slotId}"]`).getByRole('option').filter({ hasText: spellName });
+    let eligible: Response | undefined;
+    await expect(combobox).toBeEnabled();
+    await expect(async () => {
+        await combobox.fill(spellName);
+        eligible = await page.waitForResponse((response) => {
+            const url = new URL(response.url());
+
+            return response.request().method() === 'GET'
+                && url.pathname.endsWith(`/characters/1/slots/${slotId}/eligible-spells`)
+                && url.searchParams.get('q') === spellName;
+        }, { timeout: 1_000 });
+    }).toPass({ timeout: 10_000, intervals: [0, 200, 500] });
+    if (!eligible) throw new Error(`No eligible-spell response was received for ${spellName}.`);
+    expect(eligible.status()).toBe(200);
+    const searchBody = await eligible.json() as { spells: Array<{ name: string }> };
+    expect(searchBody.spells.some((spell) => spell.name === spellName)).toBe(true);
     await expect(option).toBeVisible();
+    await expect(option).toHaveAttribute('aria-selected', 'true');
 
     const mutationResponse = page.waitForResponse(isMutationResponse);
-    await option.click();
+    await combobox.press('Enter');
     const response = await mutationResponse;
     expect(response.status()).toBe(200);
     const body = await response.json() as MutationBody;
     await expect(page.getByText(new RegExp(`revision ${body.revision}$`))).toBeVisible();
     await expect(combobox).toHaveValue(spellName);
     await expect(page.getByText('Autosaved', { exact: true })).toBeVisible();
-    await page.waitForTimeout(150);
 
     return body;
 }
@@ -224,6 +405,22 @@ async function setAbility(page: Page, abbreviation: 'INT', score: number): Promi
     const body = await response.json() as { revision: number };
     await expect(page.getByText(new RegExp(`revision ${body.revision}$`))).toBeVisible();
     await expect(input).toHaveValue(String(score));
+    await expect(page.getByText('Autosaved', { exact: true })).toBeVisible();
+}
+
+async function setClassLevel(page: Page, className: string, level: number): Promise<void> {
+    const classes = page.locator('section').filter({ has: page.getByRole('heading', { name: 'Classes' }) });
+    const entry = classes.getByText(className, { exact: true }).locator('..');
+    const input = entry.getByLabel('Level');
+    const mutationResponse = page.waitForResponse(isMutationResponse);
+    await input.fill(String(level));
+    await input.press('Tab');
+    const response = await mutationResponse;
+    expect(response.status()).toBe(200);
+    const body = await response.json() as { revision: number };
+    await expect(page.getByText(new RegExp(`revision ${body.revision}$`))).toBeVisible();
+    await expect(input).toHaveValue(String(level));
+    await expect(page.getByText('Autosaved', { exact: true })).toBeVisible();
 }
 
 async function castingRows(page: Page): Promise<CastingRow[]> {
@@ -246,4 +443,32 @@ async function castingRows(page: Page): Promise<CastingRow[]> {
 
 function rowsFor(rows: CastingRow[], ability: CastingRow['ability']): CastingRow[] {
     return rows.filter((row) => row.ability === ability).sort((left, right) => left.slotId - right.slotId);
+}
+
+function withoutCastingNumbers(row: CastingRow): Omit<CastingRow, 'numbers'> {
+    const { numbers: _numbers, ...identity } = row;
+
+    return identity;
+}
+
+function preservedSlotIdentity(slot: ReturnType<typeof slots>[number]): Pick<
+    ReturnType<typeof slots>[number],
+    'id' | 'source_instance_id' | 'slot_key' | 'rule_key' | 'ordinal' | 'current_spell_version_id'
+> {
+    return {
+        id: slot.id,
+        source_instance_id: slot.source_instance_id,
+        slot_key: slot.slot_key,
+        rule_key: slot.rule_key,
+        ordinal: slot.ordinal,
+        current_spell_version_id: slot.current_spell_version_id,
+    };
+}
+
+function wizardSpellbookPanel(page: Page): Locator {
+    return page.locator('section').filter({ has: page.getByRole('heading', { name: 'Wizard spellbook access' }) });
+}
+
+function wizardList(panel: Locator, heading: string): Locator {
+    return panel.getByRole('heading', { name: heading }).locator('..').getByRole('listitem');
 }

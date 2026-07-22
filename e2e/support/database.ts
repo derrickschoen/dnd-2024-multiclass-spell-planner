@@ -4,6 +4,12 @@ import { fileURLToPath } from 'node:url';
 const projectRoot = fileURLToPath(new URL('../..', import.meta.url));
 
 export type DatabaseRow = Record<string, number | string | null>;
+export type PersistedCharacterState = Record<string, unknown>;
+
+interface GrantRuleReconciliation {
+    previous_grant_rules: string;
+    source: DatabaseRow;
+}
 
 export interface SlotRow extends DatabaseRow {
     id: number;
@@ -25,8 +31,10 @@ export interface SlotFixture extends SlotRow {
     spell_name: string | null;
 }
 
-function phpDatabase<T>(action: string): T {
-    const output = execFileSync('php', ['e2e/support/database.php', action, '1'], {
+function phpDatabase<T>(action: string, argument?: string): T {
+    const args = ['e2e/support/database.php', action, '1'];
+    if (argument !== undefined) args.push(argument);
+    const output = execFileSync('php', args, {
         cwd: projectRoot,
         encoding: 'utf8',
     });
@@ -55,4 +63,32 @@ export function character(): DatabaseRow {
 
 export function auditLog(): DatabaseRow[] {
     return phpDatabase<DatabaseRow[]>('audit');
+}
+
+export function persistedCharacterState(): PersistedCharacterState {
+    return phpDatabase<PersistedCharacterState>('persisted-character-state');
+}
+
+export function savePointSnapshot(label: string): PersistedCharacterState {
+    return phpDatabase<PersistedCharacterState>('save-point-snapshot', label);
+}
+
+export function source(displayName: string): DatabaseRow {
+    return phpDatabase<DatabaseRow>('source', displayName);
+}
+
+export function classLevel(className: string): number {
+    return phpDatabase<number>('class-level', className);
+}
+
+export function removeMagicInitiateWizardSource(): GrantRuleReconciliation {
+    return phpDatabase<GrantRuleReconciliation>('remove-magic-initiate-wizard-source');
+}
+
+export function restoreMagicInitiateWizardSource(grantRules: string): GrantRuleReconciliation {
+    return phpDatabase<GrantRuleReconciliation>('restore-magic-initiate-wizard-source', grantRules);
+}
+
+export function spellVersionId(contentKey: string): number {
+    return phpDatabase<number>('spell-version-id', contentKey);
 }
