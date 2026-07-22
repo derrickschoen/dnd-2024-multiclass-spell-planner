@@ -1865,6 +1865,13 @@ ddev config --project-name=dnd-wt-<name> --project-type=laravel --docroot=public
   --php-version=8.4 --omit-containers=db --nodejs-version=24
 ddev start
 
+# COPY IN THE GITIGNORED FILES THE WORKTREE NEEDS.
+# `git worktree add` gives you tracked files only. Anything gitignored but
+# required at runtime is silently absent, and the resulting failures look like
+# code defects rather than a missing environment. Walk .gitignore and ask of each
+# entry: "is this needed to run?" For this project that is .env, vendor,
+# node_modules, data/index and public/build.
+#
 # GAP 1: symlinking vendor/node_modules to the main checkout DOES NOT WORK here.
 # The symlink targets an absolute HOST path, and each ddev project mounts its own
 # worktree at /var/www/html, so vendor/autoload.php is unreachable and artisan
