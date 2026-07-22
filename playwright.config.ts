@@ -10,7 +10,9 @@ export default defineConfig({
     },
     reporter: 'list',
     use: {
-        baseURL: 'https://dnd-spell-planner.ddev.site',
+        // Per-worktree ddev sites override this so parallel branches can run the
+        // browser suite concurrently instead of queueing behind one shared site.
+        baseURL: process.env.E2E_BASE_URL ?? 'https://dnd-spell-planner.ddev.site',
         headless: true,
         ignoreHTTPSErrors: true,
         actionTimeout: 10_000,
