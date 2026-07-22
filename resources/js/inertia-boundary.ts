@@ -173,7 +173,7 @@ function buildReport(value: unknown, path: string): asserts value is BuildReport
     list(value.duplicate_assessments, `${path}.duplicate_assessments`, duplicateAssessment);
     object(value.wizard, `${path}.wizard`);
     list(value.wizard.spellbook, `${path}.wizard.spellbook`, wizardEntry);
-    list(value.wizard.prepared, `${path}.wizard.prepared`, wizardEntry);
+    list(value.wizard.prepared, `${path}.wizard.prepared`, wizardPreparedEntry);
     list(value.wizard.ritual_only, `${path}.wizard.ritual_only`, wizardEntry);
     string(value.wizard.explanation, `${path}.wizard.explanation`);
 }
@@ -183,6 +183,12 @@ function wizardEntry(value: unknown, path: string): void {
     number(value.spellbook_entry_id, `${path}.spellbook_entry_id`);
     string(value.spell_name, `${path}.spell_name`);
     if (value.active !== undefined) boolean(value.active, `${path}.active`);
+}
+
+function wizardPreparedEntry(value: unknown, path: string): void {
+    object(value, path);
+    number(value.spell_version_id, `${path}.spell_version_id`);
+    string(value.spell_name, `${path}.spell_name`);
 }
 
 function printableSpell(value: unknown, path: string): void {
@@ -232,7 +238,7 @@ function printableSpellList(value: unknown, path: string): void {
     });
     object(value.wizard, `${path}.wizard`);
     list(value.wizard.spellbook, `${path}.wizard.spellbook`, wizardEntry);
-    list(value.wizard.prepared, `${path}.wizard.prepared`, wizardEntry);
+    list(value.wizard.prepared, `${path}.wizard.prepared`, wizardPreparedEntry);
     list(value.wizard.ritual_only, `${path}.wizard.ritual_only`, wizardEntry);
     string(value.wizard.explanation, `${path}.wizard.explanation`);
 }

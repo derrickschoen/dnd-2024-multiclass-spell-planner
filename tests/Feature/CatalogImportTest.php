@@ -690,7 +690,7 @@ it('preserves imported metadata for every non-slot reference surface', function 
     if ($reference === 'spellbook') {
         DB::table('wizard_spellbook_entries')->insert([
             'character_id' => $characterId, 'spell_version_id' => data_get($version, 'id'),
-            'acquisition' => 'copied', 'created_at' => now(), 'updated_at' => now(),
+            'created_at' => now(), 'updated_at' => now(),
         ]);
     } elseif ($reference === 'loadout') {
         $loadoutId = DB::table('spell_loadouts')->insertGetId([

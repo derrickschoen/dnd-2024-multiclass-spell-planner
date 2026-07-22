@@ -55,14 +55,6 @@ final readonly class EligibleSpellSearch
                 });
             })
             ->when($schools !== [], fn ($builder) => $builder->whereIn('school', $schools))
-            ->when(data_get($slot, 'selection_collection') === 'wizard_spellbook', function ($builder) use ($characterId): void {
-                $builder->whereExists(function ($entry) use ($characterId): void {
-                    $entry->selectRaw('1')
-                        ->from('wizard_spellbook_entries')
-                        ->whereColumn('wizard_spellbook_entries.spell_version_id', 'spell_versions.id')
-                        ->where('wizard_spellbook_entries.character_id', $characterId);
-                });
-            })
             ->when($tags !== [], function ($builder) use ($tags): void {
                 foreach ($tags as $tag) {
                     $builder->whereExists(function ($tagQuery) use ($tag): void {

@@ -76,7 +76,6 @@ final class SeedCharacterSeeder extends Seeder
                 $config['wizard_spellbook_acquisitions'] = array_map(
                     static fn (string $key): array => [
                         'spell_version_key' => $key,
-                        'acquisition' => 'starting',
                     ],
                     [
                         '2024:detect-magic', '2024:feather-fall', '2024:mage-armor',
@@ -205,7 +204,6 @@ final class SeedCharacterSeeder extends Seeder
         $wizardSpellbook = array_map(
             static fn (string $key): array => [
                 'spell_version_key' => $key,
-                'acquisition' => 'starting',
             ],
             [
                 '2024:comprehend-languages',

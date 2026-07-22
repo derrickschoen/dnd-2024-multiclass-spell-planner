@@ -77,7 +77,7 @@ final class GrantRuleSlotGenerator
                     array_push($desiredChildMarkers, ...$this->materializeGrantedSources($source, $rule));
                 }
                 if ($rule->kind === GrantRule::SPELLBOOK_ACQUISITION) {
-                    $this->materializeSpellbookAcquisitions($source, $rule);
+                    $this->materializeSpellbookEntries($source, $rule);
                 }
             }
 
@@ -255,7 +255,7 @@ final class GrantRuleSlotGenerator
                 'allowed_spell_lists' => json_encode([$list], JSON_THROW_ON_ERROR),
                 'allowed_schools' => null,
                 'allowed_tags' => null,
-                'selection_collection' => data_get($data, 'selection_collection'),
+                'selection_collection' => null,
                 'counts_against_limit' => (bool) data_get($data, 'counts_against_limit', true),
                 'required' => (bool) data_get($data, 'required', true),
                 'is_locked' => false,
@@ -274,7 +274,7 @@ final class GrantRuleSlotGenerator
                 'allowed_spell_lists' => null,
                 'allowed_schools' => $this->nullableJsonList(data_get($data, 'schools')),
                 'allowed_tags' => $this->nullableJsonList(data_get($data, 'tags')),
-                'selection_collection' => data_get($data, 'selection_collection'),
+                'selection_collection' => null,
                 'counts_against_limit' => (bool) data_get($data, 'counts_against_limit', true),
                 'required' => (bool) data_get($data, 'required', true),
                 'is_locked' => false,
@@ -614,7 +614,7 @@ final class GrantRuleSlotGenerator
         }
     }
 
-    private function materializeSpellbookAcquisitions(object $source, GrantRule $rule): void
+    private function materializeSpellbookEntries(object $source, GrantRule $rule): void
     {
         $data = $rule->toArray();
         $config = $this->decodeJsonArray(data_get($source, 'config'));
@@ -630,6 +630,13 @@ final class GrantRuleSlotGenerator
             if (! is_array($acquisition)) {
                 throw new InvalidArgumentException(
                     "Spellbook rule '{$rule->ruleKey}' acquisition {$index} must be an object."
+                );
+            }
+            $unsupported = array_diff(array_keys($acquisition), ['spell_version_id', 'spell_version_key']);
+            if ($unsupported !== []) {
+                throw new InvalidArgumentException(
+                    "Spellbook rule '{$rule->ruleKey}' acquisition {$index} contains unsupported bookkeeping fields: "
+                    .implode(', ', $unsupported).'.'
                 );
             }
             $spellVersionId = data_get($acquisition, 'spell_version_id');
@@ -660,12 +667,6 @@ final class GrantRuleSlotGenerator
                 );
             }
 
-            $acquisitionType = data_get($acquisition, 'acquisition');
-            if (! in_array($acquisitionType, ['starting', 'level_up', 'copied', 'granted'], true)) {
-                throw new InvalidArgumentException(
-                    "Spellbook rule '{$rule->ruleKey}' acquisition {$index} has invalid provenance."
-                );
-            }
             $list = (string) data_get($data, 'list');
             $eligible = DB::table('spell_list_memberships')
                 ->where('spell_version_id', $spellVersionId)
@@ -683,11 +684,6 @@ final class GrantRuleSlotGenerator
             ];
             if (! $existingEntry) {
                 DB::table('wizard_spellbook_entries')->insert(array_merge($identity, [
-                    'acquisition' => $acquisitionType,
-                    'copy_cost_gp' => data_get($acquisition, 'copy_cost_gp'),
-                    'copy_time_hours' => data_get($acquisition, 'copy_time_hours'),
-                    'source_instance_id' => (int) data_get($source, 'id'),
-                    'notes' => data_get($acquisition, 'notes'),
                     'created_at' => now(),
                     'updated_at' => now(),
                 ]));

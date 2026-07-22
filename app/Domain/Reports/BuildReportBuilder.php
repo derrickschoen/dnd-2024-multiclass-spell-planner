@@ -4,7 +4,10 @@ declare(strict_types=1);
 
 namespace App\Domain\Reports;
 
+use App\Domain\Characters\SourceType;
+use App\Domain\Grants\SlotBucket;
 use App\Domain\Rules\CasterContribution;
+use App\Domain\Rules\CastingMode;
 use App\Domain\Rules\SpellSlots;
 use App\Domain\Spells\DuplicateWarningDetector;
 use App\Domain\Spells\SpellAccessBuilder;
@@ -238,20 +241,33 @@ final readonly class BuildReportBuilder
      */
     private function wizardSplit(int $characterId, array $routes): array
     {
+        $wizardSourceIds = DB::table('character_source_instances as source')
+            ->join('class_definitions as class', 'class.id', '=', 'source.source_definition_id')
+            ->where('source.character_id', $characterId)
+            ->where('source.source_type', SourceType::CharacterClass->value)
+            ->where('class.name', 'Wizard')
+            ->pluck('source.id')
+            ->map(static fn (mixed $id): int => (int) $id)
+            ->all();
+        $preparedRoutes = array_values(array_filter(
+            $routes,
+            static fn (array $route): bool => in_array(
+                (int) data_get($route, 'source_instance_id'),
+                $wizardSourceIds,
+                true,
+            ) && data_get($route, 'bucket') === SlotBucket::Prepared->value
+                && data_get($route, 'casting_mode') === CastingMode::WithSlots->value,
+        ));
         $preparedVersionIds = array_map(
             static fn (array $route): int => (int) data_get($route, 'spell_version_id'),
-            array_values(array_filter(
-                $routes,
-                static fn (array $route): bool => data_get($route, 'selection_collection') === 'wizard_spellbook'
-                    && data_get($route, 'casting_mode') === 'with_slots',
-            )),
+            $preparedRoutes,
         );
         $entries = DB::table('wizard_spellbook_entries as entry')
             ->join('spell_versions as version', 'version.id', '=', 'entry.spell_version_id')
             ->where('entry.character_id', $characterId)
             ->orderBy('version.display_name')
             ->select([
-                'entry.id', 'entry.acquisition', 'entry.copy_cost_gp', 'entry.copy_time_hours',
+                'entry.id',
                 'version.id as spell_version_id', 'version.display_name as spell_name', 'version.level',
                 'version.is_active',
             ])
@@ -261,18 +277,24 @@ final readonly class BuildReportBuilder
                 'spell_version_id' => (int) data_get($entry, 'spell_version_id'),
                 'spell_name' => (string) data_get($entry, 'spell_name'),
                 'level' => (int) data_get($entry, 'level'),
-                'acquisition' => (string) data_get($entry, 'acquisition'),
-                'copy_cost_gp' => data_get($entry, 'copy_cost_gp'),
-                'copy_time_hours' => data_get($entry, 'copy_time_hours'),
                 'active' => (bool) data_get($entry, 'is_active'),
                 'prepared' => in_array((int) data_get($entry, 'spell_version_id'), $preparedVersionIds, true),
             ])
             ->all();
 
-        $prepared = array_values(array_filter(
-            $entries,
-            static fn (array $entry): bool => (bool) data_get($entry, 'prepared'),
+        $prepared = array_values(array_map(
+            static fn (array $route): array => [
+                'spell_version_id' => (int) data_get($route, 'spell_version_id'),
+                'spell_name' => (string) data_get($route, 'spell_name'),
+                'level' => (int) data_get($route, 'spell_level'),
+            ],
+            $preparedRoutes,
         ));
+        usort($prepared, static fn (array $left, array $right): int => [
+            data_get($left, 'level'), data_get($left, 'spell_name'),
+        ] <=> [
+            data_get($right, 'level'), data_get($right, 'spell_name'),
+        ]);
         $ritualOnly = array_values(array_map(
             static fn (array $route): array => [
                 'spellbook_entry_id' => data_get($route, 'spellbook_entry_id'),
@@ -282,7 +304,7 @@ final readonly class BuildReportBuilder
             ],
             array_filter(
                 $routes,
-                static fn (array $route): bool => data_get($route, 'casting_mode') === 'ritual_only',
+                static fn (array $route): bool => data_get($route, 'casting_mode') === CastingMode::RitualOnly->value,
             ),
         ));
 
@@ -290,7 +312,7 @@ final readonly class BuildReportBuilder
             'spellbook' => $entries,
             'prepared' => $prepared,
             'ritual_only' => $ritualOnly,
-            'explanation' => 'Prepared spellbook spells can use spell slots. Ritual Adept also exposes any unprepared ritual-tagged spell in the spellbook as ritual-only access; that route is not a selection, does not consume preparation capacity, and is ignored by duplicate-waste checks. Unprepared non-ritual spells are not castable.',
+            'explanation' => '“In my book” marks only the spells that Ritual Adept can expose; it does not constrain Wizard preparation and is not the same as labeling a spell known or prepared. Prepared spells are limited choices drawn from the whole Wizard spell list and can use spell slots. A spell can therefore appear both in the book and as prepared. An unprepared ritual-tagged spell in the book appears as ritual-only access; that route is not a selection, consumes no preparation capacity, and is ignored by duplicate-waste checks. Unprepared non-ritual book spells are not castable.',
         ];
     }
 

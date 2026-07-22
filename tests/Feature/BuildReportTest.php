@@ -3,6 +3,7 @@
 declare(strict_types=1);
 
 use App\Domain\Reports\BuildReportBuilder;
+use App\Domain\Spells\SpellSelectionService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
@@ -75,7 +76,7 @@ it('seeds the requested six-class character and generates both Magic Initiates t
         ->get();
     expect($wizardPreparedSlots)->toHaveCount(4)
         ->and($wizardPreparedSlots->every(
-            fn (object $slot): bool => data_get($slot, 'selection_collection') === 'wizard_spellbook',
+            fn (object $slot): bool => data_get($slot, 'selection_collection') === null,
         ))->toBeTrue()
         ->and($wizardPreparedSlots->whereNotNull('current_spell_version_id'))->toHaveCount(4)
         ->and(Schema::hasTable('wizard_prepared_entries'))->toBeFalse();
@@ -233,6 +234,49 @@ it('seeds the requested six-class character and generates both Magic Initiates t
         ]);
 });
 
+it('prepares a Wizard-list spell outside the book and counts its overlap as two limited choices', function (): void {
+    $characterId = (int) DB::table('characters')->where('notes', 'seed:a6')->value('id');
+    $shieldId = (int) DB::table('spell_versions')->where('content_key', '2024:shield')->value('id');
+    expect(DB::table('wizard_spellbook_entries')
+        ->where('character_id', $characterId)
+        ->where('spell_version_id', $shieldId)
+        ->exists())->toBeFalse();
+
+    DB::table('wizard_spellbook_entries')->insert([
+        'character_id' => $characterId,
+        'spell_version_id' => $shieldId,
+        'created_at' => now(),
+        'updated_at' => now(),
+    ]);
+    $before = app(BuildReportBuilder::class)->build($characterId);
+    $beforeShield = collect(data_get($before, 'duplicate_assessments'))->firstWhere('spell_name', 'Shield');
+    expect(data_get($beforeShield, 'category'))->toBe('none')
+        ->and(data_get($beforeShield, 'selection_count'))->toBe(1);
+    DB::table('wizard_spellbook_entries')
+        ->where('character_id', $characterId)
+        ->where('spell_version_id', $shieldId)
+        ->delete();
+
+    $wizardSlotId = (int) DB::table('spell_selection_slots as slot')
+        ->join('character_source_instances as source', 'source.id', '=', 'slot.source_instance_id')
+        ->join('class_definitions as class', 'class.id', '=', 'source.source_definition_id')
+        ->where('slot.character_id', $characterId)
+        ->where('source.source_type', 'class')
+        ->where('class.name', 'Wizard')
+        ->where('slot.rule_key', 'wizard-prepared')
+        ->orderBy('slot.ordinal')
+        ->value('slot.id');
+    app(SpellSelectionService::class)->select($wizardSlotId, $shieldId);
+
+    $after = app(BuildReportBuilder::class)->build($characterId);
+    $afterShield = collect(data_get($after, 'duplicate_assessments'))->firstWhere('spell_name', 'Shield');
+    expect(collect(data_get($after, 'wizard.prepared'))->pluck('spell_name'))->toContain('Shield')
+        ->and(collect(data_get($after, 'wizard.spellbook'))->pluck('spell_name'))->not->toContain('Shield')
+        ->and(data_get($afterShield, 'category'))->toBe('wasteful')
+        ->and(data_get($afterShield, 'selection_count'))->toBe(2)
+        ->and(data_get($afterShield, 'explanation'))->toBe('Shield consumes limits in more than one selection.');
+});
+
 it('builds the golden read-only report values and duplicate classifications', function () {
     $characterId = DB::table('characters')->where('notes', 'seed:a6')->value('id');
     $report = app(BuildReportBuilder::class)->build($characterId);
@@ -272,7 +316,7 @@ it('builds the golden read-only report values and duplicate classifications', fu
     expect(data_get($report, 'wizard.spellbook'))->toHaveCount(6)
         ->and(data_get($report, 'wizard.prepared'))->toHaveCount(4)
         ->and(data_get($report, 'wizard.ritual_only'))->toHaveCount(1)
-        ->and(data_get($report, 'wizard.explanation'))->toContain('does not consume preparation capacity');
+        ->and(data_get($report, 'wizard.explanation'))->toContain('consumes no preparation capacity');
     $detectMagic = $routes->firstWhere('spell_name', 'Detect Magic');
     expect(data_get($detectMagic, 'origin'))->toBe('capability')
         ->and(data_get($detectMagic, 'casting_mode'))->toBe('ritual_only')
@@ -316,12 +360,12 @@ it('returns the complete seeded report contract rather than only its headline to
         static fn (array $entry): array => collect($entry)->except(['spellbook_entry_id', 'spell_version_id'])->all(),
     )->all();
     expect($spellbook)->toBe([
-        ['spell_name' => 'Detect Magic', 'level' => 1, 'acquisition' => 'starting', 'copy_cost_gp' => null, 'copy_time_hours' => null, 'active' => true, 'prepared' => false],
-        ['spell_name' => 'Feather Fall', 'level' => 1, 'acquisition' => 'starting', 'copy_cost_gp' => null, 'copy_time_hours' => null, 'active' => true, 'prepared' => false],
-        ['spell_name' => 'Mage Armor', 'level' => 1, 'acquisition' => 'starting', 'copy_cost_gp' => null, 'copy_time_hours' => null, 'active' => true, 'prepared' => true],
-        ['spell_name' => 'Magic Missile', 'level' => 1, 'acquisition' => 'starting', 'copy_cost_gp' => null, 'copy_time_hours' => null, 'active' => true, 'prepared' => true],
-        ['spell_name' => 'Sleep', 'level' => 1, 'acquisition' => 'starting', 'copy_cost_gp' => null, 'copy_time_hours' => null, 'active' => true, 'prepared' => true],
-        ['spell_name' => 'Thunderwave', 'level' => 1, 'acquisition' => 'starting', 'copy_cost_gp' => null, 'copy_time_hours' => null, 'active' => true, 'prepared' => true],
+        ['spell_name' => 'Detect Magic', 'level' => 1, 'active' => true, 'prepared' => false],
+        ['spell_name' => 'Feather Fall', 'level' => 1, 'active' => true, 'prepared' => false],
+        ['spell_name' => 'Mage Armor', 'level' => 1, 'active' => true, 'prepared' => true],
+        ['spell_name' => 'Magic Missile', 'level' => 1, 'active' => true, 'prepared' => true],
+        ['spell_name' => 'Sleep', 'level' => 1, 'active' => true, 'prepared' => true],
+        ['spell_name' => 'Thunderwave', 'level' => 1, 'active' => true, 'prepared' => true],
     ])->and(collect(data_get($report, 'wizard.prepared'))->pluck('spell_name')->all())->toBe([
         'Mage Armor', 'Magic Missile', 'Sleep', 'Thunderwave',
     ])->and(collect(data_get($report, 'wizard.ritual_only'))->map(
@@ -335,6 +379,11 @@ it('returns the complete seeded report contract rather than only its headline to
                 && data_get($entry, 'spellbook_entry_id') > 0
                 && is_int(data_get($entry, 'spell_version_id'))
                 && data_get($entry, 'spell_version_id') > 0,
+        ))->toBeTrue()
+        ->and(collect(data_get($report, 'wizard.prepared'))->every(
+            static fn (array $entry): bool => is_int(data_get($entry, 'spell_version_id'))
+                && data_get($entry, 'spell_version_id') > 0
+                && data_get($entry, 'spellbook_entry_id') === null,
         ))->toBeTrue()
         ->and(collect(data_get($report, 'wizard.ritual_only'))->every(
             static fn (array $entry): bool => is_int(data_get($entry, 'spellbook_entry_id'))

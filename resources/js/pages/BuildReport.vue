@@ -86,12 +86,12 @@ const spellLevel = (level: number) => (level === 0 ? 'Cantrip' : level < 0 ? 'Un
                 <p class="mt-2 max-w-4xl text-sm leading-6 text-stone-400">{{ report.wizard.explanation }}</p>
                 <div class="mt-5 grid gap-5 md:grid-cols-3">
                     <article>
-                        <h3 class="text-sm font-semibold text-stone-300">Spellbook · {{ report.wizard.spellbook.length }}</h3>
+                        <h3 class="text-sm font-semibold text-stone-300">In my book · {{ report.wizard.spellbook.length }}</h3>
                         <ul class="mt-2 space-y-1 text-sm"><li v-for="entry in report.wizard.spellbook" :key="entry.spellbook_entry_id">{{ entry.spell_name }} <span v-if="!entry.active" class="text-amber-300">(unavailable — removed from catalog)</span></li></ul>
                     </article>
                     <article>
                         <h3 class="text-sm font-semibold text-emerald-300">Prepared · {{ report.wizard.prepared.length }}</h3>
-                        <ul class="mt-2 space-y-1 text-sm"><li v-for="entry in report.wizard.prepared" :key="entry.spellbook_entry_id">{{ entry.spell_name }}</li></ul>
+                        <ul class="mt-2 space-y-1 text-sm"><li v-for="entry in report.wizard.prepared" :key="entry.spell_version_id">{{ entry.spell_name }}</li></ul>
                     </article>
                     <article>
                         <h3 class="text-sm font-semibold text-sky-300">Ritual-only · {{ report.wizard.ritual_only.length }}</h3>

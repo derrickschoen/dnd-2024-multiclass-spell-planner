@@ -36,8 +36,8 @@ interface SlotGrantRule extends GrantRuleBase {
 
 export type GrantRule =
     | (SlotGrantRule & { kind: 'fixed_spell'; count: 1; spell_version_id?: number; spell_version_key?: string })
-    | (SlotGrantRule & { kind: 'choice_from_list'; count: number; list: string; level_min: number; level_max: number; selection_collection?: 'wizard_spellbook' })
-    | (SlotGrantRule & { kind: 'choice_from_query'; count: number; level_min: number; level_max: number; schools?: string[]; tags?: string[]; selection_collection?: 'wizard_spellbook' })
+    | (SlotGrantRule & { kind: 'choice_from_list'; count: number; list: string; level_min: number; level_max: number })
+    | (SlotGrantRule & { kind: 'choice_from_query'; count: number; level_min: number; level_max: number; schools?: string[]; tags?: string[] })
     | (GrantRuleBase & { kind: 'grant_source'; count: number; source_type: DomainSourceType; source_definition_id?: number; source_definition_key?: string; definition_key_config?: string; child_config?: Record<string, unknown>; child_config_config?: string; bucket?: never })
     | (GrantRuleBase & { kind: 'capability'; capability_key: string; collection: string; access_mode: string; tags: string[]; count?: never; bucket?: never })
     | (GrantRuleBase & { kind: 'spellbook_acquisition'; list: string; acquisitions_config: string; count?: never; bucket?: never });
@@ -163,7 +163,7 @@ export interface BuildReport {
     duplicate_assessments: DuplicateAssessment[];
     wizard: {
         spellbook: Array<{ spellbook_entry_id: number; spell_name: string; active: boolean }>;
-        prepared: Array<{ spellbook_entry_id: number; spell_name: string; active: boolean }>;
+        prepared: Array<{ spell_version_id: number; spell_name: string }>;
         ritual_only: Array<{ spellbook_entry_id: number; spell_name: string }>;
         explanation: string;
     };

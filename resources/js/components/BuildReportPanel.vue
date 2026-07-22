@@ -96,8 +96,8 @@ function acknowledge(item: DuplicateAssessment): void {
             <h2 class="section-title">Wizard spellbook access</h2>
             <p class="mt-2 text-xs leading-5 text-stone-600 dark:text-stone-400">{{ report.wizard.explanation }}</p>
             <div class="mt-4 grid grid-cols-3 gap-2 text-xs">
-                <div><h3 class="font-semibold">Spellbook · {{ report.wizard.spellbook.length }}</h3><ul class="mt-1 space-y-1"><li v-for="item in report.wizard.spellbook" :key="item.spellbook_entry_id">{{ item.spell_name }} <span v-if="!item.active" class="text-amber-700 dark:text-amber-300">(unavailable — removed from catalog)</span></li></ul></div>
-                <div><h3 class="font-semibold">Prepared · {{ report.wizard.prepared.length }}</h3><ul class="mt-1 space-y-1"><li v-for="item in report.wizard.prepared" :key="item.spellbook_entry_id">{{ item.spell_name }}</li></ul></div>
+                <div><h3 class="font-semibold">In my book · {{ report.wizard.spellbook.length }}</h3><ul class="mt-1 space-y-1"><li v-for="item in report.wizard.spellbook" :key="item.spellbook_entry_id">{{ item.spell_name }} <span v-if="!item.active" class="text-amber-700 dark:text-amber-300">(unavailable — removed from catalog)</span></li></ul></div>
+                <div><h3 class="font-semibold">Prepared · {{ report.wizard.prepared.length }}</h3><ul class="mt-1 space-y-1"><li v-for="item in report.wizard.prepared" :key="item.spell_version_id">{{ item.spell_name }}</li></ul></div>
                 <div><h3 class="font-semibold">Ritual-only · {{ report.wizard.ritual_only.length }}</h3><ul class="mt-1 space-y-1"><li v-for="item in report.wizard.ritual_only" :key="item.spellbook_entry_id">{{ item.spell_name }}</li></ul></div>
             </div>
         </section>
