@@ -13,8 +13,11 @@
     "concentration": true,
     "ritual": false,
     "attackModes": [],
-    "saveAbilities": [],
-    "effectReliabilityCategory": "fixed_effect",
+    "saveAbilities": [
+      "wisdom",
+      "dexterity"
+    ],
+    "effectReliabilityCategory": "saving_throw",
     "spellLists": [
       "Bard",
       "Sorcerer",

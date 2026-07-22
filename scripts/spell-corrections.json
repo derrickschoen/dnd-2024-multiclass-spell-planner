@@ -1,0 +1,30 @@
+{
+  "2024:antilife-shell": {
+    "duration": {
+      "from": "C up to 1 hour",
+      "to": "C, up to 1 hour",
+      "reason": "Restore the missing comma in the upstream concentration abbreviation."
+    }
+  },
+  "2024:befuddlement": {
+    "duration": {
+      "from": "Instantanous",
+      "to": "Instantaneous",
+      "reason": "Correct the upstream index typo to match the detail page and SRD 5.2.1."
+    }
+  },
+  "2024:expeditious-retreat": {
+    "duration": {
+      "from": "C up to 10 minutes",
+      "to": "C, up to 10 minutes",
+      "reason": "Restore the missing comma in the upstream concentration abbreviation."
+    }
+  },
+  "2024:fog-cloud": {
+    "duration": {
+      "from": "C up to 1 hour",
+      "to": "C, up to 1 hour",
+      "reason": "Restore the missing comma in the upstream concentration abbreviation."
+    }
+  }
+}

@@ -39,7 +39,7 @@ final readonly class CharacterWorkspaceBuilder
             ])
             ->all();
 
-        $slots = DB::table('spell_selection_slots as slot')
+        $slotRows = DB::table('spell_selection_slots as slot')
             ->join('character_source_instances as source', 'source.id', '=', 'slot.source_instance_id')
             ->leftJoin('spell_versions as selected', 'selected.id', '=', DB::raw('COALESCE(slot.fixed_spell_version_id, slot.current_spell_version_id)'))
             ->where('slot.character_id', $characterId)
@@ -52,8 +52,30 @@ final readonly class CharacterWorkspaceBuilder
             ->orderBy('source.display_name')
             ->orderBy('slot.sort_order')
             ->orderBy('slot.id')
-            ->get()
-            ->map(function (object $slot) use ($report, $routesBySlot, $duplicatesByIdentity): array {
+            ->get();
+        $selectedVersionIds = $slotRows
+            ->map(static fn (object $slot): mixed => data_get($slot, 'fixed_spell_version_id')
+                ?? data_get($slot, 'current_spell_version_id'))
+            ->filter()
+            ->unique()
+            ->values();
+        $attackVersionIds = DB::table('spell_version_attack_modes')
+            ->whereIn('spell_version_id', $selectedVersionIds)
+            ->pluck('spell_version_id')
+            ->flip();
+        $saveVersionIds = DB::table('spell_version_save_abilities')
+            ->whereIn('spell_version_id', $selectedVersionIds)
+            ->pluck('spell_version_id')
+            ->flip();
+
+        $slots = $slotRows
+            ->map(function (object $slot) use (
+                $report,
+                $routesBySlot,
+                $duplicatesByIdentity,
+                $attackVersionIds,
+                $saveVersionIds,
+            ): array {
                 $route = $routesBySlot->get(data_get($slot, 'id'));
                 $ability = data_get($route, 'spellcasting_ability') ?? $this->sourceAbility($slot);
                 $modifier = $ability === null ? null : $this->abilityModifier(
@@ -61,6 +83,8 @@ final readonly class CharacterWorkspaceBuilder
                 );
                 $proficiency = (int) data_get($report, 'character.proficiency_bonus');
                 $duplicate = $duplicatesByIdentity->get(data_get($slot, 'spell_identity_id'));
+                $selectedVersionId = data_get($slot, 'fixed_spell_version_id')
+                    ?? data_get($slot, 'current_spell_version_id');
 
                 return [
                     'id' => (int) data_get($slot, 'id'),
@@ -75,8 +99,12 @@ final readonly class CharacterWorkspaceBuilder
                     'spell_name' => data_get($slot, 'spell_name'),
                     'spell_level' => data_get($slot, 'spell_level'),
                     'ability' => $ability,
-                    'attack_bonus' => $modifier === null ? null : $proficiency + $modifier,
-                    'save_dc' => $modifier === null ? null : 8 + $proficiency + $modifier,
+                    'attack_bonus' => $modifier === null || $selectedVersionId === null
+                        || ! $attackVersionIds->has($selectedVersionId)
+                            ? null : $proficiency + $modifier,
+                    'save_dc' => $modifier === null || $selectedVersionId === null
+                        || ! $saveVersionIds->has($selectedVersionId)
+                            ? null : 8 + $proficiency + $modifier,
                     'ritual' => (bool) data_get($slot, 'ritual'),
                     'concentration' => (bool) data_get($slot, 'concentration'),
                     'duplicate_status' => data_get($duplicate, 'category', 'none'),

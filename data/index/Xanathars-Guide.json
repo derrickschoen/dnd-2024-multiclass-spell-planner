@@ -102,8 +102,10 @@
     "concentration": false,
     "ritual": false,
     "attackModes": [],
-    "saveAbilities": [],
-    "effectReliabilityCategory": "fixed_effect",
+    "saveAbilities": [
+      "strength"
+    ],
+    "effectReliabilityCategory": "saving_throw",
     "spellLists": [
       "Druid",
       "Sorcerer",
@@ -468,10 +470,10 @@
     "components": "V, S, M",
     "duration": "Instantaneous",
     "concentration": false,
-    "ritual": false,
+    "ritual": true,
     "attackModes": [],
     "saveAbilities": [],
-    "effectReliabilityCategory": "fixed_effect",
+    "effectReliabilityCategory": "ritual_utility",
     "spellLists": [
       "Cleric",
       "Paladin"
@@ -893,10 +895,10 @@
     "components": "V, S",
     "duration": "Concentration, up to 1 day",
     "concentration": true,
-    "ritual": false,
+    "ritual": true,
     "attackModes": [],
     "saveAbilities": [],
-    "effectReliabilityCategory": "fixed_effect",
+    "effectReliabilityCategory": "ritual_utility",
     "spellLists": [
       "Bard",
       "Druid",
@@ -1593,8 +1595,10 @@
     "concentration": true,
     "ritual": false,
     "attackModes": [],
-    "saveAbilities": [],
-    "effectReliabilityCategory": "fixed_effect",
+    "saveAbilities": [
+      "strength"
+    ],
+    "effectReliabilityCategory": "saving_throw",
     "spellLists": [
       "Druid",
       "Sorcerer",
@@ -1954,8 +1958,11 @@
     "concentration": false,
     "ritual": false,
     "attackModes": [],
-    "saveAbilities": [],
-    "effectReliabilityCategory": "fixed_effect",
+    "saveAbilities": [
+      "strength",
+      "dexterity"
+    ],
+    "effectReliabilityCategory": "saving_throw",
     "spellLists": [
       "Druid",
       "Wizard",
@@ -2120,8 +2127,10 @@
     "concentration": true,
     "ritual": false,
     "attackModes": [],
-    "saveAbilities": [],
-    "effectReliabilityCategory": "fixed_effect",
+    "saveAbilities": [
+      "dexterity"
+    ],
+    "effectReliabilityCategory": "saving_throw",
     "spellLists": [
       "Druid",
       "Sorcerer",
@@ -2148,8 +2157,10 @@
     "concentration": true,
     "ritual": false,
     "attackModes": [],
-    "saveAbilities": [],
-    "effectReliabilityCategory": "fixed_effect",
+    "saveAbilities": [
+      "constitution"
+    ],
+    "effectReliabilityCategory": "saving_throw",
     "spellLists": [
       "Druid",
       "Sorcerer",
@@ -2176,8 +2187,10 @@
     "concentration": true,
     "ritual": false,
     "attackModes": [],
-    "saveAbilities": [],
-    "effectReliabilityCategory": "fixed_effect",
+    "saveAbilities": [
+      "dexterity"
+    ],
+    "effectReliabilityCategory": "saving_throw",
     "spellLists": [
       "Druid",
       "Sorcerer",
@@ -2204,8 +2217,10 @@
     "concentration": true,
     "ritual": false,
     "attackModes": [],
-    "saveAbilities": [],
-    "effectReliabilityCategory": "fixed_effect",
+    "saveAbilities": [
+      "constitution"
+    ],
+    "effectReliabilityCategory": "saving_throw",
     "spellLists": [
       "Druid",
       "Sorcerer",

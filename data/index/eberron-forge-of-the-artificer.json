@@ -11,10 +11,10 @@
     "components": "V, S, M(C)",
     "duration": "Instantaneous",
     "concentration": false,
-    "ritual": false,
+    "ritual": true,
     "attackModes": [],
     "saveAbilities": [],
-    "effectReliabilityCategory": "fixed_effect",
+    "effectReliabilityCategory": "ritual_utility",
     "spellLists": [
       "Artificer"
     ],

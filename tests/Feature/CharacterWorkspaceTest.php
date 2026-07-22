@@ -176,10 +176,28 @@ it('builds the complete workspace editing contract for the seeded character', fu
         'source' => 'Bard 1', 'source_type' => 'class', 'label' => 'Cantrip Known 1',
         'bucket' => 'cantrip_known', 'level_min' => 0, 'level_max' => 0,
         'spell_id' => null, 'spell_name' => null, 'spell_level' => null,
-        'ability' => 'charisma', 'attack_bonus' => 6, 'save_dc' => 14,
+        'ability' => 'charisma', 'attack_bonus' => null, 'save_dc' => null,
         'ritual' => false, 'concentration' => false, 'duplicate_status' => 'none',
         'state' => 'active', 'eligibility' => 'unselected', 'invalid_reason' => null,
         'orphan_reason' => null, 'override_note' => null, 'locked' => false,
+    ]);
+});
+
+it('shows only mechanically relevant casting math from each selected spell source', function () {
+    $characterId = (int) DB::table('characters')->where('notes', 'like', "seed:mutt\n%")->value('id');
+    $slots = collect(data_get(app(CharacterWorkspaceBuilder::class)->build($characterId), 'slots'))
+        ->keyBy('spell_name');
+
+    expect($slots->get('Bane'))->toMatchArray([
+        'ability' => 'charisma', 'attack_bonus' => null, 'save_dc' => 14,
+        'concentration' => true, 'ritual' => false,
+    ])->and($slots->get('Chromatic Orb'))->toMatchArray([
+        'ability' => 'charisma', 'attack_bonus' => 6, 'save_dc' => null,
+    ])->and($slots->get('Mage Hand'))->toMatchArray([
+        'ability' => 'intelligence', 'attack_bonus' => null, 'save_dc' => null,
+    ])->and($slots->get('Find Familiar'))->toMatchArray([
+        'ability' => 'intelligence', 'attack_bonus' => null, 'save_dc' => null,
+        'concentration' => false, 'ritual' => true,
     ]);
 });
 
@@ -669,17 +687,24 @@ it('round-trips a named save point through the mutation path', function () {
     expect((int) DB::table('characters')->where('id', $characterId)->value('intelligence'))->toBe(13);
 });
 
-it('changing an ability score recomputes the source save DC', function () {
+it('changing an ability score recomputes only mechanically relevant casting math', function () {
     $characterId = workspaceCharacterId();
-    $slotId = (int) DB::table('spell_selection_slots')->where('character_id', $characterId)
-        ->where('rule_key', 'wizard-cantrips')->where('ordinal', 1)->value('id');
+    $slotIds = DB::table('spell_selection_slots')->where('character_id', $characterId)
+        ->where('rule_key', 'wizard-cantrips')->whereIn('ordinal', [1, 2])
+        ->orderBy('ordinal')->pluck('id');
+    $acidSplashId = (int) DB::table('spell_versions')->where('content_key', '2024:acid-splash')->value('id');
+    $fireBoltId = (int) DB::table('spell_versions')->where('content_key', '2024:fire-bolt')->value('id');
+    DB::table('spell_selection_slots')->where('id', $slotIds->get(0))
+        ->update(['current_spell_version_id' => $acidSplashId]);
+    DB::table('spell_selection_slots')->where('id', $slotIds->get(1))
+        ->update(['current_spell_version_id' => $fireBoltId]);
 
     $response = mutateCharacter($this, $characterId, 0, [
         'type' => 'update_ability', 'ability' => 'intelligence', 'score' => 18,
     ])->assertOk();
-    $slot = collect($response->json('workspace.slots'))->firstWhere('id', $slotId);
-    expect(data_get($slot, 'save_dc'))->toBe(15)
-        ->and(data_get($slot, 'attack_bonus'))->toBe(7);
+    $slots = collect($response->json('workspace.slots'))->keyBy('id');
+    expect($slots->get($slotIds->get(0)))->toMatchArray(['save_dc' => 15, 'attack_bonus' => null])
+        ->and($slots->get($slotIds->get(1)))->toMatchArray(['save_dc' => null, 'attack_bonus' => 7]);
 });
 
 it('returns the exact mutation envelope, inverse, operation, and reversible audit contract', function () {

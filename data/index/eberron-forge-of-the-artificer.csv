@@ -1,2 +1,2 @@
 identityKey,versionKey,name,edition,level,school,castingTime,range,components,duration,concentration,ritual,attackModes,saveAbilities,effectReliabilityCategory,spellLists,sourceBooks,sourcePage,sourceSlug
-homunculus-servant,2024:homunculus-servant,Homunculus Servant,2024,2,Conjuration,1 hour or R,10 feet,"V, S, M(C)",Instantaneous,false,false,,,fixed_effect,Artificer,Eberron - Forge of the Artificer,,homunculus-servant
+homunculus-servant,2024:homunculus-servant,Homunculus Servant,2024,2,Conjuration,1 hour or R,10 feet,"V, S, M(C)",Instantaneous,false,true,,,ritual_utility,Artificer,Eberron - Forge of the Artificer,,homunculus-servant

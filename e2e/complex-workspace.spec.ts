@@ -252,16 +252,21 @@ test('S5: INT changes propagate to every INT route in both directions without mo
     expect(initialInt.length).toBeGreaterThan(0);
     expect(initialWis.length).toBeGreaterThan(0);
     expect(initialCha.length).toBeGreaterThan(0);
-    expect(initialInt.every((row) => row.numbers === '+4 / 12')).toBe(true);
-    expect(initialWis.every((row) => row.numbers === '+4 / 12')).toBe(true);
-    expect(initialCha.every((row) => row.numbers === '+6 / 14')).toBe(true);
+    expect(initialInt.some((row) => row.numbers === '12')).toBe(true);
+    expect(initialInt.every((row) => ['12', '-'].includes(row.numbers))).toBe(true);
+    expect(initialWis.some((row) => row.numbers === '12')).toBe(true);
+    expect(initialWis.every((row) => ['12', '-'].includes(row.numbers))).toBe(true);
+    expect(initialCha.every((row) => row.numbers === '-')).toBe(true);
 
     await setAbility(page, 'INT', 20);
 
     const raised = await castingRows(page);
     const raisedInt = rowsFor(raised, 'INT');
     expect(raisedInt.map(withoutCastingNumbers)).toEqual(initialInt.map(withoutCastingNumbers));
-    expect(raisedInt.every((row) => row.numbers === '+8 / 16')).toBe(true);
+    expect(raisedInt.filter((row) => row.numbers === '16')).toHaveLength(
+        initialInt.filter((row) => row.numbers === '12').length,
+    );
+    expect(raisedInt.every((row) => ['16', '-'].includes(row.numbers))).toBe(true);
     expect(rowsFor(raised, 'WIS')).toEqual(initialWis);
     expect(rowsFor(raised, 'CHA')).toEqual(initialCha);
     expect(character().intelligence).toBe(20);
@@ -987,6 +992,26 @@ test('T10: Mutt matches the authoritative sheet attribution with zero duplicates
     expect(actualByClass).toEqual(expectedByClass);
     expect(new Set(muttSlots.map((slot) => slot.spell_name)).size).toBe(35);
     expect(report.duplicate_assessments.filter((item) => item.category !== 'none')).toEqual([]);
+
+    const bane = requireSlot(muttSlots.find((slot) => slot.spell_name === 'Bane'), "Mutt's Bane slot");
+    const familiar = requireSlot(
+        muttSlots.find((slot) => slot.spell_name === 'Find Familiar'),
+        "Mutt's Find Familiar slot",
+    );
+    const chromaticOrb = requireSlot(
+        muttSlots.find((slot) => slot.spell_name === 'Chromatic Orb'),
+        "Mutt's Chromatic Orb slot",
+    );
+    const mageHand = requireSlot(
+        muttSlots.find((slot) => slot.spell_name === 'Mage Hand'),
+        "Mutt's Mage Hand slot",
+    );
+    await expect(slotRow(page, bane.id).locator('td').nth(6)).toHaveText('14');
+    await expect(slotRow(page, bane.id).locator('td').nth(7)).toHaveText('◆ Yes');
+    await expect(slotRow(page, familiar.id).locator('td').nth(8)).toHaveText('◇ Yes');
+    await expect(slotRow(page, chromaticOrb.id).locator('td').nth(6)).toHaveText('+6');
+    await expect(slotRow(page, mageHand.id).locator('td').nth(6)).toHaveText('-');
+
     for (const [spellName, sourceName] of [
         ['Bane', 'Bard 1'], ['Healing Word', 'Cleric 1'], ['Shield', 'Wizard 1'],
     ]) {

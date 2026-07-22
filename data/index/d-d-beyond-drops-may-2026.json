@@ -10,7 +10,7 @@
     "range": "120 feet.",
     "components": "V, S, M",
     "duration": "C, up to 1 minute",
-    "concentration": false,
+    "concentration": true,
     "ritual": false,
     "attackModes": [],
     "saveAbilities": [
@@ -40,7 +40,7 @@
     "range": "120 feet.",
     "components": "V, S",
     "duration": "C, up to 1 minute",
-    "concentration": false,
+    "concentration": true,
     "ritual": false,
     "attackModes": [],
     "saveAbilities": [
@@ -98,7 +98,7 @@
     "range": "90 feet",
     "components": "V, S, M",
     "duration": "C, up to 1 minute",
-    "concentration": false,
+    "concentration": true,
     "ritual": false,
     "attackModes": [],
     "saveAbilities": [

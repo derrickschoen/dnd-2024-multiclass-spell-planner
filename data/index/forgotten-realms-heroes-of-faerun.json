@@ -95,10 +95,10 @@
     "components": "V, S, M(C*)",
     "duration": "8 hours",
     "concentration": false,
-    "ritual": false,
+    "ritual": true,
     "attackModes": [],
     "saveAbilities": [],
-    "effectReliabilityCategory": "fixed_effect",
+    "effectReliabilityCategory": "ritual_utility",
     "spellLists": [
       "Cleric",
       "Wizard"
@@ -120,7 +120,7 @@
     "range": "Self",
     "components": "V, S",
     "duration": "C, up to 10 minutes",
-    "concentration": false,
+    "concentration": true,
     "ritual": false,
     "attackModes": [],
     "saveAbilities": [],
@@ -145,7 +145,7 @@
     "range": "Self",
     "components": "V, S",
     "duration": "C, up to 10 minutes",
-    "concentration": false,
+    "concentration": true,
     "ritual": false,
     "attackModes": [],
     "saveAbilities": [
@@ -174,7 +174,7 @@
     "range": "60 feet",
     "components": "V, S, M",
     "duration": "C, up to 10 minutes",
-    "concentration": false,
+    "concentration": true,
     "ritual": false,
     "attackModes": [],
     "saveAbilities": [
@@ -288,7 +288,7 @@
     "range": "120 feet",
     "components": "V, S, M",
     "duration": "C, up to 1 minute",
-    "concentration": false,
+    "concentration": true,
     "ritual": false,
     "attackModes": [],
     "saveAbilities": [
@@ -317,7 +317,7 @@
     "range": "60 feet",
     "components": "V, S",
     "duration": "C, up to 1 minute",
-    "concentration": false,
+    "concentration": true,
     "ritual": false,
     "attackModes": [],
     "saveAbilities": [
@@ -345,7 +345,7 @@
     "range": "Self",
     "components": "V, S, M(C)",
     "duration": "C, up to 1 minute",
-    "concentration": false,
+    "concentration": true,
     "ritual": false,
     "attackModes": [],
     "saveAbilities": [],
@@ -373,7 +373,7 @@
     "range": "Self",
     "components": "V, S, M(C)",
     "duration": "C, up to 1 minute",
-    "concentration": false,
+    "concentration": true,
     "ritual": false,
     "attackModes": [],
     "saveAbilities": [
@@ -402,7 +402,7 @@
     "range": "Self",
     "components": "V",
     "duration": "C, up to 1 minute",
-    "concentration": false,
+    "concentration": true,
     "ritual": false,
     "attackModes": [],
     "saveAbilities": [
@@ -485,7 +485,7 @@
     "range": "Self",
     "components": "V, S",
     "duration": "C, up to 1 minute",
-    "concentration": false,
+    "concentration": true,
     "ritual": false,
     "attackModes": [
       "ranged_spell"
@@ -513,7 +513,7 @@
     "range": "60 feet",
     "components": "V, S",
     "duration": "C, up to 1 minute",
-    "concentration": false,
+    "concentration": true,
     "ritual": false,
     "attackModes": [
       "melee_spell"

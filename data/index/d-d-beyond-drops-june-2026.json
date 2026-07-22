@@ -40,7 +40,7 @@
     "range": "Touch",
     "components": "V, S",
     "duration": "C, up to 1 minute",
-    "concentration": false,
+    "concentration": true,
     "ritual": false,
     "attackModes": [],
     "saveAbilities": [],

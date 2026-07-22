@@ -2,7 +2,15 @@ import { test, describe } from 'node:test';
 import assert from 'node:assert/strict';
 import { readFile, readdir } from 'node:fs/promises';
 import { parse as parseHtml } from 'node-html-parser';
-import { parseIndex, classify, canonicalSourceBook, parseSpellLevel, parseSpellPage, parseSpellLists } from './scrape-spells.mjs';
+import {
+    applyCorrections,
+    canonicalSourceBook,
+    classify,
+    parseIndex,
+    parseSpellLevel,
+    parseSpellLists,
+    parseSpellPage,
+} from './scrape-spells.mjs';
 
 /**
  * These fixtures encode the REAL header layouts, captured from both sites on
@@ -75,9 +83,125 @@ describe('classify treats attack and save as sets', () => {
         assert.deepEqual(r.attackModes, []);
     });
 
-    test('concentration is read from duration, not the description', () => {
+    test('a saving-throw benefit does not invent a spell save DC', () => {
+        const r = classify('You make Constitution saving throws with advantage.');
+        assert.deepEqual(r.saveAbilities, []);
+        assert.equal(r.effectReliabilityCategory, 'fixed_effect');
+    });
+
+    test('concentration recognizes BOTH edition formats', () => {
+        assert.equal(classify('x', 'C, up to 10 minutes').concentration, true);
         assert.equal(classify('x', 'Concentration, up to 1 minute').concentration, true);
         assert.equal(classify('x', 'Instantaneous').concentration, false);
+    });
+
+    test('ritual recognizes BOTH edition index formats and the spelled-out detail format', () => {
+        assert.equal(classify('x', '', 'Action or R').ritual, true);
+        assert.equal(classify('x', '', '1 hour or R').ritual, true);
+        assert.equal(classify('x', '', '1 Action R').ritual, true);
+        assert.equal(classify('x', '', '1 Hour R').ritual, true);
+        assert.equal(classify('x', '', '1 hour or Ritual').ritual, true);
+        assert.equal(classify('x', '', 'Action').ritual, false);
+    });
+});
+
+describe('generated catalog preserves concentration and ritual corpus invariants', () => {
+    test('both editions remain populated and named reference spells retain their traits', async () => {
+        const directory = new URL('../data/index/', import.meta.url);
+        const recordsByVersion = new Map();
+        for (const file of (await readdir(directory)).filter((name) => name.endsWith('.json'))) {
+            for (const record of JSON.parse(await readFile(new URL(file, directory), 'utf8'))) {
+                recordsByVersion.set(record.versionKey, record);
+            }
+        }
+
+        const modern = [...recordsByVersion.values()].filter((record) => record.edition === '2024');
+        const legacy = [...recordsByVersion.values()].filter((record) => record.edition === '2014');
+        assert.equal(modern.length, 419);
+        assert.equal(modern.filter((record) => record.concentration).length, 175);
+        assert.equal(modern.filter((record) => record.ritual).length, 33);
+        assert.equal(legacy.length, 524);
+        assert.equal(legacy.filter((record) => record.concentration).length, 234);
+        assert.equal(legacy.filter((record) => record.ritual).length, 34);
+
+        for (const edition of ['2024', '2014']) {
+            const records = edition === '2024' ? modern : legacy;
+            assert.equal(records.find((record) => record.name === 'Bane')?.concentration, true);
+            assert.equal(records.find((record) => record.name === 'Find Familiar')?.ritual, true);
+        }
+    });
+});
+
+describe('parseSpellPage classifies spell effects outside paragraphs', () => {
+    const modernRows = async () => new Map(parseIndex(
+        await readFile(new URL('./.cache/2024/__index__.html', import.meta.url), 'utf8'),
+        '2024',
+    ).map(applyCorrections).map((row) => [row.slug, row]));
+
+    const parseCached = async (slug) => {
+        const rows = await modernRows();
+        return parseSpellPage(
+            await readFile(new URL(`./.cache/2024/${slug}.html`, import.meta.url), 'utf8'),
+            rows.get(slug),
+        );
+    };
+
+    test('includes Magic Circle list items and Prismatic table cells', async () => {
+        assert.deepEqual((await parseCached('magic-circle')).saveAbilities, ['charisma']);
+        assert.deepEqual(
+            (await parseCached('prismatic-spray')).saveAbilities,
+            ['dexterity', 'constitution', 'wisdom'],
+        );
+        assert.deepEqual(
+            (await parseCached('prismatic-wall')).saveAbilities,
+            ['constitution', 'dexterity', 'wisdom'],
+        );
+    });
+
+    test('excludes saves belonging to embedded summoned-creature stat blocks', async () => {
+        assert.deepEqual((await parseCached('giant-insect')).saveAbilities, []);
+        assert.deepEqual((await parseCached('summon-dragon')).saveAbilities, []);
+
+        const legacyIndex = parseIndex(
+            await readFile(new URL('./.cache/2014/__index__.html', import.meta.url), 'utf8'),
+            '2014',
+        );
+        const summonFey = legacyIndex.find((row) => row.slug === 'summon-fey');
+        assert.deepEqual(parseSpellPage(
+            await readFile(new URL('./.cache/2014/summon-fey.html', import.meta.url), 'utf8'),
+            summonFey,
+        ).saveAbilities, []);
+        const summonDraconicSpirit = legacyIndex.find((row) => row.slug === 'summon-draconic-spirit');
+        assert.deepEqual(parseSpellPage(
+            await readFile(new URL('./.cache/2014/summon-draconic-spirit.html', import.meta.url), 'utf8'),
+            summonDraconicSpirit,
+        ).saveAbilities, []);
+    });
+});
+
+describe('upstream corrections are explicit and guarded', () => {
+    test('corrects Befuddlement only when the cached typo still matches the manifest', async () => {
+        const rows = parseIndex(
+            await readFile(new URL('./.cache/2024/__index__.html', import.meta.url), 'utf8'),
+            '2024',
+        );
+        const raw = rows.find((row) => row.slug === 'befuddlement');
+        assert.equal(raw.duration, 'Instantanous');
+        assert.equal(applyCorrections(raw).duration, 'Instantaneous');
+        assert.deepEqual(Object.fromEntries(
+            ['antilife-shell', 'expeditious-retreat', 'fog-cloud'].map((slug) => {
+                const row = rows.find((candidate) => candidate.slug === slug);
+                return [slug, applyCorrections(row).duration];
+            }),
+        ), {
+            'antilife-shell': 'C, up to 1 hour',
+            'expeditious-retreat': 'C, up to 10 minutes',
+            'fog-cloud': 'C, up to 1 hour',
+        });
+        assert.throws(
+            () => applyCorrections({ ...raw, duration: 'Already fixed upstream' }),
+            /Stale correction 2024:befuddlement.duration/,
+        );
     });
 });
 

@@ -47,8 +47,10 @@ const castingSources = computed(() => {
         bySource.set(slot.source, {
             source: slot.source,
             ability: slot.ability,
-            attack: slot.attack_bonus,
-            dc: slot.save_dc,
+            attack: report.value.character.proficiency_bonus
+                + Math.floor(((report.value.character.abilities[slot.ability] ?? 10) - 10) / 2),
+            dc: 8 + report.value.character.proficiency_bonus
+                + Math.floor(((report.value.character.abilities[slot.ability] ?? 10) - 10) / 2),
         });
     }
     return [...bySource.values()];
@@ -76,6 +78,15 @@ function modifier(score: number): string {
 
 function signed(value: number | null): string {
     return value === null ? '—' : value >= 0 ? `+${value}` : String(value);
+}
+
+function castingMath(slot: WorkspaceSlot): string {
+    if (slot.attack_bonus !== null && slot.save_dc !== null) {
+        return `${signed(slot.attack_bonus)} / ${slot.save_dc}`;
+    }
+    if (slot.attack_bonus !== null) return signed(slot.attack_bonus);
+    if (slot.save_dc !== null) return String(slot.save_dc);
+    return '-';
 }
 
 function title(value: string): string {
@@ -342,7 +353,7 @@ onBeforeUnmount(() => window.removeEventListener('keydown', keyboardShortcuts));
                                     <tr :class="slot.eligibility === 'invalid' || slot.state !== 'active' ? 'bg-amber-50 dark:bg-amber-950/40' : ''">
                                         <td class="font-medium">{{ slot.source }}</td><td>{{ slot.label }}</td><td>{{ title(slot.bucket) }}</td><td>L{{ slot.level_min }}–{{ slot.level_max }}</td>
                                         <td><span v-if="slot.locked" class="font-medium">{{ slot.spell_name }}</span><SpellCombobox v-else :ref="(element) => setCombobox(slot.id, element)" :character-id="report.character.id" :slot-id="slot.id" :model-value="slot.spell_name" :invalid="slot.eligibility === 'invalid' || slot.state !== 'active'" :disabled="store.saving" @select="selectSpell(slot, $event)" /></td>
-                                        <td>{{ slot.ability ? slot.ability.slice(0, 3).toUpperCase() : '—' }}</td><td>{{ signed(slot.attack_bonus) }} / {{ slot.save_dc ?? '—' }}</td>
+                                        <td>{{ slot.ability ? slot.ability.slice(0, 3).toUpperCase() : '—' }}</td><td>{{ castingMath(slot) }}</td>
                                         <td>{{ slot.concentration ? '◆ Yes' : '— No' }}</td><td>{{ slot.ritual ? '◇ Yes' : '— No' }}</td>
                                         <td><span v-if="slot.duplicate_status !== 'none'" class="status-badge status-warning">⚠ {{ title(slot.duplicate_status) }}</span><span v-else>— None</span></td>
                                         <td><span class="status-badge" :class="slot.state === 'active' && slot.eligibility !== 'invalid' ? 'status-ok' : 'status-warning'">{{ slot.state === 'active' && slot.eligibility !== 'invalid' ? '✓' : '⚠' }} {{ title(slot.state === 'active' ? slot.eligibility : slot.state) }}</span></td>

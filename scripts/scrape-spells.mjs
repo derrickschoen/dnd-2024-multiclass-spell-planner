@@ -26,6 +26,7 @@ import { parse } from 'node-html-parser';
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), '..');
 const CACHE = join(ROOT, 'scripts/.cache');
+const CORRECTIONS = JSON.parse(await readFile(join(ROOT, 'scripts/spell-corrections.json'), 'utf8'));
 // Verification can target a disposable directory so the committed catalog is
 // never rewritten merely to prove cached pages still produce the same dataset.
 const OUT_INDEX = process.env.SPELL_SCRAPER_INDEX_DIR || join(ROOT, 'data/index');
@@ -179,13 +180,24 @@ export function classify(description, duration = '', castingTime = '') {
     if (/ranged spell attack/i.test(body)) attackModes.push('ranged_spell');
     if (!attackModes.length && /\bspell attack\b/i.test(body)) attackModes.push('spell');
 
+    // A spell that grants advantage on the caster's own saving throws does not
+    // use the caster's save DC. Remove that benefit wording before detecting
+    // saves imposed by the spell.
+    const saveText = body.replace(
+        /\b(Strength|Dexterity|Constitution|Intelligence|Wisdom|Charisma)\s+saving throws\s+with (?:advantage|disadvantage)\b/gi,
+        '',
+    );
     const saveAbilities = [...new Set(
-        [...body.matchAll(/\b(Strength|Dexterity|Constitution|Intelligence|Wisdom|Charisma)\s+saving throw/gi)]
+        [...saveText.matchAll(/\b(Strength|Dexterity|Constitution|Intelligence|Wisdom|Charisma)\s+saving throw/gi)]
             .map((m) => m[1].toLowerCase())
     )];
 
-    const concentration = /concentration/i.test(duration);
-    const ritual = /\britual\b/i.test(castingTime) || /\britual\b/i.test(body.slice(0, 400));
+    // Index abbreviations are authoritative for both editions. Modern pages use
+    // "C, up to ..." while legacy pages spell out Concentration. Rituals are
+    // "... or R" in 2024 and a bare trailing "R" in 2014; detail pages cannot
+    // repair legacy ritual data because they omit the marker entirely.
+    const concentration = /^\s*C\s*,/i.test(duration) || /\bconcentration\b/i.test(duration);
+    const ritual = /\bR\s*$/i.test(castingTime) || /\britual\b/i.test(castingTime);
 
     let category;
     if (attackModes.length && saveAbilities.length) category = 'mixed';
@@ -196,6 +208,28 @@ export function classify(description, duration = '', castingTime = '') {
     else category = 'fixed_effect';
 
     return { attackModes, saveAbilities, concentration, ritual, effectReliabilityCategory: category };
+}
+
+/**
+ * Apply narrowly scoped, reviewable corrections to known upstream source typos.
+ * The expected old value is checked so a site change cannot silently leave a
+ * stale correction in force.
+ */
+export function applyCorrections(indexRow) {
+    const key = `${indexRow.edition}:${indexRow.slug}`;
+    const corrections = CORRECTIONS[key];
+    if (!corrections) return indexRow;
+
+    const corrected = { ...indexRow };
+    for (const [field, correction] of Object.entries(corrections)) {
+        if (corrected[field] !== correction.from) {
+            throw new Error(
+                `Stale correction ${key}.${field}: expected "${correction.from}", got "${corrected[field]}"`
+            );
+        }
+        corrected[field] = correction.to;
+    }
+    return corrected;
 }
 
 /**
@@ -271,8 +305,22 @@ export function parseSpellPage(htmlText, indexRow) {
         .filter((p) => !/^(Source|Casting Time|Range|Components|Duration):/i.test(p) && p !== levelLine)
         .join('\n\n');
 
+    // Spell effects also appear in lists and data tables. Creature stat blocks
+    // embedded by summoning spells are deliberately excluded: their actions use
+    // the creature's later saves, not a save made to resolve the spell itself.
+    const listEffects = content.querySelectorAll('li').map(text).filter(Boolean);
+    const tableEffects = content.querySelectorAll('table')
+        .filter((table) => {
+            const tableText = text(table);
+            return !/\bArmor Class\b/i.test(tableText)
+                || !/\bHit Points\b/i.test(tableText)
+                || !/\bSTR(?:\s*\(Mod\/Save\))?/i.test(tableText);
+        })
+        .flatMap((table) => table.querySelectorAll('td').map(text).filter(Boolean));
+    const classificationText = [description, ...listEffects, ...tableEffects].filter(Boolean).join('\n\n');
+
     return {
-        ...classify(description, indexRow.duration, indexRow.castingTime),
+        ...classify(classificationText, indexRow.duration, indexRow.castingTime),
         sourceBooks,
         sourcePage: pageMatch ? Number(pageMatch[1]) : null,
         level,
@@ -384,7 +432,7 @@ export async function buildDataset({ editions = ['2024', '2014'], limit = 0, off
     for (const ed of editions) {
         const site = SITES[ed];
         const indexHtml = await fetchCached(site.origin + site.indexPath, ed, '__index__', { offline });
-        let rows = parseIndex(indexHtml, ed);
+        let rows = parseIndex(indexHtml, ed).map(applyCorrections);
         if (limit) rows = rows.slice(0, limit);
         console.log(`[${ed}] index: ${rows.length} spells`);
 

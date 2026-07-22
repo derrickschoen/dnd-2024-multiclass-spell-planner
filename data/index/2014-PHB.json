@@ -765,10 +765,10 @@
     "components": "V, S, M",
     "duration": "8 Hours",
     "concentration": false,
-    "ritual": false,
+    "ritual": true,
     "attackModes": [],
     "saveAbilities": [],
-    "effectReliabilityCategory": "fixed_effect",
+    "effectReliabilityCategory": "ritual_utility",
     "spellLists": [
       "Artificer",
       "Ranger",
@@ -1097,10 +1097,10 @@
     "components": "V, S, M",
     "duration": "1 hour",
     "concentration": false,
-    "ritual": false,
+    "ritual": true,
     "attackModes": [],
     "saveAbilities": [],
-    "effectReliabilityCategory": "fixed_effect",
+    "effectReliabilityCategory": "ritual_utility",
     "spellLists": [
       "Bard",
       "Sorcerer",
@@ -1207,10 +1207,10 @@
     "components": "V, S",
     "duration": "Concentration, up to 10 minutes",
     "concentration": true,
-    "ritual": false,
+    "ritual": true,
     "attackModes": [],
     "saveAbilities": [],
-    "effectReliabilityCategory": "fixed_effect",
+    "effectReliabilityCategory": "ritual_utility",
     "spellLists": [
       "Artificer",
       "Bard",
@@ -1239,10 +1239,10 @@
     "components": "V, S, M",
     "duration": "Concentration, up to 10 minutes",
     "concentration": true,
-    "ritual": false,
+    "ritual": true,
     "attackModes": [],
     "saveAbilities": [],
-    "effectReliabilityCategory": "fixed_effect",
+    "effectReliabilityCategory": "ritual_utility",
     "spellLists": [
       "Cleric",
       "Druid",
@@ -1514,10 +1514,10 @@
     "components": "V, S, M",
     "duration": "Instantaneous",
     "concentration": false,
-    "ritual": false,
+    "ritual": true,
     "attackModes": [],
     "saveAbilities": [],
-    "effectReliabilityCategory": "fixed_effect",
+    "effectReliabilityCategory": "ritual_utility",
     "spellLists": [
       "Wizard"
     ],
@@ -1806,10 +1806,10 @@
     "components": "V, S, M",
     "duration": "Instantaneous",
     "concentration": false,
-    "ritual": false,
+    "ritual": true,
     "attackModes": [],
     "saveAbilities": [],
-    "effectReliabilityCategory": "fixed_effect",
+    "effectReliabilityCategory": "ritual_utility",
     "spellLists": [
       "Artificer",
       "Bard",
@@ -1833,10 +1833,10 @@
     "components": "S, M",
     "duration": "10 days",
     "concentration": false,
-    "ritual": false,
+    "ritual": true,
     "attackModes": [],
     "saveAbilities": [],
-    "effectReliabilityCategory": "fixed_effect",
+    "effectReliabilityCategory": "ritual_utility",
     "spellLists": [
       "Bard",
       "Warlock",
@@ -2026,10 +2026,10 @@
     "components": "V, S",
     "duration": "Instantaneous",
     "concentration": false,
-    "ritual": false,
+    "ritual": true,
     "attackModes": [],
     "saveAbilities": [],
-    "effectReliabilityCategory": "fixed_effect",
+    "effectReliabilityCategory": "ritual_utility",
     "spellLists": [
       "Artificer",
       "Cleric",
@@ -2246,10 +2246,10 @@
     "components": "V, S",
     "duration": "10 minutes",
     "concentration": false,
-    "ritual": false,
+    "ritual": true,
     "attackModes": [],
     "saveAbilities": [],
-    "effectReliabilityCategory": "fixed_effect",
+    "effectReliabilityCategory": "ritual_utility",
     "spellLists": [
       "Bard",
       "Druid",
@@ -2301,10 +2301,10 @@
     "components": "V, S, M",
     "duration": "1 hour",
     "concentration": false,
-    "ritual": false,
+    "ritual": true,
     "attackModes": [],
     "saveAbilities": [],
-    "effectReliabilityCategory": "fixed_effect",
+    "effectReliabilityCategory": "ritual_utility",
     "spellLists": [
       "Wizard"
     ],
@@ -2383,10 +2383,10 @@
     "components": "V, S, M",
     "duration": "1 hour",
     "concentration": false,
-    "ritual": false,
+    "ritual": true,
     "attackModes": [],
     "saveAbilities": [],
-    "effectReliabilityCategory": "fixed_effect",
+    "effectReliabilityCategory": "ritual_utility",
     "spellLists": [
       "Bard",
       "Warlock",
@@ -2522,10 +2522,10 @@
     "components": "V, S, M",
     "duration": "24 hours",
     "concentration": false,
-    "ritual": false,
+    "ritual": true,
     "attackModes": [],
     "saveAbilities": [],
-    "effectReliabilityCategory": "fixed_effect",
+    "effectReliabilityCategory": "ritual_utility",
     "spellLists": [
       "Bard",
       "Druid",
@@ -2575,10 +2575,10 @@
     "components": "V, S, M",
     "duration": "Instantaneous",
     "concentration": false,
-    "ritual": false,
+    "ritual": true,
     "attackModes": [],
     "saveAbilities": [],
-    "effectReliabilityCategory": "fixed_effect",
+    "effectReliabilityCategory": "ritual_utility",
     "spellLists": [
       "Cleric",
       "Druid (Optional)",
@@ -2628,10 +2628,10 @@
     "components": "S",
     "duration": "Concentration, up to 1 hour",
     "concentration": true,
-    "ritual": false,
+    "ritual": true,
     "attackModes": [],
     "saveAbilities": [],
-    "effectReliabilityCategory": "fixed_effect",
+    "effectReliabilityCategory": "ritual_utility",
     "spellLists": [
       "Druid",
       "Ranger"
@@ -3162,10 +3162,10 @@
     "components": "V, S, M",
     "duration": "10 days",
     "concentration": false,
-    "ritual": false,
+    "ritual": true,
     "attackModes": [],
     "saveAbilities": [],
-    "effectReliabilityCategory": "fixed_effect",
+    "effectReliabilityCategory": "ritual_utility",
     "spellLists": [
       "Cleric",
       "Paladin (Optional)",
@@ -3395,10 +3395,10 @@
     "components": "V, S, M",
     "duration": "Instantaneous",
     "concentration": false,
-    "ritual": false,
+    "ritual": true,
     "attackModes": [],
     "saveAbilities": [],
-    "effectReliabilityCategory": "fixed_effect",
+    "effectReliabilityCategory": "ritual_utility",
     "spellLists": [
       "Bard",
       "Druid",
@@ -3452,10 +3452,10 @@
     "components": "V, S, M",
     "duration": "Until dispelled",
     "concentration": false,
-    "ritual": false,
+    "ritual": true,
     "attackModes": [],
     "saveAbilities": [],
-    "effectReliabilityCategory": "fixed_effect",
+    "effectReliabilityCategory": "ritual_utility",
     "spellLists": [
       "Artificer",
       "Bard",
@@ -3894,10 +3894,10 @@
     "components": "V, S",
     "duration": "Concentration, up to 10 minutes",
     "concentration": true,
-    "ritual": false,
+    "ritual": true,
     "attackModes": [],
     "saveAbilities": [],
-    "effectReliabilityCategory": "fixed_effect",
+    "effectReliabilityCategory": "ritual_utility",
     "spellLists": [
       "Bard",
       "Cleric",
@@ -4585,10 +4585,10 @@
     "components": "V, S, M",
     "duration": "1 hour",
     "concentration": false,
-    "ritual": false,
+    "ritual": true,
     "attackModes": [],
     "saveAbilities": [],
-    "effectReliabilityCategory": "fixed_effect",
+    "effectReliabilityCategory": "ritual_utility",
     "spellLists": [
       "Bard",
       "Cleric",
@@ -4814,10 +4814,10 @@
     "components": "V, S, M",
     "duration": "8 hours",
     "concentration": false,
-    "ritual": false,
+    "ritual": true,
     "attackModes": [],
     "saveAbilities": [],
-    "effectReliabilityCategory": "fixed_effect",
+    "effectReliabilityCategory": "ritual_utility",
     "spellLists": [
       "Bard",
       "Wizard"
@@ -4897,8 +4897,10 @@
     "concentration": false,
     "ritual": false,
     "attackModes": [],
-    "saveAbilities": [],
-    "effectReliabilityCategory": "fixed_effect",
+    "saveAbilities": [
+      "charisma"
+    ],
+    "effectReliabilityCategory": "saving_throw",
     "spellLists": [
       "Cleric",
       "Paladin",
@@ -4977,10 +4979,10 @@
     "components": "V, S",
     "duration": "8 hours",
     "concentration": false,
-    "ritual": false,
+    "ritual": true,
     "attackModes": [],
     "saveAbilities": [],
-    "effectReliabilityCategory": "fixed_effect",
+    "effectReliabilityCategory": "ritual_utility",
     "spellLists": [
       "Cleric",
       "Druid",
@@ -5031,10 +5033,10 @@
     "components": "V, S",
     "duration": "1 hour",
     "concentration": false,
-    "ritual": false,
+    "ritual": true,
     "attackModes": [],
     "saveAbilities": [],
-    "effectReliabilityCategory": "fixed_effect",
+    "effectReliabilityCategory": "ritual_utility",
     "spellLists": [
       "Wizard"
     ],
@@ -5425,10 +5427,10 @@
     "components": "V, S, M",
     "duration": "24 hours",
     "concentration": false,
-    "ritual": false,
+    "ritual": true,
     "attackModes": [],
     "saveAbilities": [],
-    "effectReliabilityCategory": "fixed_effect",
+    "effectReliabilityCategory": "ritual_utility",
     "spellLists": [
       "Artificer",
       "Druid",
@@ -5454,10 +5456,10 @@
     "components": "V, S, M",
     "duration": "1 hour",
     "concentration": false,
-    "ritual": false,
+    "ritual": true,
     "attackModes": [],
     "saveAbilities": [],
-    "effectReliabilityCategory": "fixed_effect",
+    "effectReliabilityCategory": "ritual_utility",
     "spellLists": [
       "Artificer",
       "Cleric",
@@ -5842,10 +5844,10 @@
     "components": "V, S, M",
     "duration": "Instantaneous",
     "concentration": false,
-    "ritual": false,
+    "ritual": true,
     "attackModes": [],
     "saveAbilities": [],
-    "effectReliabilityCategory": "fixed_effect",
+    "effectReliabilityCategory": "ritual_utility",
     "spellLists": [
       "Cleric",
       "Druid (Optional)",
@@ -6583,9 +6585,11 @@
     "duration": "Concentration, up to 1 minute",
     "concentration": true,
     "ritual": false,
-    "attackModes": [],
+    "attackModes": [
+      "melee_spell"
+    ],
     "saveAbilities": [],
-    "effectReliabilityCategory": "fixed_effect",
+    "effectReliabilityCategory": "attack_roll",
     "spellLists": [
       "Artificer",
       "Sorcerer (Optional)",
@@ -6662,10 +6666,10 @@
     "components": "V, S, M",
     "duration": "1 minute",
     "concentration": false,
-    "ritual": false,
+    "ritual": true,
     "attackModes": [],
     "saveAbilities": [],
-    "effectReliabilityCategory": "fixed_effect",
+    "effectReliabilityCategory": "ritual_utility",
     "spellLists": [
       "Cleric"
     ],
@@ -6687,10 +6691,10 @@
     "components": "V, S",
     "duration": "Instantaneous",
     "concentration": false,
-    "ritual": false,
+    "ritual": true,
     "attackModes": [],
     "saveAbilities": [],
-    "effectReliabilityCategory": "fixed_effect",
+    "effectReliabilityCategory": "ritual_utility",
     "spellLists": [
       "Druid",
       "Ranger"
@@ -6795,7 +6799,7 @@
     "components": "V",
     "duration": "1 minute",
     "concentration": false,
-    "ritual": false,
+    "ritual": true,
     "attackModes": [],
     "saveAbilities": [
       "intelligence"
@@ -6828,7 +6832,11 @@
       "melee_spell"
     ],
     "saveAbilities": [
-      "constitution"
+      "constitution",
+      "wisdom",
+      "strength",
+      "intelligence",
+      "dexterity"
     ],
     "effectReliabilityCategory": "mixed",
     "spellLists": [
@@ -6908,9 +6916,13 @@
     "duration": "Concentration, up to 1 minute",
     "concentration": true,
     "ritual": false,
-    "attackModes": [],
-    "saveAbilities": [],
-    "effectReliabilityCategory": "fixed_effect",
+    "attackModes": [
+      "melee_spell"
+    ],
+    "saveAbilities": [
+      "charisma"
+    ],
+    "effectReliabilityCategory": "mixed",
     "spellLists": [
       "Cleric",
       "Paladin"
@@ -7356,10 +7368,10 @@
     "components": "V, S, M",
     "duration": "1 hour",
     "concentration": false,
-    "ritual": false,
+    "ritual": true,
     "attackModes": [],
     "saveAbilities": [],
-    "effectReliabilityCategory": "fixed_effect",
+    "effectReliabilityCategory": "ritual_utility",
     "spellLists": [
       "Bard (Optional)",
       "Wizard"
@@ -7844,10 +7856,10 @@
     "components": "V, S, M",
     "duration": "Until dispelled",
     "concentration": false,
-    "ritual": false,
+    "ritual": true,
     "attackModes": [],
     "saveAbilities": [],
-    "effectReliabilityCategory": "fixed_effect",
+    "effectReliabilityCategory": "ritual_utility",
     "spellLists": [
       "Wizard"
     ],
@@ -7956,10 +7968,10 @@
     "components": "V, S, M",
     "duration": "1 day",
     "concentration": false,
-    "ritual": false,
+    "ritual": true,
     "attackModes": [],
     "saveAbilities": [],
-    "effectReliabilityCategory": "fixed_effect",
+    "effectReliabilityCategory": "ritual_utility",
     "spellLists": [
       "Cleric"
     ],
@@ -8088,10 +8100,8 @@
     "concentration": false,
     "ritual": false,
     "attackModes": [],
-    "saveAbilities": [
-      "wisdom"
-    ],
-    "effectReliabilityCategory": "saving_throw",
+    "saveAbilities": [],
+    "effectReliabilityCategory": "fixed_effect",
     "spellLists": [
       "Bard (Optional)",
       "Cleric",
@@ -8809,7 +8819,9 @@
     "ritual": false,
     "attackModes": [],
     "saveAbilities": [
-      "dexterity"
+      "dexterity",
+      "constitution",
+      "wisdom"
     ],
     "effectReliabilityCategory": "saving_throw",
     "spellLists": [
@@ -8995,8 +9007,13 @@
     "concentration": false,
     "ritual": false,
     "attackModes": [],
-    "saveAbilities": [],
-    "effectReliabilityCategory": "fixed_effect",
+    "saveAbilities": [
+      "constitution",
+      "wisdom",
+      "charisma",
+      "intelligence"
+    ],
+    "effectReliabilityCategory": "saving_throw",
     "spellLists": [
       "Bard",
       "Cleric",
@@ -9101,8 +9118,10 @@
     "concentration": false,
     "ritual": false,
     "attackModes": [],
-    "saveAbilities": [],
-    "effectReliabilityCategory": "fixed_effect",
+    "saveAbilities": [
+      "wisdom"
+    ],
+    "effectReliabilityCategory": "saving_throw",
     "spellLists": [
       "Bard (Optional)",
       "Druid",
@@ -9762,7 +9781,8 @@
     "attackModes": [],
     "saveAbilities": [
       "constitution",
-      "dexterity"
+      "dexterity",
+      "wisdom"
     ],
     "effectReliabilityCategory": "saving_throw",
     "spellLists": [
@@ -9816,7 +9836,8 @@
     "ritual": false,
     "attackModes": [],
     "saveAbilities": [
-      "constitution"
+      "constitution",
+      "dexterity"
     ],
     "effectReliabilityCategory": "saving_throw",
     "spellLists": [

@@ -140,10 +140,10 @@
     "components": "S",
     "duration": "Concentration, up to 1 hour",
     "concentration": true,
-    "ritual": false,
+    "ritual": true,
     "attackModes": [],
     "saveAbilities": [],
-    "effectReliabilityCategory": "fixed_effect",
+    "effectReliabilityCategory": "ritual_utility",
     "spellLists": [
       "Wizard (Dunamancy)"
     ],
@@ -330,7 +330,8 @@
     "ritual": false,
     "attackModes": [],
     "saveAbilities": [
-      "wisdom"
+      "wisdom",
+      "dexterity"
     ],
     "effectReliabilityCategory": "saving_throw",
     "spellLists": [
