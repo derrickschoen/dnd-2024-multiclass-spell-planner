@@ -9,7 +9,6 @@ use App\Domain\Grants\GrantRuleSlotGenerator;
 use App\Domain\Spells\DuplicateWarningDetector;
 use App\Domain\Spells\SpellAccessBuilder;
 use App\Domain\Spells\SpellSelectionEligibility;
-use InvalidArgumentException;
 
 final readonly class CharacterCommandFactory
 {
@@ -49,6 +48,18 @@ final readonly class CharacterCommandFactory
                 $this->generator,
                 $this->integrity,
             ),
+            'add_source' => new AddSourceCommand(
+                $payload,
+                $this->state,
+                $this->generator,
+                $this->integrity,
+            ),
+            'remove_source' => new RemoveSourceCommand(
+                $payload,
+                $this->state,
+                $this->generator,
+                $this->integrity,
+            ),
             'acknowledge_warning' => new AcknowledgeWarningCommand(
                 $payload,
                 $this->access,
@@ -61,7 +72,6 @@ final readonly class CharacterCommandFactory
                 $this->state,
                 $this->integrity,
             ),
-            default => throw new InvalidArgumentException('Unknown character command type.'),
         };
     }
 }

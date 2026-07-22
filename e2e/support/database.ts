@@ -6,11 +6,6 @@ const projectRoot = fileURLToPath(new URL('../..', import.meta.url));
 export type DatabaseRow = Record<string, number | string | null>;
 export type PersistedCharacterState = Record<string, unknown>;
 
-interface GrantRuleReconciliation {
-    previous_grant_rules: string;
-    source: DatabaseRow;
-}
-
 export interface SlotRow extends DatabaseRow {
     id: number;
     character_id: number;
@@ -22,13 +17,6 @@ export interface SlotRow extends DatabaseRow {
     state: string;
     created_at: string;
     updated_at: string;
-}
-
-export interface MagicInitiateCreation {
-    accepted: boolean;
-    error: string | null;
-    source: DatabaseRow | null;
-    slots: SlotRow[];
 }
 
 export interface SlotFixture extends SlotRow {
@@ -98,18 +86,6 @@ export function source(displayName: string): DatabaseRow {
 
 export function classLevel(className: string): number {
     return phpDatabase<number>('class-level', className);
-}
-
-export function removeMagicInitiateWizardSource(): GrantRuleReconciliation {
-    return phpDatabase<GrantRuleReconciliation>('remove-magic-initiate-wizard-source');
-}
-
-export function restoreMagicInitiateWizardSource(grantRules: string): GrantRuleReconciliation {
-    return phpDatabase<GrantRuleReconciliation>('restore-magic-initiate-wizard-source', grantRules);
-}
-
-export function addMagicInitiateSource(chosenList: string): MagicInitiateCreation {
-    return phpDatabase<MagicInitiateCreation>('add-magic-initiate-source', chosenList);
 }
 
 export function spellVersionId(contentKey: string): number {

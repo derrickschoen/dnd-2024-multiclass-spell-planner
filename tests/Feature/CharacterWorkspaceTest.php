@@ -40,6 +40,10 @@ it('serves the seeded character list and editable workspace', function () {
         ->component('Characters/Workspace')
         ->where('workspace.report.caster.caster_level', 6)
         ->where('workspace.report.character.proficiency_bonus', 3)
+        ->where('workspace.source_catalog.feat.0.configuration_kind', 'magic_initiate')
+        ->where('workspace.source_catalog.species.0.configuration_kind', 'origin_feat_magic_initiate')
+        ->where('workspace.source_catalog.background.0.configuration_kind', 'origin_feat_magic_initiate')
+        ->has('workspace.removable_sources', 4)
         ->has('workspace.slots')
     );
 });
@@ -240,6 +244,248 @@ it('round-trips source configuration with one audit group and rejects unsupporte
     mutateCharacter($this, $characterId, 1, $changed->json('inverse'))
         ->assertOk()->assertJsonPath('revision', 2);
     expect(app(CharacterState::class)->capture($characterId))->toBe($before);
+});
+
+it('adds Magic Initiate through the DSL with independent list and ability config and exact undo redo', function () {
+    $characterId = workspaceCharacterId();
+    $definitionId = (int) DB::table('feat_definitions')
+        ->where('content_key', '2024:feat:magic-initiate')->value('id');
+    $before = app(CharacterState::class)->capture($characterId);
+
+    foreach ([
+        [['chosen_list' => 'Bard', 'spellcasting_ability' => 'charisma'],
+            'Magic Initiate must use the Cleric, Druid, or Wizard spell list.'],
+        [['chosen_list' => 'Cleric', 'spellcasting_ability' => 'constitution'],
+            'Magic Initiate must use Intelligence, Wisdom, or Charisma.'],
+        [['chosen_list' => 'Wizard', 'spellcasting_ability' => 'charisma'],
+            "Magic Initiate already uses chosen_list 'Wizard' for this character."],
+    ] as [$config, $message]) {
+        mutateCharacter($this, $characterId, 0, [
+            'type' => 'add_source',
+            'source_type' => 'feat',
+            'source_definition_id' => $definitionId,
+            'config' => $config,
+        ])->assertUnprocessable()->assertJsonPath('message', $message);
+        expect(app(CharacterState::class)->capture($characterId))->toBe($before);
+    }
+
+    $operation = Str::uuid()->toString();
+    $added = mutateCharacter($this, $characterId, 0, [
+        'type' => 'add_source',
+        'source_type' => 'feat',
+        'source_definition_id' => $definitionId,
+        'config' => ['chosen_list' => 'Cleric', 'spellcasting_ability' => 'charisma'],
+    ], $operation)->assertOk()->assertJsonPath('revision', 1);
+    $source = DB::table('character_source_instances')
+        ->where('character_id', $characterId)->where('display_name', 'Magic Initiate: Cleric')->sole();
+    $slots = DB::table('spell_selection_slots')->where('source_instance_id', data_get($source, 'id'))
+        ->orderBy('id')->get();
+    $after = app(CharacterState::class)->capture($characterId);
+
+    expect(json_decode((string) data_get($source, 'config'), true, 512, JSON_THROW_ON_ERROR))->toBe([
+        'chosen_list' => 'Cleric',
+        'spellcasting_ability' => 'charisma',
+    ])->and($slots)->toHaveCount(3)
+        ->and($slots->where('rule_key', 'magic-initiate-cantrips'))->toHaveCount(2)
+        ->and($slots->where('rule_key', 'magic-initiate-cantrips')->every(
+            fn (object $slot): bool => ! (bool) data_get($slot, 'with_slots')
+                && data_get($slot, 'free_cast') === null
+                && data_get($slot, 'allowed_spell_lists') === '["Cleric"]',
+        ))->toBeTrue();
+    $levelOne = $slots->where('rule_key', 'magic-initiate-level-one')->sole();
+    expect((bool) data_get($levelOne, 'with_slots'))->toBeTrue()
+        ->and(json_decode((string) data_get($levelOne, 'free_cast'), true, 512, JSON_THROW_ON_ERROR))->toBe([
+            'uses' => 1, 'recovery' => 'long_rest', 'pool_scope' => 'per_spell',
+        ]);
+
+    $audit = DB::table('change_log')->where('operation_uuid', $operation)->get();
+    expect($audit->count())->toBeGreaterThan(1)
+        ->and($audit->pluck('group_id')->unique())->toHaveCount(1)
+        ->and($audit->pluck('action_type')->unique()->all())->toBe(['add_source']);
+    mutateCharacter($this, $characterId, 0, [
+        'type' => 'remove_source', 'source_instance_id' => data_get($source, 'id'),
+    ], $operation)->assertOk()->assertJsonPath('idempotent_replay', true)->assertJsonPath('revision', 1);
+    expect(app(CharacterState::class)->capture($characterId))->toBe($after)
+        ->and(DB::table('character_operations')->where('operation_uuid', $operation)->count())->toBe(1);
+
+    $undone = mutateCharacter($this, $characterId, 1, $added->json('inverse'))
+        ->assertOk()->assertJsonPath('revision', 2);
+    expect(app(CharacterState::class)->capture($characterId))->toBe($before);
+    mutateCharacter($this, $characterId, 2, $undone->json('inverse'))
+        ->assertOk()->assertJsonPath('revision', 3);
+    expect(app(CharacterState::class)->capture($characterId))->toBe($after);
+});
+
+it('adds species and background roots with nested Magic Initiate chains and rejects non-repeatable duplicates', function () {
+    $characterId = (int) DB::table('characters')->insertGetId([
+        'name' => 'Nested Source Test', 'created_at' => now(), 'updated_at' => now(),
+    ]);
+    $humanId = (int) DB::table('species_definitions')->where('content_key', '2024:species:human')->value('id');
+    $backgroundId = (int) DB::table('background_definitions')
+        ->where('content_key', '2024:background:custom')->value('id');
+
+    $invalid = [
+        'origin_feat_key' => '2024:feat:magic-initiate',
+        'origin_feat_config' => ['chosen_list' => 'Bard', 'spellcasting_ability' => 'charisma'],
+    ];
+    mutateCharacter($this, $characterId, 0, [
+        'type' => 'add_source', 'source_type' => 'species',
+        'source_definition_id' => $humanId, 'config' => $invalid,
+    ])->assertUnprocessable()
+        ->assertJsonPath('message', 'Magic Initiate must use the Cleric, Druid, or Wizard spell list.');
+    mutateCharacter($this, $characterId, 0, [
+        'type' => 'add_source', 'source_type' => 'species',
+        'source_definition_id' => $humanId,
+        'config' => ['origin_feat_key' => '2024:feat:magic-initiate'],
+    ])->assertUnprocessable()
+        ->assertJsonPath('message', 'Magic Initiate origin feat config must be an object.');
+
+    $humanConfig = [
+        'origin_feat_key' => '2024:feat:magic-initiate',
+        'origin_feat_config' => ['chosen_list' => 'Wizard', 'spellcasting_ability' => 'charisma'],
+    ];
+    mutateCharacter($this, $characterId, 0, [
+        'type' => 'add_source', 'source_type' => 'species',
+        'source_definition_id' => $humanId, 'config' => $humanConfig,
+    ])->assertOk()->assertJsonPath('revision', 1);
+    $human = DB::table('character_source_instances')->where('character_id', $characterId)
+        ->where('source_type', 'species')->sole();
+    $humanFeat = DB::table('character_source_instances')
+        ->where('parent_source_instance_id', data_get($human, 'id'))->sole();
+    expect(data_get($humanFeat, 'display_name'))->toBe('Magic Initiate: Wizard')
+        ->and(DB::table('spell_selection_slots')->where('source_instance_id', data_get($humanFeat, 'id'))->count())
+        ->toBe(3);
+
+    mutateCharacter($this, $characterId, 1, [
+        'type' => 'add_source', 'source_type' => 'species',
+        'source_definition_id' => $humanId, 'config' => $humanConfig,
+    ])->assertUnprocessable()->assertJsonPath('message', 'Human is not repeatable.');
+
+    $backgroundConfig = [
+        'origin_feat_key' => '2024:feat:magic-initiate',
+        'origin_feat_config' => ['chosen_list' => 'Druid', 'spellcasting_ability' => 'intelligence'],
+    ];
+    mutateCharacter($this, $characterId, 1, [
+        'type' => 'add_source', 'source_type' => 'background',
+        'source_definition_id' => $backgroundId, 'config' => $backgroundConfig,
+    ])->assertOk()->assertJsonPath('revision', 2);
+    $background = DB::table('character_source_instances')->where('character_id', $characterId)
+        ->where('source_type', 'background')->sole();
+    $backgroundFeat = DB::table('character_source_instances')
+        ->where('parent_source_instance_id', data_get($background, 'id'))->sole();
+    expect(data_get($backgroundFeat, 'display_name'))->toBe('Magic Initiate: Druid')
+        ->and(DB::table('spell_selection_slots')->where('source_instance_id', data_get($backgroundFeat, 'id'))->count())
+        ->toBe(3);
+
+    $plainFeatId = DB::table('feat_definitions')->insertGetId([
+        'content_key' => '2024:feat:plain-test',
+        'name' => 'Plain Test Feat',
+        'rules_edition' => '2024',
+        'repeatable' => false,
+        'grant_rules' => '[]',
+        'created_at' => now(),
+        'updated_at' => now(),
+    ]);
+    $plain = mutateCharacter($this, $characterId, 2, [
+        'type' => 'add_source', 'source_type' => 'feat',
+        'source_definition_id' => $plainFeatId, 'config' => [],
+    ])->assertOk()->assertJsonPath('revision', 3);
+    $plainSource = DB::table('character_source_instances')->where('character_id', $characterId)
+        ->where('source_definition_id', $plainFeatId)->sole();
+    expect(data_get($plainSource, 'display_name'))->toBe('Plain Test Feat')
+        ->and(data_get($plainSource, 'acquired_at_character_level'))->toBe(1)
+        ->and(collect($plain->json('workspace.source_catalog.feat'))->firstWhere('id', $plainFeatId))
+        ->toMatchArray(['configuration_kind' => 'none', 'repeatable' => false]);
+});
+
+it('removes a root source through the command and cascades to its nested feat', function (string $sourceType): void {
+    $characterId = workspaceCharacterId();
+    $root = DB::table('character_source_instances')
+        ->where('character_id', $characterId)
+        ->where('source_type', $sourceType)
+        ->whereNull('parent_source_instance_id')
+        ->sole();
+    $child = DB::table('character_source_instances')
+        ->where('parent_source_instance_id', data_get($root, 'id'))
+        ->sole();
+    $slotIds = DB::table('spell_selection_slots')
+        ->where('source_instance_id', data_get($child, 'id'))
+        ->orderBy('id')
+        ->pluck('id')
+        ->all();
+    $before = app(CharacterState::class)->capture($characterId);
+
+    $removed = mutateCharacter($this, $characterId, 0, [
+        'type' => 'remove_source', 'source_instance_id' => data_get($root, 'id'),
+    ])->assertOk()->assertJsonPath('revision', 1);
+
+    expect(DB::table('character_source_instances')->whereIn('id', [
+        data_get($root, 'id'), data_get($child, 'id'),
+    ])->pluck('state')->unique()->all())->toBe(['tombstoned'])
+        ->and(DB::table('spell_selection_slots')->whereIn('id', $slotIds)
+            ->pluck('state')->unique()->all())->toBe(['orphaned']);
+
+    mutateCharacter($this, $characterId, 1, $removed->json('inverse'))
+        ->assertOk()->assertJsonPath('revision', 2);
+    expect(app(CharacterState::class)->capture($characterId))->toBe($before);
+})->with([
+    'species' => ['species'],
+    'background' => ['background'],
+]);
+
+it('tombstones a source, preserves orphan selections, and restores identical rows through undo redo', function () {
+    $characterId = workspaceCharacterId();
+    $source = DB::table('character_source_instances')->where('character_id', $characterId)
+        ->where('display_name', 'Magic Initiate: Wizard')->sole();
+    $sourceId = (int) data_get($source, 'id');
+    $before = app(CharacterState::class)->capture($characterId);
+    $sourceBefore = (array) $source;
+    $slotsBefore = DB::table('spell_selection_slots')->where('source_instance_id', $sourceId)
+        ->orderBy('id')->get()->map(static fn (object $slot): array => (array) $slot)->all();
+    $operation = Str::uuid()->toString();
+
+    $removed = mutateCharacter($this, $characterId, 0, [
+        'type' => 'remove_source', 'source_instance_id' => $sourceId,
+    ], $operation)->assertOk()->assertJsonPath('revision', 1);
+    $sourceRemoved = (array) DB::table('character_source_instances')->find($sourceId);
+    $slotsRemoved = DB::table('spell_selection_slots')->where('source_instance_id', $sourceId)
+        ->orderBy('id')->get()->map(static fn (object $slot): array => (array) $slot)->all();
+    $removedState = app(CharacterState::class)->capture($characterId);
+
+    expect(data_get($sourceRemoved, 'state'))->toBe('tombstoned')
+        ->and($slotsRemoved)->toHaveCount(3)
+        ->and(array_column($slotsRemoved, 'id'))->toBe(array_column($slotsBefore, 'id'))
+        ->and(array_column($slotsRemoved, 'slot_key'))->toBe(array_column($slotsBefore, 'slot_key'))
+        ->and(array_column($slotsRemoved, 'current_spell_version_id'))
+        ->toBe(array_column($slotsBefore, 'current_spell_version_id'))
+        ->and(collect($slotsRemoved)->every(fn (array $slot): bool => data_get($slot, 'state') === 'orphaned'))
+        ->toBeTrue()
+        ->and(collect($slotsRemoved)->every(
+            fn (array $slot): bool => data_get($slot, 'selection_eligibility') === 'invalid'
+                && data_get($slot, 'selection_invalid_reason')
+                    === 'Selection preserved because its source is no longer active.',
+        ))->toBeTrue();
+    $audit = DB::table('change_log')->where('operation_uuid', $operation)->get();
+    expect($audit->count())->toBeGreaterThan(1)
+        ->and($audit->pluck('group_id')->unique())->toHaveCount(1)
+        ->and($audit->pluck('action_type')->unique()->all())->toBe(['remove_source']);
+
+    mutateCharacter($this, $characterId, 0, [
+        'type' => 'remove_source', 'source_instance_id' => $sourceId,
+    ], $operation)->assertOk()->assertJsonPath('idempotent_replay', true)->assertJsonPath('revision', 1);
+    expect(app(CharacterState::class)->capture($characterId))->toBe($removedState);
+
+    $restored = mutateCharacter($this, $characterId, 1, $removed->json('inverse'))
+        ->assertOk()->assertJsonPath('revision', 2);
+    expect(app(CharacterState::class)->capture($characterId))->toBe($before)
+        ->and((array) DB::table('character_source_instances')->find($sourceId))->toBe($sourceBefore)
+        ->and(DB::table('spell_selection_slots')->where('source_instance_id', $sourceId)
+            ->orderBy('id')->get()->map(static fn (object $slot): array => (array) $slot)->all())
+        ->toBe($slotsBefore);
+
+    mutateCharacter($this, $characterId, 2, $restored->json('inverse'))
+        ->assertOk()->assertJsonPath('revision', 3);
+    expect(app(CharacterState::class)->capture($characterId))->toBe($removedState);
 });
 
 it('round-trips warning acknowledgement with idempotent replay and grouped audit rows', function () {

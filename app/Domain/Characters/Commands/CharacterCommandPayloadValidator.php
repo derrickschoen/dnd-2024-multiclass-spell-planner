@@ -14,7 +14,7 @@ final class CharacterCommandPayloadValidator
      */
     public function validate(array $payload): array
     {
-        $type = $this->requiredString($payload, 'type', 80);
+        $type = $this->requiredString($payload, 'type', 22);
         if (array_key_exists('reason', $payload)) {
             $this->requiredString($payload, 'reason', 255);
         }
@@ -24,6 +24,8 @@ final class CharacterCommandPayloadValidator
             'set_slot' => $this->setSlot($payload),
             'update_character_rules' => $this->updateCharacterRules($payload),
             'update_source_config' => $this->updateSourceConfig($payload),
+            'add_source' => $this->addSource($payload),
+            'remove_source' => $this->removeSource($payload),
             'acknowledge_warning' => $this->acknowledgeWarning($payload),
             'update_class' => $this->updateClass($payload),
             'restore_snapshot' => $this->restoreSnapshot($payload),
@@ -48,7 +50,7 @@ final class CharacterCommandPayloadValidator
             'type', 'slot_id', 'mode', 'spell_version_id', 'note', 'state', 'integrity', 'reason',
         ]);
         $this->positiveInteger($payload, 'slot_id');
-        $mode = $this->requiredString($payload, 'mode', 40);
+        $mode = $this->requiredString($payload, 'mode', 13);
         if (! in_array($mode, ['select', 'clear', 'keep_override', 'restore'], true)) {
             throw new InvalidArgumentException('Unknown slot mutation mode.');
         }
@@ -91,6 +93,37 @@ final class CharacterCommandPayloadValidator
     }
 
     /** @param array<string, mixed> $payload */
+    private function addSource(array $payload): array
+    {
+        $this->rejectUnknown($payload, [
+            'type', 'source_type', 'source_definition_id', 'config', 'reason',
+        ]);
+        $sourceType = $this->requiredString($payload, 'source_type', 10);
+        if (! in_array($sourceType, ['feat', 'species', 'background'], true)) {
+            throw new InvalidArgumentException('Source type must be feat, species, or background.');
+        }
+        $this->positiveInteger($payload, 'source_definition_id');
+        if (! array_key_exists('config', $payload) || ! is_array(data_get($payload, 'config'))) {
+            throw new InvalidArgumentException('Source config must be an object.');
+        }
+        $config = data_get($payload, 'config');
+        if ($config !== [] && array_is_list($config)) {
+            throw new InvalidArgumentException('Source config must be an object.');
+        }
+
+        return $payload;
+    }
+
+    /** @param array<string, mixed> $payload */
+    private function removeSource(array $payload): array
+    {
+        $this->rejectUnknown($payload, ['type', 'source_instance_id', 'reason']);
+        $this->positiveInteger($payload, 'source_instance_id');
+
+        return $payload;
+    }
+
+    /** @param array<string, mixed> $payload */
     private function acknowledgeWarning(array $payload): array
     {
         $this->rejectUnknown($payload, [
@@ -98,7 +131,7 @@ final class CharacterCommandPayloadValidator
         ]);
         $this->nonEmptyString($payload, 'warning_fingerprint', 255);
         $mode = array_key_exists('mode', $payload)
-            ? $this->requiredString($payload, 'mode', 40)
+            ? $this->requiredString($payload, 'mode', 11)
             : 'acknowledge';
         if (! in_array($mode, ['acknowledge', 'delete'], true)) {
             throw new InvalidArgumentException('Unknown warning acknowledgement mode.');

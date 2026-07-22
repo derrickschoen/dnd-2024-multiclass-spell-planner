@@ -225,6 +225,38 @@ gone quiet and a different one found what it structurally could not:
       Example-based tests check the points you thought of. Properties check the
       space between them.
 
+
+## Backlog tier 7 — close the gap the tests kept reporting
+
+Honest read on yield: the testing instruments have saturated. Tier 6's mutation
+sweep of Characters, Catalog and Reports returned 100% MSI BEFORE any new tests
+(1,195 mutants, zero escapes), and property testing surfaced a generator bug
+rather than an engine one. The last two iterations found no production defects.
+
+Meanwhile the suite has been reporting the same deviation since tier 2: **there is
+no way to add or remove a source through the app.** The seven commands cover
+ability, slot, rules, source CONFIG, acknowledgement, class and snapshot. None
+adds a feat, species or background. S4 and S15 both had to drive fixtures instead
+of the UI because of it.
+
+That is not a test weakness. It is the tests correctly reporting a missing
+feature, repeatedly, for five iterations.
+
+- [x] **F1 add_source / remove_source commands.** Same contract as the others:
+      apply()/inverse(), idempotent operation_uuid, revision guard, one
+      transaction, grouped audit rows. Removing a source must TOMBSTONE it and
+      orphan its slots with selections preserved -- the behaviour S4 already
+      proves, reached through a real command instead of a fixture.
+- [x] **F2 UI to add and remove feats/species/background**, satisfying S11's
+      accessibility guarantees: keyboard reachable, visibly focused, labelled, no
+      colour-only signalling.
+- [x] **S16 add a feat through the browser** — pick Magic Initiate, choose its
+      list and ability, assert its three slots materialise via the DSL with
+      correct per-slot casting modes (cantrips get no free cast; only the level-1
+      spell does).
+- [x] **S17 remove a feat through the browser** — retires the S4 fixture-trigger
+      deviation. Assert orphaning and identical-row restoration through real UI.
+
 ## Iteration log
 
 ### Iteration 1 — E2E-1 batch 1 complete
@@ -1196,3 +1228,50 @@ both attempted with bounded waits. Each produced no content and ended with
 `Execution error`; silence was not treated as approval. Local legality,
 non-vacuity, stable-union completeness, restoration, formatting, and six
 sensitivity checks passed. No commit or push was made.
+
+### Iteration 13 — UNIT E2E-12 first-class add/remove source complete
+
+Added validated `add_source` and `remove_source` commands with the established
+transaction/revision/idempotency/audit contract and signed snapshot inverses.
+Adds delegate direct and nested materialization to the grant-rule DSL; removals
+tombstone the complete source tree and orphan its selected slots. The accessible
+workspace UI now adds and removes feats, species, and backgrounds with labelled,
+focus-visible controls and destructive confirmation.
+
+S4 now uses the real removal command and signed undo, retiring its fixture
+deviation. S16 pins Magic Initiate's two cantrips as no-free-cast/no-spell-slots
+and its level-1 choice as the sole free-cast/with-slots grant. S17 confirms
+removal in the browser, verifies preserved orphan selections, then deep-compares
+identical source and slot rows after undo. Each scenario failed under a deliberate
+production break and passed after restoration.
+
+Clean verification observed:
+
+```text
+Tests:    358 passed (12447 assertions)
+Duration: 28.14s
+
+> typecheck
+> vue-tsc --noEmit
+
+> build
+> vite build
+✓ 567 modules transformed.
+✓ built in 483ms
+
+> test:e2e
+> playwright test
+Running 17 tests using 1 worker
+17 passed (51.3s)
+```
+
+The seven golden values remain unchanged. The new/changed command mutation union
+is 277/277 killed (100%, with no skips or uncovered mutants). The historical
+Characters 786/786 baseline was proven invalid: its launcher resolved the wrong
+project under Infection's temporary directory and translated Infection's Pest
+filters to descriptions that matched no tests. After fixing both defects, the
+existing workspace builder alone produced 144 mutants and killed 38, disproving
+the old whole-directory claim. A broad run skipped 626/914 and was discarded, so
+no false whole-directory after score is reported. Full outputs, sensitivity
+failures, and deviations are in `docs/E2E-12-ADD-REMOVE-SOURCE-REPORT.md`. No
+commit or push was made.

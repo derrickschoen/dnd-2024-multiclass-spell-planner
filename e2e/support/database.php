@@ -2,10 +2,8 @@
 
 declare(strict_types=1);
 
-use App\Domain\Grants\GrantRuleSlotGenerator;
 use Illuminate\Contracts\Console\Kernel;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Str;
 
 require __DIR__.'/../../vendor/autoload.php';
 
@@ -90,12 +88,6 @@ $result = match ($action) {
             ->sole(['level.level']),
         'level',
     ),
-    'remove-magic-initiate-wizard-source' => reconcileMagicInitiateWizardSource($characterId, '[]'),
-    'restore-magic-initiate-wizard-source' => reconcileMagicInitiateWizardSource(
-        $characterId,
-        (string) $argument,
-    ),
-    'add-magic-initiate-source' => addMagicInitiateSource($characterId, (string) $argument),
     default => throw new InvalidArgumentException("Unknown database action: {$action}"),
 };
 
@@ -131,49 +123,6 @@ function persistedCharacterState(int $characterId): array
 }
 
 /** @return array<string, mixed> */
-function addMagicInitiateSource(int $characterId, string $chosenList): array
-{
-    try {
-        return DB::transaction(function () use ($characterId, $chosenList): array {
-            $definition = DB::table('feat_definitions')
-                ->where('content_key', '2024:feat:magic-initiate')
-                ->sole();
-            $ability = DB::table('class_definitions')->where('name', $chosenList)->value('spellcasting_ability');
-            if (! is_string($ability) || $ability === '') {
-                throw new InvalidArgumentException("Unknown Magic Initiate list '{$chosenList}'.");
-            }
-            $sourceId = DB::table('character_source_instances')->insertGetId([
-                'character_id' => $characterId,
-                'instance_uuid' => Str::uuid()->toString(),
-                'source_type' => 'feat',
-                'source_definition_id' => data_get($definition, 'id'),
-                'display_name' => 'Magic Initiate: '.$chosenList,
-                'config' => json_encode([
-                    'chosen_list' => $chosenList,
-                    'spellcasting_ability' => strtolower($ability),
-                ], JSON_THROW_ON_ERROR),
-                'acquired_at_character_level' => 1,
-                'state' => 'active',
-                'notes' => 'e2e:direct-production-path',
-                'created_at' => now(),
-                'updated_at' => now(),
-            ]);
-            app(GrantRuleSlotGenerator::class)->generateForSource($sourceId);
-
-            return [
-                'accepted' => true,
-                'error' => null,
-                'source' => (array) DB::table('character_source_instances')->find($sourceId),
-                'slots' => DB::table('spell_selection_slots')->where('source_instance_id', $sourceId)
-                    ->orderBy('id')->get()->map(static fn (object $row): array => (array) $row)->all(),
-            ];
-        });
-    } catch (Throwable $exception) {
-        return ['accepted' => false, 'error' => $exception->getMessage(), 'source' => null, 'slots' => []];
-    }
-}
-
-/** @return array<string, mixed> */
 function mutationFootprint(int $characterId): array
 {
     return [
@@ -197,34 +146,5 @@ function mutationFootprint(int $characterId): array
             ->get()
             ->map(static fn (object $row): array => (array) $row)
             ->all(),
-    ];
-}
-
-/** @return array{previous_grant_rules: string, source: array<string, mixed>} */
-function reconcileMagicInitiateWizardSource(int $characterId, string $grantRules): array
-{
-    json_decode($grantRules, true, 512, JSON_THROW_ON_ERROR);
-    $child = DB::table('character_source_instances')
-        ->where('character_id', $characterId)
-        ->where('display_name', 'Magic Initiate: Wizard')
-        ->sole();
-    $parent = DB::table('character_source_instances')->find(data_get($child, 'parent_source_instance_id'));
-    if ($parent === null || data_get($parent, 'source_type') !== 'species') {
-        throw new RuntimeException('Magic Initiate: Wizard did not have the expected species parent.');
-    }
-    $definition = DB::table('species_definitions')->find(data_get($parent, 'source_definition_id'));
-    if ($definition === null) {
-        throw new RuntimeException('The Magic Initiate: Wizard parent definition was missing.');
-    }
-    $previous = (string) data_get($definition, 'grant_rules');
-    DB::table('species_definitions')->where('id', data_get($definition, 'id'))->update([
-        'grant_rules' => $grantRules,
-        'updated_at' => now(),
-    ]);
-    app(GrantRuleSlotGenerator::class)->generateForSource((int) data_get($parent, 'id'));
-
-    return [
-        'previous_grant_rules' => $previous,
-        'source' => (array) DB::table('character_source_instances')->find(data_get($child, 'id')),
     ];
 }

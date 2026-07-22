@@ -79,6 +79,13 @@ function apiAbuseFixtures(int $characterId): array
             ->where('character_id', $characterId)
             ->where('display_name', 'Magic Initiate: Wizard')
             ->value('id'),
+        'class_source' => (int) DB::table('character_source_instances')
+            ->where('character_id', $characterId)
+            ->where('source_type', 'class')
+            ->value('id'),
+        'source_definition' => (int) DB::table('feat_definitions')
+            ->where('content_key', '2024:feat:magic-initiate')
+            ->value('id'),
         'class' => (int) DB::table('class_definitions')->where('name', 'Wizard')->value('id'),
         'spell' => (int) DB::table('spell_versions')->where('content_key', '2024:fire-bolt')->value('id'),
     ];
@@ -154,6 +161,37 @@ function apiAbusePayloads(string $type, int $characterId, array $fixtures): arra
             ['type' => $type, 'source_instance_id' => data_get($fixtures, 'source'), 'chosen_list' => 'Bard'],
             ['type' => $type, 'source_instance_id' => data_get($fixtures, 'source'), 'chosen_list' => str_repeat('x', 81)],
         ],
+        'add_source' => [
+            ['type' => $type, 'source_definition_id' => data_get($fixtures, 'source_definition'), 'config' => []],
+            ['type' => $type, 'source_type' => null, 'source_definition_id' => data_get($fixtures, 'source_definition'), 'config' => []],
+            ['type' => $type, 'source_type' => [], 'source_definition_id' => data_get($fixtures, 'source_definition'), 'config' => []],
+            ['type' => $type, 'source_type' => 'class', 'source_definition_id' => data_get($fixtures, 'source_definition'), 'config' => []],
+            ['type' => $type, 'source_type' => str_repeat('x', 41), 'source_definition_id' => data_get($fixtures, 'source_definition'), 'config' => []],
+            ['type' => $type, 'source_type' => 'feat', 'config' => []],
+            ['type' => $type, 'source_type' => 'feat', 'source_definition_id' => '1', 'config' => []],
+            ['type' => $type, 'source_type' => 'feat', 'source_definition_id' => null, 'config' => []],
+            ['type' => $type, 'source_type' => 'feat', 'source_definition_id' => 0, 'config' => []],
+            ['type' => $type, 'source_type' => 'feat', 'source_definition_id' => PHP_INT_MAX, 'config' => []],
+            ['type' => $type, 'source_type' => 'species', 'source_definition_id' => data_get($fixtures, 'source_definition'), 'config' => []],
+            ['type' => $type, 'source_type' => 'feat', 'source_definition_id' => data_get($fixtures, 'source_definition')],
+            ['type' => $type, 'source_type' => 'feat', 'source_definition_id' => data_get($fixtures, 'source_definition'), 'config' => null],
+            ['type' => $type, 'source_type' => 'feat', 'source_definition_id' => data_get($fixtures, 'source_definition'), 'config' => 'config'],
+            ['type' => $type, 'source_type' => 'feat', 'source_definition_id' => data_get($fixtures, 'source_definition'), 'config' => [[]]],
+            ['type' => $type, 'source_type' => 'feat', 'source_definition_id' => data_get($fixtures, 'source_definition'), 'config' => []],
+            ['type' => $type, 'source_type' => 'feat', 'source_definition_id' => data_get($fixtures, 'source_definition'), 'config' => ['chosen_list' => 'Bard', 'spellcasting_ability' => 'charisma']],
+            ['type' => $type, 'source_type' => 'feat', 'source_definition_id' => data_get($fixtures, 'source_definition'), 'config' => ['chosen_list' => 'Cleric', 'spellcasting_ability' => 'constitution']],
+            ['type' => $type, 'source_type' => 'feat', 'source_definition_id' => data_get($fixtures, 'source_definition'), 'config' => ['chosen_list' => 'Wizard', 'spellcasting_ability' => 'charisma']],
+            ['type' => $type, 'source_type' => 'feat', 'source_definition_id' => data_get($fixtures, 'source_definition'), 'config' => ['chosen_list' => 'Cleric', 'spellcasting_ability' => 'charisma'], 'source_limit' => PHP_INT_MAX],
+        ],
+        'remove_source' => [
+            ['type' => $type],
+            ['type' => $type, 'source_instance_id' => '1'],
+            ['type' => $type, 'source_instance_id' => null],
+            ['type' => $type, 'source_instance_id' => 0],
+            ['type' => $type, 'source_instance_id' => PHP_INT_MAX],
+            ['type' => $type, 'source_instance_id' => data_get($fixtures, 'class_source')],
+            ['type' => $type, 'source_instance_id' => data_get($fixtures, 'source'), 'source_limit' => PHP_INT_MAX],
+        ],
         'acknowledge_warning' => [
             ['type' => $type, 'note' => 'Intentional.'],
             ['type' => $type, 'warning_fingerprint' => null, 'note' => 'Intentional.'],
@@ -214,6 +252,8 @@ dataset('A1 command types', [
     'set slot' => ['set_slot'],
     'update character rules' => ['update_character_rules'],
     'update source config' => ['update_source_config'],
+    'add source' => ['add_source'],
+    'remove source' => ['remove_source'],
     'acknowledge warning' => ['acknowledge_warning'],
     'update class' => ['update_class'],
     'restore snapshot' => ['restore_snapshot'],
@@ -328,6 +368,9 @@ it('A2 rejects slots, sources, save points, and acknowledgements owned by anothe
             'type' => 'update_source_config',
             'source_instance_id' => $otherSourceId,
             'chosen_list' => 'Cleric',
+        ]),
+        fn (): TestResponse => apiAbuseMutation($this, $characterId, [
+            'type' => 'remove_source', 'source_instance_id' => $otherSourceId,
         ]),
         fn (): TestResponse => apiAbuseMutation($this, $characterId, $otherDelete),
     ];

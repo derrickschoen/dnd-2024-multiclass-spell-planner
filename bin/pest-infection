@@ -4,14 +4,26 @@
 declare(strict_types=1);
 
 $projectRoot = dirname(__DIR__);
+if (! is_dir($projectRoot.'/tests')) {
+    $vendorDirectory = realpath($projectRoot.'/vendor');
+    if ($vendorDirectory !== false && is_dir(dirname($vendorDirectory).'/tests')) {
+        $projectRoot = dirname($vendorDirectory);
+    }
+}
 $versionRequested = in_array('--version', $argv, true);
 $runner = $versionRequested
     ? $projectRoot.'/vendor/bin/phpunit'
     : $projectRoot.'/vendor/bin/pest';
 $command = escapeshellarg(PHP_BINARY).' '.escapeshellarg($runner);
 $junitPath = null;
+$arguments = array_slice($argv, 1);
+for ($index = 0; $index < count($arguments) - 1; $index++) {
+    if ($arguments[$index] === '--filter') {
+        $arguments[$index + 1] = pestFilterForInfection($arguments[$index + 1]);
+    }
+}
 
-foreach (array_slice($argv, 1) as $argument) {
+foreach ($arguments as $argument) {
     $command .= ' '.escapeshellarg($argument);
 
     if (str_starts_with($argument, '--log-junit=')) {
@@ -42,3 +54,23 @@ if (! $versionRequested && $exitCode === 0) {
 }
 
 exit($exitCode);
+
+function pestFilterForInfection(string $filter): string
+{
+    preg_match_all('/__pest_evaluable_([A-Za-z0-9_]+)/', $filter, $matches);
+    $methods = array_values(array_unique($matches[1] ?? []));
+    if ($methods === []) {
+        return $filter;
+    }
+
+    $descriptions = array_map(static function (string $method): string {
+        $stablePrefix = explode('__', $method, 2)[0];
+
+        return str_replace('_', ' ', $stablePrefix);
+    }, $methods);
+
+    return '/'.implode('|', array_map(
+        static fn (string $description): string => preg_quote($description, '/'),
+        $descriptions,
+    )).'/';
+}

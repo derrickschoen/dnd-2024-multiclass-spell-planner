@@ -1,15 +1,12 @@
 import { expect, test, type Locator, type Page, type Response } from '@playwright/test';
 import {
-    addMagicInitiateSource,
     auditLog,
     character,
     characterOperations,
     classLevel,
     mutationFootprint,
     persistedCharacterState,
-    removeMagicInitiateWizardSource,
     resetDatabase,
-    restoreMagicInitiateWizardSource,
     savePointSnapshot,
     slotFixtures,
     slots,
@@ -69,6 +66,10 @@ interface MutationBody {
             invalid_selections: Array<{ id: number; spell_name: string; eligibility: string }>;
         };
     };
+}
+
+interface CommandMutationBody extends MutationBody {
+    inverse: Record<string, unknown>;
 }
 
 test.beforeEach(async ({ page }) => {
@@ -187,8 +188,11 @@ test('S4: removing and restoring Magic Initiate: Wizard preserves its orphaned s
     expect(before).toHaveLength(3);
     expect(before.every((slot) => slot.state === 'active' && slot.current_spell_version_id !== null)).toBe(true);
 
-    const removal = removeMagicInitiateWizardSource();
-    expect(removal.source.state).toBe('tombstoned');
+    const removal = await postCharacterCommand(page, {
+        type: 'remove_source', source_instance_id: sourceId,
+    }, 0);
+    expect(removal.revision).toBe(1);
+    expect(source('Magic Initiate: Wizard').state).toBe('tombstoned');
     const orphaned = slots().filter((slot) => slot.source_instance_id === sourceId);
 
     expect(orphaned).toHaveLength(3);
@@ -208,8 +212,9 @@ test('S4: removing and restoring Magic Initiate: Wizard preserves its orphaned s
         await expect(slotRow(page, slot.id).locator('td').nth(10)).toHaveText(/Orphaned/);
     }
 
-    const restoration = restoreMagicInitiateWizardSource(removal.previous_grant_rules);
-    expect(restoration.source.state).toBe('active');
+    const restoration = await postCharacterCommand(page, removal.inverse, 1);
+    expect(restoration.revision).toBe(2);
+    expect(source('Magic Initiate: Wizard').state).toBe('active');
     const restored = slots().filter((slot) => slot.source_instance_id === sourceId);
 
     expect(restored).toHaveLength(3);
@@ -755,40 +760,131 @@ test('S14: concurrent edits to different slots both persist with distinct operat
 test('S15: repeated Magic Initiate refuses the same list and accepts a different list', async ({ page }) => {
     const sourceConfiguration = reportSection(page, 'Source configuration');
     await expect(sourceConfiguration).toBeVisible();
-    expect(await sourceConfiguration.getByRole('button', { name: /add.*magic initiate/i }).count()).toBe(0);
     const beforeSlots = slots();
     const beforeSources = slotFixtures().filter((slot) => slot.source_name === 'Magic Initiate: Wizard');
     expect(beforeSources).toHaveLength(3);
 
-    const refused = addMagicInitiateSource('Wizard');
-    expect(refused).toEqual({
-        accepted: false,
-        error: "Magic Initiate already uses chosen_list 'Wizard' for this character.",
-        source: null,
-        slots: [],
-    });
+    await sourceConfiguration.getByLabel('Source type').selectOption('feat');
+    await sourceConfiguration.getByLabel('Source to add').selectOption({ label: 'Magic Initiate' });
+    await sourceConfiguration.getByLabel('Magic Initiate spell list').selectOption('Wizard');
+    await sourceConfiguration.getByLabel('Magic Initiate casting ability').selectOption('charisma');
+    const refusedResponse = page.waitForResponse(isMutationResponse);
+    await sourceConfiguration.getByRole('button', { name: 'Add Magic Initiate' }).click();
+    expect((await refusedResponse).status()).toBe(422);
+    await expect(page.getByRole('alert')).toContainText(
+        "Magic Initiate already uses chosen_list 'Wizard' for this character.",
+    );
     expect(slots()).toEqual(beforeSlots);
     expect(slotFixtures().filter((slot) => slot.source_name === 'Magic Initiate: Wizard')).toHaveLength(3);
 
-    const accepted = addMagicInitiateSource('Cleric');
-    expect(accepted.accepted).toBe(true);
-    expect(accepted.error).toBeNull();
-    expect(accepted.source).toEqual(expect.objectContaining({
+    await sourceConfiguration.getByLabel('Magic Initiate spell list').selectOption('Cleric');
+    const acceptedResponse = page.waitForResponse(isMutationResponse);
+    await sourceConfiguration.getByRole('button', { name: 'Add Magic Initiate' }).click();
+    expect((await acceptedResponse).status()).toBe(200);
+    const acceptedSource = source('Magic Initiate: Cleric');
+    const acceptedSlots = slots().filter((slot) => slot.source_instance_id === acceptedSource.id);
+    expect(acceptedSource).toEqual(expect.objectContaining({
         character_id: 1,
         source_type: 'feat',
         display_name: 'Magic Initiate: Cleric',
         state: 'active',
     }));
-    expect(accepted.slots).toHaveLength(3);
-    expect(accepted.slots.map((slot) => slot.allowed_spell_lists)).toEqual([
+    expect(acceptedSlots).toHaveLength(3);
+    expect(acceptedSlots.map((slot) => slot.allowed_spell_lists)).toEqual([
         '["Cleric"]', '["Cleric"]', '["Cleric"]',
     ]);
-
-    await page.reload({ waitUntil: 'networkidle' });
-    await expect(page.getByRole('heading', { name: 'A6 Sixfold Spellcaster', level: 1 })).toBeVisible();
-    await expect(reportSection(page, 'Source configuration').getByText('Magic Initiate: Cleric', { exact: true })).toBeVisible();
-    for (const slot of accepted.slots) {
+    await expect(page.getByRole('alert')).toHaveCount(0);
+    await expect(reportSection(page, 'Source configuration')
+        .getByLabel(`Chosen spell list for source ${acceptedSource.id}`)).toHaveValue('Cleric');
+    for (const slot of acceptedSlots) {
         await expect(page.getByRole('combobox', { name: `Spell selection for slot ${slot.id}` })).toBeVisible();
+    }
+});
+
+test('S16: adding Magic Initiate materialises three DSL slots with per-slot casting modes', async ({ page }) => {
+    const sourceConfiguration = reportSection(page, 'Source configuration');
+    await sourceConfiguration.getByLabel('Source type').selectOption('feat');
+    await sourceConfiguration.getByLabel('Source to add').selectOption({ label: 'Magic Initiate' });
+    await sourceConfiguration.getByLabel('Magic Initiate spell list').selectOption('Cleric');
+    await sourceConfiguration.getByLabel('Magic Initiate casting ability').selectOption('charisma');
+
+    const mutationResponse = page.waitForResponse(isMutationResponse);
+    await sourceConfiguration.getByRole('button', { name: 'Add Magic Initiate' }).click();
+    const response = await mutationResponse;
+    expect(response.status()).toBe(200);
+    await expect(page.getByText(/revision 1$/)).toBeVisible();
+
+    const addedSource = source('Magic Initiate: Cleric');
+    await expect(sourceConfiguration.getByLabel(`Chosen spell list for source ${addedSource.id}`)).toHaveValue('Cleric');
+    expect(JSON.parse(String(addedSource.config))).toEqual({
+        chosen_list: 'Cleric',
+        spellcasting_ability: 'charisma',
+    });
+    const addedSlots = slots().filter((slot) => slot.source_instance_id === addedSource.id);
+    expect(addedSlots).toHaveLength(3);
+    const cantrips = addedSlots.filter((slot) => slot.rule_key === 'magic-initiate-cantrips');
+    const levelOne = requireSlot(
+        addedSlots.find((slot) => slot.rule_key === 'magic-initiate-level-one'),
+        'the newly added Magic Initiate level-one slot',
+    );
+    expect(cantrips).toHaveLength(2);
+    expect(cantrips.map((slot) => ({
+        ordinal: slot.ordinal,
+        with_slots: slot.with_slots,
+        free_cast: slot.free_cast,
+        level_min: slot.spell_level_min,
+        level_max: slot.spell_level_max,
+    }))).toEqual([
+        { ordinal: 1, with_slots: 0, free_cast: null, level_min: 0, level_max: 0 },
+        { ordinal: 2, with_slots: 0, free_cast: null, level_min: 0, level_max: 0 },
+    ]);
+    expect({
+        with_slots: levelOne.with_slots,
+        free_cast: JSON.parse(String(levelOne.free_cast)),
+        level_min: levelOne.spell_level_min,
+        level_max: levelOne.spell_level_max,
+    }).toEqual({
+        with_slots: 1,
+        free_cast: { uses: 1, recovery: 'long_rest', pool_scope: 'per_spell' },
+        level_min: 1,
+        level_max: 1,
+    });
+});
+
+test('S17: removing a feat in the browser orphans selections and undo restores identical rows', async ({ page }) => {
+    const sourceBefore = source('Magic Initiate: Wizard');
+    const sourceId = sourceBefore.id;
+    const slotsBefore = slots().filter((slot) => slot.source_instance_id === sourceId);
+    expect(slotsBefore).toHaveLength(3);
+    expect(slotsBefore.every((slot) => slot.current_spell_version_id !== null)).toBe(true);
+
+    let confirmation = '';
+    page.once('dialog', async (dialog) => {
+        confirmation = dialog.message();
+        await dialog.accept();
+    });
+    const removeResponse = page.waitForResponse(isMutationResponse);
+    await reportSection(page, 'Source configuration')
+        .getByRole('button', { name: 'Remove Magic Initiate: Wizard', exact: true }).click();
+    expect((await removeResponse).status()).toBe(200);
+    expect(confirmation).toContain('Its spell choices will be preserved as orphaned slots');
+    expect(source('Magic Initiate: Wizard').state).toBe('tombstoned');
+    const orphaned = slots().filter((slot) => slot.source_instance_id === sourceId);
+    expect(orphaned.map(preservedSlotIdentity)).toEqual(slotsBefore.map(preservedSlotIdentity));
+    expect(orphaned.every((slot) => slot.state === 'orphaned')).toBe(true);
+    expect(orphaned.every((slot) => slot.selection_invalid_reason
+        === 'Selection preserved because its source is no longer active.')).toBe(true);
+    for (const slot of orphaned) {
+        await expect(slotRow(page, slot.id).locator('td').nth(10)).toContainText('Orphaned');
+    }
+
+    const undoResponse = page.waitForResponse(isMutationResponse);
+    await page.getByRole('button', { name: /Undo/ }).click();
+    expect((await undoResponse).status()).toBe(200);
+    expect(source('Magic Initiate: Wizard')).toEqual(sourceBefore);
+    expect(slots().filter((slot) => slot.source_instance_id === sourceId)).toEqual(slotsBefore);
+    for (const slot of slotsBefore) {
+        await expect(slotRow(page, slot.id).locator('td').nth(10)).toContainText('Valid');
     }
 });
 
@@ -898,6 +994,34 @@ function duplicateWarning(page: Page, spellName: string): Locator {
 
 function isMutationResponse(response: { request(): { method(): string }; url(): string }): boolean {
     return response.request().method() === 'POST' && response.url().endsWith('/characters/1/mutations');
+}
+
+async function postCharacterCommand(
+    page: Page,
+    command: Record<string, unknown>,
+    expectedRevision: number,
+): Promise<CommandMutationBody> {
+    const result = await page.evaluate(async ({ submittedCommand, revision }) => {
+        const token = document.querySelector<HTMLMetaElement>('meta[name="csrf-token"]')?.content ?? '';
+        const response = await fetch('/characters/1/mutations', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                Accept: 'application/json',
+                'X-CSRF-TOKEN': token,
+            },
+            body: JSON.stringify({
+                operation_uuid: crypto.randomUUID(),
+                expected_revision: revision,
+                command: submittedCommand,
+            }),
+        });
+
+        return { status: response.status, body: await response.json() as CommandMutationBody };
+    }, { submittedCommand: command, revision: expectedRevision });
+    expect(result.status).toBe(200);
+
+    return result.body;
 }
 
 async function setAbility(page: Page, abbreviation: 'INT' | 'WIS', score: number): Promise<void> {

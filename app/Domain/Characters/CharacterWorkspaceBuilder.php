@@ -126,6 +126,41 @@ final readonly class CharacterWorkspaceBuilder
             })
             ->all();
 
+        $sourceCatalog = collect(['feat', 'species', 'background'])->mapWithKeys(
+            function (string $sourceType): array {
+                $table = $sourceType.'_definitions';
+
+                return [$sourceType => DB::table($table)->orderBy('name')->get([
+                    'id', 'content_key', 'name', 'repeatable', 'grant_rules',
+                ])->map(function (object $definition): array {
+                    return [
+                        'id' => (int) data_get($definition, 'id'),
+                        'content_key' => (string) data_get($definition, 'content_key'),
+                        'name' => (string) data_get($definition, 'name'),
+                        'repeatable' => (bool) data_get($definition, 'repeatable'),
+                        'configuration_kind' => $this->sourceConfigurationKind($definition),
+                    ];
+                })->all()];
+            },
+        )->all();
+
+        $removableSources = DB::table('character_source_instances')
+            ->where('character_id', $characterId)
+            ->whereIn('source_type', ['feat', 'species', 'background'])
+            ->where('state', 'active')
+            ->orderBy('source_type')
+            ->orderBy('display_name')
+            ->orderBy('id')
+            ->get(['id', 'parent_source_instance_id', 'source_type', 'source_definition_id', 'display_name'])
+            ->map(static fn (object $source): array => [
+                'id' => (int) data_get($source, 'id'),
+                'parent_source_instance_id' => data_get($source, 'parent_source_instance_id') === null
+                    ? null : (int) data_get($source, 'parent_source_instance_id'),
+                'source_type' => (string) data_get($source, 'source_type'),
+                'source_definition_id' => (int) data_get($source, 'source_definition_id'),
+                'display_name' => (string) data_get($source, 'display_name'),
+            ])->all();
+
         return [
             'revision' => (int) DB::table('characters')->where('id', $characterId)->value('revision'),
             'report' => $report,
@@ -136,6 +171,8 @@ final readonly class CharacterWorkspaceBuilder
                 ])->all(),
             'allow_legacy' => (bool) DB::table('characters')->where('id', $characterId)->value('allow_legacy'),
             'configurable_sources' => $configurableSources,
+            'source_catalog' => $sourceCatalog,
+            'removable_sources' => $removableSources,
             'spell_lists' => DB::table('class_definitions')->whereIn('name', ['Cleric', 'Druid', 'Wizard'])
                 ->orderBy('name')->pluck('name')->all(),
             'slots' => $slots,
@@ -166,6 +203,23 @@ final readonly class CharacterWorkspaceBuilder
         $ability = data_get($decoded, 'spellcasting_ability');
 
         return is_string($ability) && $ability !== '' ? strtolower($ability) : null;
+    }
+
+    private function sourceConfigurationKind(object $definition): string
+    {
+        if (data_get($definition, 'content_key') === '2024:feat:magic-initiate') {
+            return 'magic_initiate';
+        }
+        $rules = json_decode((string) data_get($definition, 'grant_rules', '[]'), true, 512, JSON_THROW_ON_ERROR);
+        foreach (is_array($rules) ? $rules : [] as $rule) {
+            if (is_array($rule)
+                && data_get($rule, 'kind') === 'grant_source'
+                && data_get($rule, 'source_type') === 'feat') {
+                return 'origin_feat_magic_initiate';
+            }
+        }
+
+        return 'none';
     }
 
     private function abilityModifier(int $score): int

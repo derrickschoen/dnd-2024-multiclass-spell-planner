@@ -64,6 +64,21 @@ export interface CharacterClass {
 }
 
 export interface SavePoint { id: number; label: string; created_at: string }
+export type SourceType = 'feat' | 'species' | 'background';
+export interface SourceDefinition {
+    id: number;
+    content_key: string;
+    name: string;
+    repeatable: boolean;
+    configuration_kind: 'magic_initiate' | 'origin_feat_magic_initiate' | 'none';
+}
+export interface RemovableSource {
+    id: number;
+    parent_source_instance_id: number | null;
+    source_type: SourceType;
+    source_definition_id: number;
+    display_name: string;
+}
 
 export interface BuildReport {
     character: {
@@ -110,6 +125,8 @@ export interface Workspace {
         chosen_list: string;
         spellcasting_ability: string;
     }>;
+    source_catalog: Record<SourceType, SourceDefinition[]>;
+    removable_sources: RemovableSource[];
     spell_lists: string[];
     slots: WorkspaceSlot[];
     save_points: SavePoint[];

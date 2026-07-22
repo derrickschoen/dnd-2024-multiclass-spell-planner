@@ -1,11 +1,11 @@
 <script setup lang="ts">
 import { Head } from '@inertiajs/vue3';
-import { computed, nextTick, onBeforeUnmount, onMounted, ref } from 'vue';
+import { computed, nextTick, onBeforeUnmount, onMounted, ref, watch } from 'vue';
 import AppShell from '@/components/AppShell.vue';
 import BuildReportPanel from '@/components/BuildReportPanel.vue';
 import SpellCombobox from '@/components/SpellCombobox.vue';
 import { useCharacterStore } from '@/stores/character';
-import type { CharacterClass, CharacterCommand, EligibleSpell, Workspace, WorkspaceSlot } from '@/types';
+import type { CharacterClass, CharacterCommand, EligibleSpell, SourceType, Workspace, WorkspaceSlot } from '@/types';
 
 const props = defineProps<{ workspace: Workspace }>();
 const store = useCharacterStore();
@@ -23,12 +23,22 @@ const savePointLabel = ref('');
 const savePointSaving = ref(false);
 const overrideNotes = ref<Record<number, string>>({});
 const comboboxes = ref<Record<number, InstanceType<typeof SpellCombobox> | null>>({});
+const newSourceType = ref<SourceType>('feat');
+const newSourceDefinitionId = ref<number | null>(null);
+const newSourceList = ref('Cleric');
+const newSourceAbility = ref('intelligence');
 
 const current = computed(() => store.workspace!);
 const report = computed(() => current.value.report);
 const availableToAdd = computed(() => current.value.available_classes.filter(
     (option) => !current.value.classes.some((entry) => entry.class_definition_id === option.id),
 ));
+const sourceDefinitions = computed(() => current.value.source_catalog[newSourceType.value]);
+const selectedSourceDefinition = computed(() => sourceDefinitions.value.find(
+    (definition) => definition.id === newSourceDefinitionId.value,
+) ?? null);
+const sourceNeedsMagicInitiateConfig = computed(() => selectedSourceDefinition.value
+    && selectedSourceDefinition.value.configuration_kind !== 'none');
 const sources = computed(() => [...new Set(current.value.slots.map((slot) => slot.source))].sort());
 const castingSources = computed(() => {
     const bySource = new Map<string, { source: string; ability: string; attack: number | null; dc: number | null }>();
@@ -121,6 +131,37 @@ function updateSourceList(sourceId: number, event: Event): void {
         source_instance_id: sourceId,
         chosen_list: (event.target as HTMLSelectElement).value,
     });
+}
+
+watch(newSourceType, () => { newSourceDefinitionId.value = null; });
+
+async function addSource(): Promise<void> {
+    const definition = selectedSourceDefinition.value;
+    if (!definition) return;
+    const magicInitiateConfig = {
+        chosen_list: newSourceList.value,
+        spellcasting_ability: newSourceAbility.value,
+    };
+    const config = definition.configuration_kind === 'magic_initiate'
+        ? magicInitiateConfig
+        : definition.configuration_kind === 'origin_feat_magic_initiate'
+            ? {
+                origin_feat_key: '2024:feat:magic-initiate',
+                origin_feat_config: magicInitiateConfig,
+            }
+            : {};
+    await store.execute({
+        type: 'add_source',
+        source_type: newSourceType.value,
+        source_definition_id: definition.id,
+        config,
+    });
+    if (!store.error) newSourceDefinitionId.value = null;
+}
+
+function removeSource(sourceId: number, displayName: string): void {
+    if (!window.confirm(`Remove ${displayName}? Its spell choices will be preserved as orphaned slots until you undo or replace them.`)) return;
+    void store.execute({ type: 'remove_source', source_instance_id: sourceId });
 }
 
 function selectSpell(slot: WorkspaceSlot, spell: EligibleSpell): void {
@@ -232,11 +273,29 @@ onBeforeUnmount(() => window.removeEventListener('keydown', keyboardShortcuts));
 
                 <section class="panel">
                     <h2 class="section-title">Source configuration</h2>
+                    <form class="mt-3 grid items-end gap-3 rounded-md border border-stone-200 p-3 sm:grid-cols-2 xl:grid-cols-5 dark:border-stone-800" @submit.prevent="addSource">
+                        <label class="text-xs">Source type<select v-model="newSourceType" class="field mt-1 w-full" :disabled="store.saving"><option value="feat">Feat</option><option value="species">Species</option><option value="background">Background</option></select></label>
+                        <label class="text-xs">Source to add<select v-model="newSourceDefinitionId" class="field mt-1 w-full" :disabled="store.saving"><option :value="null">Choose a source…</option><option v-for="definition in sourceDefinitions" :key="definition.id" :value="definition.id">{{ definition.name }}</option></select></label>
+                        <label v-if="sourceNeedsMagicInitiateConfig" class="text-xs">Magic Initiate spell list<select v-model="newSourceList" class="field mt-1 w-full" :disabled="store.saving"><option v-for="list in current.spell_lists" :key="list" :value="list">{{ list }}</option></select></label>
+                        <label v-if="sourceNeedsMagicInitiateConfig" class="text-xs">Magic Initiate casting ability<select v-model="newSourceAbility" class="field mt-1 w-full" :disabled="store.saving"><option value="intelligence">Intelligence</option><option value="wisdom">Wisdom</option><option value="charisma">Charisma</option></select></label>
+                        <button type="submit" class="button-primary" :disabled="!selectedSourceDefinition || store.saving">Add {{ selectedSourceDefinition?.name ?? 'source' }}</button>
+                    </form>
+                    <p class="mt-2 text-xs text-stone-500">Adding a species or background also materialises any nested granted feat and spell choices from its catalog rules.</p>
                     <div class="mt-3 space-y-2">
                         <label v-for="source in current.configurable_sources" :key="source.id" class="grid items-center gap-2 rounded-md border border-stone-200 p-3 text-sm sm:grid-cols-[1fr_12rem] dark:border-stone-800">
                             <span><strong>{{ source.display_name }}</strong><span class="mt-1 block text-xs text-stone-500">Chosen list is configuration; changing it preserves this source's slot identities.</span></span>
                             <span class="text-xs">Chosen spell list<select class="field mt-1 w-full" :aria-label="`Chosen spell list for source ${source.id}`" :value="source.chosen_list" :disabled="store.saving" @change="updateSourceList(source.id, $event)"><option v-for="list in current.spell_lists" :key="list" :value="list">{{ list }}</option></select></span>
                         </label>
+                    </div>
+                    <div class="mt-4 border-t border-stone-200 pt-3 dark:border-stone-800">
+                        <h3 class="text-xs font-semibold uppercase tracking-wide text-stone-500">Active feats, species, and backgrounds</h3>
+                        <ul class="mt-2 grid gap-2 sm:grid-cols-2">
+                            <li v-for="source in current.removable_sources" :key="source.id" class="flex items-center justify-between gap-3 rounded-md border border-stone-200 p-3 text-sm dark:border-stone-800">
+                                <span><strong>{{ source.display_name }}</strong><span class="block text-xs text-stone-500">{{ title(source.source_type) }}<template v-if="source.parent_source_instance_id"> · granted by another source</template></span></span>
+                                <button type="button" class="button-danger" :aria-label="`Remove ${source.display_name}`" :disabled="store.saving" @click="removeSource(source.id, source.display_name)">Remove</button>
+                            </li>
+                        </ul>
+                        <p v-if="!current.removable_sources.length" class="mt-2 text-sm text-stone-500">No active feats, species, or backgrounds.</p>
                     </div>
                 </section>
 
