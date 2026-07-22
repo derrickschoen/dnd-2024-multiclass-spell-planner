@@ -151,7 +151,7 @@ it('seeds the requested six-class character and generates both Magic Initiates t
         ->all();
     expect($selectionsByClass)->toBe([
         'Bard' => [
-            'bard-cantrips' => ['Thunderclap', 'Vicious Mockery'],
+            'bard-cantrips' => ['Starry Wisp', 'Vicious Mockery'],
             'bard-prepared' => ['Bane', 'Dissonant Whispers', 'Sleep', 'Thunderwave'],
         ],
         'Cleric' => [
@@ -160,18 +160,18 @@ it('seeds the requested six-class character and generates both Magic Initiates t
             'cleric-prepared' => ['Create or Destroy Water', 'Cure Wounds', 'Healing Word', 'Sanctuary'],
         ],
         'Druid' => [
-            'druid-cantrips' => ['Shape Water', 'Shillelagh'],
-            'druid-prepared' => ['Absorb Elements', 'Goodberry', 'Jump', 'Speak with Animals'],
+            'druid-cantrips' => ['Poison Spray', 'Shillelagh'],
+            'druid-prepared' => ['Faerie Fire', 'Goodberry', 'Jump', 'Speak with Animals'],
         ],
         'Paladin' => [
-            'paladin-prepared' => ['Thunderous Smite', 'Wrathful Smite'],
+            'paladin-prepared' => ['Searing Smite', 'Divine Favor'],
         ],
         'Sorcerer' => [
             'sorcerer-cantrips' => ['Chill Touch', 'Ray of Frost', 'Shocking Grasp', 'True Strike'],
             'sorcerer-prepared' => ['Chromatic Orb', 'Ray of Sickness'],
         ],
         'Wizard' => [
-            'wizard-cantrips' => ['Mage Hand', 'Minor Illusion', 'Mold Earth'],
+            'wizard-cantrips' => ['Mage Hand', 'Minor Illusion', 'Elementalism'],
             'wizard-prepared' => ['Feather Fall', 'Find Familiar', 'Shield', 'Unseen Servant'],
         ],
     ]);

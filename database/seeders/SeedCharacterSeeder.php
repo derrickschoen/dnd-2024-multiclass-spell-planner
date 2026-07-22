@@ -246,10 +246,10 @@ final class SeedCharacterSeeder extends Seeder
             'Sorcerer' => [
                 '2024:chill-touch', '2024:ray-of-frost', '2024:shocking-grasp', '2024:true-strike',
             ],
-            'Bard' => ['2024:thunderclap', '2024:vicious-mockery'],
+            'Bard' => ['2024:starry-wisp', '2024:vicious-mockery'],
             'Cleric' => ['2024:light', '2024:spare-the-dying', '2024:thaumaturgy'],
-            'Druid' => ['2014:shape-water', '2024:shillelagh'],
-            'Wizard' => ['2024:mage-hand', '2024:minor-illusion', '2014:mold-earth'],
+            'Druid' => ['2024:poison-spray', '2024:shillelagh'],
+            'Wizard' => ['2024:mage-hand', '2024:minor-illusion', '2024:elementalism'],
         ];
         foreach ($cantrips as $className => $versions) {
             foreach ($versions as $index => $versionKey) {
@@ -281,8 +281,8 @@ final class SeedCharacterSeeder extends Seeder
             'Sorcerer' => ['2024:chromatic-orb', '2024:ray-of-sickness'],
             'Bard' => ['2024:bane', '2024:dissonant-whispers', '2024:sleep', '2024:thunderwave'],
             'Cleric' => ['2024:create-or-destroy-water', '2024:cure-wounds', '2024:healing-word', '2024:sanctuary'],
-            'Druid' => ['2014:absorb-elements', '2024:goodberry', '2024:jump', '2024:speak-with-animals'],
-            'Paladin' => ['2024:thunderous-smite', '2024:wrathful-smite'],
+            'Druid' => ['2024:faerie-fire', '2024:goodberry', '2024:jump', '2024:speak-with-animals'],
+            'Paladin' => ['2024:searing-smite', '2024:divine-favor'],
             'Wizard' => ['2024:feather-fall', '2024:find-familiar', '2024:shield', '2024:unseen-servant'],
         ];
         foreach ($authoritativeLeveledAssignments as $className => $versions) {

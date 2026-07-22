@@ -45,3 +45,4 @@ Thumbs.db
 # Built locally with `npm run scrape`. Only the CC-BY SRD 5.2.1 subset in
 # data/srd/ is redistributed.
 /data/index/
+/.worktrees/

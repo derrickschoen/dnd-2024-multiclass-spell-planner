@@ -87,14 +87,14 @@ it('builds exact modern Cleric and Druid long-rest swap sections for Mutt withou
         ->and(collect(data_get($druid, 'spells'))->pluck('name')->all())->toBe([
             'Animal Friendship', 'Buzzing Bee', 'Charm Person', 'Create or Destroy Water',
             'Cure Wounds', 'Detect Magic', 'Detect Poison and Disease', 'Entangle',
-            'Faerie Fire', 'Fog Cloud', 'Healing Word', 'Ice Knife', 'Longstrider',
+            'Fog Cloud', 'Healing Word', 'Ice Knife', 'Longstrider',
             'Protection from Evil and Good', 'Purify Food and Drink', 'Thunderwave',
         ]);
 
     expect(collect(data_get($cleric, 'spells'))->pluck('name'))->not->toContain(
         'Create or Destroy Water', 'Cure Wounds', 'Healing Word', 'Sanctuary', 'Guidance',
     )->and(collect(data_get($druid, 'spells'))->pluck('name'))->not->toContain(
-        'Goodberry', 'Jump', 'Speak with Animals', 'Shillelagh', 'Shape Water',
+        'Goodberry', 'Jump', 'Speak with Animals', 'Shillelagh', 'Poison Spray',
     )->and(collect(data_get($cleric, 'spells'))->pluck('level')->unique()->all())->toBe([1])
         ->and(collect(data_get($druid, 'spells'))->pluck('level')->unique()->all())->toBe([1]);
 });
@@ -130,7 +130,7 @@ it('serves both print variants and degrades full mode when Tier 2 is absent', fu
             ->where('spellList.text_status', 'not_requested')
             ->has('spellList.source_groups', 6)
             ->where('spellList.unprepared_sections.0.spells', fn ($spells) => count($spells) === 12)
-            ->where('spellList.unprepared_sections.1.spells', fn ($spells) => count($spells) === 16)
+            ->where('spellList.unprepared_sections.1.spells', fn ($spells) => count($spells) === 15)
         );
     $this->get("/characters/{$id}/print?variant=full")
         ->assertOk()

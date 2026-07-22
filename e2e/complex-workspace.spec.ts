@@ -956,7 +956,7 @@ test('T10: Mutt matches the authoritative sheet attribution with zero duplicates
     expect(muttSlots.every((slot) => slot.selection_eligibility === 'valid')).toBe(true);
     const expectedByClass: Record<string, Record<string, string[]>> = {
         'Bard 1': {
-            'bard-cantrips': ['Thunderclap', 'Vicious Mockery'],
+            'bard-cantrips': ['Starry Wisp', 'Vicious Mockery'],
             'bard-prepared': ['Bane', 'Dissonant Whispers', 'Sleep', 'Thunderwave'],
         },
         'Cleric 1': {
@@ -965,18 +965,18 @@ test('T10: Mutt matches the authoritative sheet attribution with zero duplicates
             'cleric-prepared': ['Create or Destroy Water', 'Cure Wounds', 'Healing Word', 'Sanctuary'],
         },
         'Druid 1': {
-            'druid-cantrips': ['Shape Water', 'Shillelagh'],
-            'druid-prepared': ['Absorb Elements', 'Goodberry', 'Jump', 'Speak with Animals'],
+            'druid-cantrips': ['Poison Spray', 'Shillelagh'],
+            'druid-prepared': ['Faerie Fire', 'Goodberry', 'Jump', 'Speak with Animals'],
         },
         'Paladin 1': {
-            'paladin-prepared': ['Thunderous Smite', 'Wrathful Smite'],
+            'paladin-prepared': ['Searing Smite', 'Divine Favor'],
         },
         'Sorcerer 1': {
             'sorcerer-cantrips': ['Chill Touch', 'Ray of Frost', 'Shocking Grasp', 'True Strike'],
             'sorcerer-prepared': ['Chromatic Orb', 'Ray of Sickness'],
         },
         'Wizard 1': {
-            'wizard-cantrips': ['Mage Hand', 'Minor Illusion', 'Mold Earth'],
+            'wizard-cantrips': ['Mage Hand', 'Minor Illusion', 'Elementalism'],
             'wizard-prepared': ['Feather Fall', 'Find Familiar', 'Shield', 'Unseen Servant'],
         },
     };
@@ -1038,28 +1038,28 @@ test('T10: Mutt matches the authoritative sheet attribution with zero duplicates
     ]);
 
     const shapeWater = requireSlot(
-        muttSlots.find((slot) => slot.spell_name === 'Shape Water'),
+        muttSlots.find((slot) => slot.spell_name === 'Poison Spray'),
         "Mutt's Shape Water slot",
     );
     const moldEarth = requireSlot(
-        muttSlots.find((slot) => slot.spell_name === 'Mold Earth'),
+        muttSlots.find((slot) => slot.spell_name === 'Elementalism'),
         "Mutt's Mold Earth slot",
     );
     expect({
         source: shapeWater.source_name,
         version: shapeWater.current_spell_version_id,
         lists: shapeWater.allowed_spell_lists,
-    }).toEqual({ source: 'Druid 1', version: spellVersionId('2014:shape-water'), lists: '["Druid"]' });
+    }).toEqual({ source: 'Druid 1', version: spellVersionId('2024:poison-spray'), lists: '["Druid"]' });
     expect({
         source: moldEarth.source_name,
         version: moldEarth.current_spell_version_id,
         lists: moldEarth.allowed_spell_lists,
-    }).toEqual({ source: 'Wizard 1', version: spellVersionId('2014:mold-earth'), lists: '["Wizard"]' });
+    }).toEqual({ source: 'Wizard 1', version: spellVersionId('2024:elementalism'), lists: '["Wizard"]' });
     const absorbElements = requireSlot(
-        muttSlots.find((slot) => slot.spell_name === 'Absorb Elements'),
-        "Mutt's Absorb Elements slot",
+        muttSlots.find((slot) => slot.spell_name === 'Faerie Fire'),
+        "Mutt's Faerie Fire slot",
     );
-    expect(absorbElements.current_spell_version_id).toBe(spellVersionId('2014:absorb-elements'));
+    expect(absorbElements.current_spell_version_id).toBe(spellVersionId('2024:faerie-fire'));
 
     const muttAudit = auditLog(muttId);
     const operationCount = (actionType: string): number => new Set(
@@ -1117,7 +1117,7 @@ test('E2E-17: Mutt prints reference and full variants with exact long-rest swap 
     expect(await druid.locator('.spell-card h3').allTextContents()).toEqual([
         'Animal Friendship', 'Buzzing Bee', 'Charm Person', 'Create or Destroy Water',
         'Cure Wounds', 'Detect Magic', 'Detect Poison and Disease', 'Entangle',
-        'Faerie Fire', 'Fog Cloud', 'Healing Word', 'Ice Knife', 'Longstrider',
+        'Fog Cloud', 'Healing Word', 'Ice Knife', 'Longstrider',
         'Protection from Evil and Good', 'Purify Food and Drink', 'Thunderwave',
     ]);
     for (const prepared of ['Create or Destroy Water', 'Cure Wounds', 'Healing Word', 'Sanctuary']) {
