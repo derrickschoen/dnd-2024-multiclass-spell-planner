@@ -1810,3 +1810,34 @@ legal sequences of class/config/legacy/override/undo operations and check
 invariants after every step. One hand-authored messy character cannot explore
 order-dependent failures such as "subclass switch -> level down -> keep override
 -> undo -> catalog removal".
+
+## Stateful command-sequence testing — design verdict (2026-07-22)
+
+An independent design pass says **build it**, but scoped tightly.
+
+**Shape:** a bounded HTTP-level Pest state machine. Explicitly NOT Eris, and NOT a
+reusable property-testing framework — dependencies on server-issued inverses
+dominate ordinary value shrinking, so a custom bounded machine fits better.
+
+**Cost:** 3-5 days, ~500-800 lines of fixture, adapters, oracle, trace and
+shrinker. CI target 5-8 fixed seeds of 20-30 actions under ~30s; nightly 25-50
+seeds of 40 actions.
+
+**Why it beats more reading:** nine command families give 81 ordered pairs and 729
+triples before state distinctions are considered. Adversarial reading finds local
+inconsistencies; it cannot systematically exercise that interaction space.
+
+**A bug shape nothing existing would catch:** source-list regeneration combined
+with a DELAYED slot inverse. Both commands pass their own tests while their
+composition restores a spell against changed slot constraints. Mutation testing
+cannot invent an ordering.
+
+**Stop condition, worth honouring:** abandon or narrow it if the legality adapter
+starts duplicating grant-rule or spell-eligibility logic. Its job is to consume
+public choices and server-issued tokens, not to become a second domain engine —
+a generator that reimplements the rules ends up testing the test.
+
+Caveat: the design ran read-only without Docker access, so schema claims were
+verified against migrations rather than a live database. It stated that rather
+than presenting them as checked. Its own independent critique attempts failed
+twice and it explicitly did not treat silence as approval.
