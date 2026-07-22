@@ -1,0 +1,44 @@
+#!/usr/bin/env php
+<?php
+
+declare(strict_types=1);
+
+$projectRoot = dirname(__DIR__);
+$versionRequested = in_array('--version', $argv, true);
+$runner = $versionRequested
+    ? $projectRoot.'/vendor/bin/phpunit'
+    : $projectRoot.'/vendor/bin/pest';
+$command = escapeshellarg(PHP_BINARY).' '.escapeshellarg($runner);
+$junitPath = null;
+
+foreach (array_slice($argv, 1) as $argument) {
+    $command .= ' '.escapeshellarg($argument);
+
+    if (str_starts_with($argument, '--log-junit=')) {
+        $junitPath = substr($argument, strlen('--log-junit='));
+    }
+}
+
+passthru($command, $exitCode);
+
+if (! $versionRequested && $exitCode === 0) {
+    if ($junitPath !== null && is_file($junitPath)) {
+        $document = new DOMDocument;
+        $document->load($junitPath);
+        $xpath = new DOMXPath($document);
+
+        foreach (['//testsuite/@name', '//testcase/@class'] as $query) {
+            foreach ($xpath->query($query) ?: [] as $attribute) {
+                if (str_starts_with($attribute->nodeValue, 'Tests\\')) {
+                    $attribute->nodeValue = 'P\\'.$attribute->nodeValue;
+                }
+            }
+        }
+
+        $document->save($junitPath);
+    }
+
+    echo "OK (Pest suite)\n";
+}
+
+exit($exitCode);

@@ -167,6 +167,30 @@ guard, enumerate EVERY path that should enforce it and prove each one does.
 Deliver the matrix itself as documentation, not just tests: a table of guard x
 path with a verdict per cell, so the next gap is visible rather than discovered.
 
+
+## Backlog tier 5 — mutation testing the EXISTING suite
+
+Every iteration has sensitivity-checked its NEW tests by hand: break the
+behaviour, watch the test fail, restore. That has worked -- but roughly 150 tests
+predate this practice and have never been checked. Given this repo's record (three
+confirmed can't-fail tests, plus more found in every review round since), assume
+more are hiding in the older suite.
+
+Infection does mechanically what we have been doing by inspection: it mutates
+production code and reports which mutations NO test catches. An escaped mutant is
+a precise, reproducible statement that some behaviour is unprotected.
+
+- [x] **M1 Mutation-test the pure rules engine** (`app/Domain/Rules/`). Fast, no
+      DB, and it is the core of the app: caster levels, slot tables, per-class
+      rounding, proficiency bonus, max preparable level.
+- [x] **M2 Mutation-test the spell/grant domain** (`app/Domain/Spells/`,
+      `app/Domain/Grants/`) -- duplicate classification, access routes, eligibility.
+- [x] **M3 Kill or justify every escaped mutant.** Some are legitimately
+      equivalent; those get documented, not tested. The rest get a test.
+
+Deliverable is the escaped-mutant list with a verdict per mutant, plus the tests
+that kill the real ones.
+
 ## Iteration log
 
 ### Iteration 1 — E2E-1 batch 1 complete
@@ -922,3 +946,146 @@ output and exited 124 with `Execution error`; no files were changed. This silenc
 was not treated as approval. The finding above was independently reproduced and
 the remaining paths were reviewed locally. No verification-contract deviation
 occurred.
+
+### Iteration 11 — UNIT E2E-10 mutation testing (M1–M3) complete
+
+Installed `infection/infection` 0.34.0 as a dev dependency and configured
+`infection.json5` for all of `app/Domain` with no source exclusions, four threads,
+and a 60-second per-mutant timeout. Infection's PHPUnit adapter is pointed at
+`bin/pest-infection`, a Pest 4 compatibility launcher that reports PHPUnit 12's
+version during probing, delegates every real run to Pest, normalizes Pest's
+generated `P\Tests\...` JUnit class names, and emits the success marker Infection
+expects only after a zero exit code.
+
+Mutation results:
+
+```text
+M1 pure rules before: 56/95 killed, 39 escaped, MSI 58.95%
+M1 ClassProgressionLookup before: 3/3 killed, MSI 100%
+M1 combined before: 59/98 killed, MSI 60.20%
+M1 combined after: 123/128 killed, 5 equivalent escapes, MSI 96.09%
+
+M2 focused before: 723/854 killed, 131 escaped, MSI 84.66%
+M2 focused after: 860/885 killed, 25 equivalent escapes, MSI 97.18%
+
+GrantRuleSlotGenerator: 321/321 killed, MSI 100%
+SpellAccessBuilder: 157/157 killed, MSI 100%
+SpellSelectionEligibility: 88/88 killed, MSI 100%
+SpellSelectionService: 8/8 killed, MSI 100%
+```
+
+The initial unscoped M2 run generated 862 mutants but skipped 715 because their
+covering-test sets exceeded the original 15-second timeout. Its displayed 100%
+MSI was invalid and was discarded. M2 was explicitly split per class with the
+directly relevant Pest files and a 60-second timeout. Every file in `Spells/` and
+`Grants/` was run; nothing was silently omitted.
+
+The original runs produced 170 escapes: 145 real gaps and 25 equivalent mutants.
+All 145 real gaps are now killed. Broader after-coverage generated five additional
+equivalent mutants, leaving 30 justified equivalent survivors across the final
+runs. The complete one-row-per-mutant ledger, stable Infection IDs, verdicts,
+rationales, scores, scoping, and new-test mapping are in
+`docs/E2E-10-MUTATION-REPORT.md`.
+
+New falsifiable coverage:
+
+- `MulticlassSlotsTest`: level zero, every progression type, epic caps, all Pact
+  Magic rows and aggregation, and all maximum-preparable breakpoints; killed 36
+  original M1 escapes.
+- `DuplicateWarningDetectorTest`: complete sorted assessment DTO, versions,
+  labels, explanations, hard-coded fingerprint, source/slot lists, and list
+  compaction; killed 32 original M2 escapes.
+- `GrantRuleTest`: defaults for all six rule kinds, 33 malformed shapes,
+  independent query/source alternatives, trimming, free-cast diagnostics, and
+  JSON behavior; killed 77 original M2 escapes.
+
+Verification output observed:
+
+```text
+Disabled xdebug
+
+Dropping all tables ............................................ 4.20ms DONE
+Creating migration table ....................................... 3.88ms DONE
+0001_01_01_000000_create_users_table ........................... 0.94ms DONE
+0001_01_01_000001_create_cache_table ........................... 0.38ms DONE
+0001_01_01_000002_create_jobs_table ............................ 0.65ms DONE
+2026_07_21_000100_create_catalog_tables ........................ 6.69ms DONE
+2026_07_21_000200_create_character_tables ...................... 3.30ms DONE
+2026_07_21_000300_add_spell_selection_eligibility .............. 1.93ms DONE
+2026_07_21_000400_create_subclass_progressions ................. 0.27ms DONE
+2026_07_21_000500_create_character_operations .................. 0.29ms DONE
+Database\Seeders\ClassProgressionSeeder ......................... 36 ms DONE
+Database\Seeders\ContentDefinitionSeeder ......................... 1 ms DONE
+Database\Seeders\SeedCharacterSeeder ............................ 21 ms DONE
+
+Tests:    268 passed (2266 assertions)
+Duration: 24.11s
+
+> typecheck
+> vue-tsc --noEmit
+
+> build
+> vite build
+vite v8.1.5 building client environment for production...
+[plugin laravel:fonts] Optimized font fallbacks require the optional "fontaine" package. Install it, or set "optimizedFallbacks: false" on your fonts to disable the feature.
+✓ 567 modules transformed.
+✓ built in 746ms
+
+> test:e2e
+> playwright test
+Running 15 tests using 1 worker
+  ✓ S1
+  ✓ S2
+  ✓ S3
+  ✓ S4
+  ✓ S5
+  ✓ S6
+  ✓ S7
+  ✓ S8
+  ✓ S9
+  ✓ S10
+  ✓ S11
+  ✓ S12
+  ✓ S13
+  ✓ S14
+  ✓ S15
+15 passed (54.5s)
+```
+
+Final direct golden-value output after another fresh seed:
+
+```json
+{
+    "caster_level": 6,
+    "slots": [
+        {"level": 1, "count": 4},
+        {"level": 2, "count": 3},
+        {"level": 3, "count": 3}
+    ],
+    "proficiency_bonus": 3,
+    "max_preparable_levels": {
+        "Bard": 1,
+        "Cleric": 1,
+        "Druid": 1,
+        "Paladin": 1,
+        "Sorcerer": 1,
+        "Wizard": 1
+    },
+    "mage_hand": "wasteful",
+    "entangle": "none",
+    "detect_magic": {
+        "origin": "capability",
+        "casting_mode": "ritual_only",
+        "is_selection": false,
+        "counts_against_limit": false
+    }
+}
+```
+
+Review deviation: the required independent Claude review was attempted twice.
+Both runs produced no output; the bounded retry exited 124 with `Execution error`.
+This silence was not treated as approval. Self-review, Composer validation, PHP
+syntax checks, targeted Pint, and `git diff --check` passed. Repository-wide Pint
+still reports four pre-existing style findings, including the longstanding
+file-level docblock placement in `MulticlassSlotsTest`; no formatting-only churn
+was introduced. No commit or push was made.

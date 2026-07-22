@@ -29,6 +29,10 @@ function thirdDown(string $name, int $level): CasterContribution
 }
 
 describe('per-class rounding', function () {
+    it('accepts level zero as an empty class contribution', function () {
+        expect(full('Wizard', 0)->casterLevels())->toBe(0);
+    });
+
     it('rounds Paladin and Ranger up, each class independently', function () {
         // The load-bearing case: pooling first gives ceil(2/2) = 1, which is wrong.
         expect(halfUp('Paladin', 1)->casterLevels())->toBe(1);
@@ -59,6 +63,20 @@ describe('per-class rounding', function () {
         expect(fn () => (new CasterContribution('Mystery', 3, 'wat'))->casterLevels())
             ->toThrow(InvalidArgumentException::class);
     });
+
+    it('pins every progression type across its rounding boundaries', function (string $type, array $expected) {
+        foreach ($expected as $classLevel => $casterLevels) {
+            expect((new CasterContribution('Test', $classLevel, $type))->casterLevels())
+                ->toBe($casterLevels, "{$type} level {$classLevel}");
+        }
+    })->with([
+        'full' => [CasterContribution::FULL, [0 => 0, 1 => 1, 2 => 2, 20 => 20]],
+        'half down' => [CasterContribution::HALF_DOWN, [0 => 0, 1 => 0, 2 => 1, 3 => 1, 4 => 2, 20 => 10]],
+        'third up' => [CasterContribution::THIRD_UP, [0 => 0, 1 => 1, 2 => 1, 3 => 1, 4 => 2, 20 => 7]],
+        'third down' => [CasterContribution::THIRD_DOWN, [0 => 0, 1 => 0, 2 => 0, 3 => 1, 4 => 1, 5 => 1, 6 => 2, 20 => 6]],
+        'pact' => [CasterContribution::PACT, [0 => 0, 1 => 0, 20 => 0]],
+        'none' => [CasterContribution::NONE, [0 => 0, 1 => 0, 20 => 0]],
+    ]);
 });
 
 describe('the multiclass slot table', function () {
@@ -95,6 +113,10 @@ describe('the multiclass slot table', function () {
     it('gives no slots below caster level 1', function () {
         expect(SpellSlots::slotsForCasterLevel(0))->toBe([]);
     });
+
+    it('caps epic caster levels at the level twenty row', function () {
+        expect(SpellSlots::slotsForCasterLevel(21))->toBe(SpellSlots::slotsForCasterLevel(20));
+    });
 });
 
 describe('Warlock Pact Magic stays a separate pool', function () {
@@ -113,9 +135,71 @@ describe('Warlock Pact Magic stays a separate pool', function () {
         expect(SpellSlots::pactMagic($contributions))->toBe(['count' => 2, 'level' => 3]);
     });
 
+    it('matches every Pact Magic breakpoint and caps epic Warlock levels', function () {
+        $expected = [
+            1 => [1, 1], 2 => [2, 1], 3 => [2, 2], 4 => [2, 2],
+            5 => [2, 3], 6 => [2, 3], 7 => [2, 4], 8 => [2, 4],
+            9 => [2, 5], 10 => [2, 5], 11 => [3, 5], 12 => [3, 5],
+            13 => [3, 5], 14 => [3, 5], 15 => [3, 5], 16 => [3, 5],
+            17 => [4, 5], 18 => [4, 5], 19 => [4, 5], 20 => [4, 5],
+            21 => [4, 5],
+        ];
+
+        foreach ($expected as $level => [$count, $slotLevel]) {
+            expect(SpellSlots::pactMagic([
+                new CasterContribution('Warlock', $level, CasterContribution::PACT),
+            ]))->toBe(['count' => $count, 'level' => $slotLevel], "Warlock level {$level}");
+        }
+    });
+
+    it('adds levels from multiple Pact Magic contributions', function () {
+        expect(SpellSlots::pactMagic([
+            new CasterContribution('Warlock A', 1, CasterContribution::PACT),
+            new CasterContribution('Warlock B', 1, CasterContribution::PACT),
+        ]))->toBe(['count' => 2, 'level' => 1]);
+    });
+
     it('returns no pact pool when there is no Warlock', function () {
         expect(SpellSlots::pactMagic([full('Wizard', 5)]))->toBeNull();
     });
+});
+
+describe('maximum preparable spell level', function () {
+    it('pins each progression table independently of shared spell slots', function (string $type, array $expected) {
+        foreach ($expected as $classLevel => $spellLevel) {
+            $contribution = new CasterContribution('Test', $classLevel, $type);
+            expect(SpellSlots::maxPreparableLevelForClass($contribution))
+                ->toBe($spellLevel, "{$type} level {$classLevel}");
+        }
+    })->with([
+        'full' => [CasterContribution::FULL, [
+            0 => 0, 1 => 1, 2 => 1, 3 => 2, 4 => 2, 5 => 3, 6 => 3,
+            7 => 4, 8 => 4, 9 => 5, 10 => 5, 11 => 6, 12 => 6,
+            13 => 7, 14 => 7, 15 => 8, 16 => 8, 17 => 9, 20 => 9, 21 => 9,
+        ]],
+        'half up' => [CasterContribution::HALF_UP, [
+            0 => 0, 1 => 1, 4 => 1, 5 => 2, 8 => 2, 9 => 3,
+            12 => 3, 13 => 4, 16 => 4, 17 => 5, 20 => 5, 21 => 5,
+        ]],
+        'half down' => [CasterContribution::HALF_DOWN, [
+            0 => 0, 1 => 0, 2 => 1, 4 => 1, 5 => 2, 8 => 2,
+            9 => 3, 12 => 3, 13 => 4, 16 => 4, 17 => 5, 20 => 5,
+        ]],
+        'third up' => [CasterContribution::THIRD_UP, [
+            0 => 0, 1 => 0, 2 => 0, 3 => 1, 6 => 1, 7 => 2,
+            12 => 2, 13 => 3, 18 => 3, 19 => 4, 20 => 4, 25 => 4,
+        ]],
+        'third down' => [CasterContribution::THIRD_DOWN, [
+            0 => 0, 1 => 0, 2 => 0, 3 => 1, 6 => 1, 7 => 2,
+            12 => 2, 13 => 3, 18 => 3, 19 => 4, 20 => 4, 25 => 4,
+        ]],
+        'pact' => [CasterContribution::PACT, [
+            0 => 1, 1 => 1, 2 => 1, 3 => 2, 4 => 2, 5 => 3, 6 => 3,
+            7 => 4, 8 => 4, 9 => 5, 16 => 5, 17 => 5, 20 => 5, 21 => 5,
+        ]],
+        'none' => [CasterContribution::NONE, [0 => 0, 1 => 0, 20 => 0]],
+        'unknown' => ['unknown', [0 => 0, 1 => 0, 20 => 0]],
+    ]);
 });
 
 describe('proficiency bonus follows character level, not caster level', function () {
