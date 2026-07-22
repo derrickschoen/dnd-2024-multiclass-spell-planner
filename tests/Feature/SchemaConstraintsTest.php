@@ -12,7 +12,6 @@ uses(RefreshDatabase::class);
  * decorative. Each one corresponds to a way character data could silently
  * corrupt if SQLite were not enforcing it.
  */
-
 function makeCharacter(string $name = 'Test'): int
 {
     return DB::table('characters')->insertGetId([
@@ -81,6 +80,31 @@ it('scopes slot_key uniqueness per character, not globally', function () {
     // But the same character may not reuse a key.
     expect(fn () => makeSlot($alice, makeSourceInstance($alice), 'shared:key:1'))
         ->toThrow(QueryException::class);
+});
+
+it('refuses a slot that holds a fixed grant and a user selection simultaneously', function () {
+    $identity = DB::table('spell_identities')->insertGetId([
+        'content_key' => 'spell:test', 'canonical_name' => 'Test Spell',
+        'normalized_name' => 'test spell', 'created_at' => now(), 'updated_at' => now(),
+    ]);
+    $version = DB::table('spell_versions')->insertGetId([
+        'content_key' => '2024:spell:test', 'spell_identity_id' => $identity,
+        'display_name' => 'Test Spell', 'rules_edition' => '2024', 'level' => 1,
+        'school' => 'Evocation', 'created_at' => now(), 'updated_at' => now(),
+    ]);
+    $character = makeCharacter();
+    $source = makeSourceInstance($character);
+
+    expect(DB::select("SELECT name FROM sqlite_master WHERE type = 'trigger' AND name LIKE 'spell_slots_exclusive_assignment_%'"))
+        ->toHaveCount(2);
+
+    expect(fn () => DB::table('spell_selection_slots')->insert([
+        'character_id' => $character, 'source_instance_id' => $source,
+        'slot_key' => 'exclusive:assignment:1', 'rule_key' => 'exclusive-assignment',
+        'ordinal' => 1, 'bucket' => 'automatic', 'eligibility_kind' => 'fixed_spell',
+        'fixed_spell_version_id' => $version, 'current_spell_version_id' => $version,
+        'created_at' => now(), 'updated_at' => now(),
+    ]))->toThrow(QueryException::class);
 });
 
 it('refuses a duplicate class row for one character', function () {

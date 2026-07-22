@@ -5,6 +5,9 @@ declare(strict_types=1);
 namespace App\Domain\Characters;
 
 use App\Domain\Reports\BuildReportBuilder;
+use App\Domain\Rules\Ability;
+use App\Domain\Rules\AbilityScores;
+use App\Domain\Spells\SpellSlotAssignment;
 use Illuminate\Support\Facades\DB;
 
 final readonly class CharacterWorkspaceBuilder
@@ -15,8 +18,10 @@ final readonly class CharacterWorkspaceBuilder
     public function build(int $characterId): array
     {
         $report = $this->reports->build($characterId);
-        $routesBySlot = collect(data_get($report, 'access_routes'))->whereNotNull('slot_id')->keyBy('slot_id');
-        $duplicatesByIdentity = collect(data_get($report, 'duplicate_assessments'))->keyBy('spell_identity_id');
+        $accessRoutes = $this->reportList($report, 'access_routes');
+        $duplicateAssessments = $this->reportList($report, 'duplicate_assessments');
+        $routesBySlot = collect($accessRoutes)->whereNotNull('slot_id')->keyBy('slot_id');
+        $duplicatesByIdentity = collect($duplicateAssessments)->keyBy('spell_identity_id');
         $classes = DB::table('character_class_levels as level')
             ->join('class_definitions as class', 'class.id', '=', 'level.class_definition_id')
             ->leftJoin('subclass_definitions as subclass', 'subclass.id', '=', 'level.subclass_definition_id')
@@ -77,15 +82,26 @@ final readonly class CharacterWorkspaceBuilder
                 $attackVersionIds,
                 $saveVersionIds,
             ): array {
-                $route = $routesBySlot->get(data_get($slot, 'id'));
-                $ability = data_get($route, 'spellcasting_ability') ?? $this->sourceAbility($slot);
-                $modifier = $ability === null ? null : $this->abilityModifier(
-                    (int) data_get($report, "character.abilities.{$ability}", 10),
+                $assignment = SpellSlotAssignment::fromReferences(
+                    data_get($slot, 'fixed_spell_version_id') === null
+                        ? null : (int) data_get($slot, 'fixed_spell_version_id'),
+                    data_get($slot, 'current_spell_version_id') === null
+                        ? null : (int) data_get($slot, 'current_spell_version_id'),
                 );
+                $route = $routesBySlot->get(data_get($slot, 'id'));
+                $routeAbility = data_get($route, 'spellcasting_ability');
+                $ability = is_string($routeAbility) ? Ability::tryFrom($routeAbility) : $this->sourceAbility($slot);
+                if ($routeAbility !== null && $ability === null) {
+                    throw new \UnexpectedValueException("Unknown spellcasting ability '{$routeAbility}'.");
+                }
+                $abilityValues = data_get($report, 'character.abilities');
+                if (! is_array($abilityValues)) {
+                    throw new \UnexpectedValueException('Build report abilities must be an object.');
+                }
+                $abilityScore = $ability === null ? null : AbilityScores::fromArray($abilityValues)->score($ability);
                 $proficiency = (int) data_get($report, 'character.proficiency_bonus');
                 $duplicate = $duplicatesByIdentity->get(data_get($slot, 'spell_identity_id'));
-                $selectedVersionId = data_get($slot, 'fixed_spell_version_id')
-                    ?? data_get($slot, 'current_spell_version_id');
+                $selectedVersionId = $assignment->spellVersionId();
 
                 return [
                     'id' => (int) data_get($slot, 'id'),
@@ -96,17 +112,17 @@ final readonly class CharacterWorkspaceBuilder
                     'bucket' => (string) data_get($slot, 'bucket'),
                     'level_min' => (int) data_get($slot, 'spell_level_min'),
                     'level_max' => (int) data_get($slot, 'spell_level_max'),
-                    'spell_id' => data_get($slot, 'fixed_spell_version_id') ?? data_get($slot, 'current_spell_version_id'),
+                    'spell_id' => $selectedVersionId,
                     'spell_name' => data_get($slot, 'spell_name'),
                     'spell_level' => data_get($slot, 'spell_level'),
                     'spell_edition' => data_get($slot, 'spell_edition'),
-                    'ability' => $ability,
-                    'attack_bonus' => $modifier === null || $selectedVersionId === null
+                    'ability' => $ability?->value,
+                    'attack_bonus' => $abilityScore === null || $selectedVersionId === null
                         || ! $attackVersionIds->has($selectedVersionId)
-                            ? null : $proficiency + $modifier,
-                    'save_dc' => $modifier === null || $selectedVersionId === null
+                            ? null : $abilityScore->spellAttackBonus($proficiency)->value,
+                    'save_dc' => $abilityScore === null || $selectedVersionId === null
                         || ! $saveVersionIds->has($selectedVersionId)
-                            ? null : 8 + $proficiency + $modifier,
+                            ? null : $abilityScore->spellSaveDC($proficiency)->value,
                     'ritual' => (bool) data_get($slot, 'ritual'),
                     'concentration' => (bool) data_get($slot, 'concentration'),
                     'duplicate_status' => data_get($duplicate, 'category', 'none'),
@@ -126,13 +142,13 @@ final readonly class CharacterWorkspaceBuilder
                 || in_array(data_get($slot, 'state'), ['orphaned', 'kept_override'], true),
         ));
         $warningAssessments = array_values(array_filter(
-            data_get($report, 'duplicate_assessments'),
+            $duplicateAssessments,
             static fn (array $item): bool => data_get($item, 'category') !== 'none',
         ));
         $report['invalid_selections'] = $invalid;
         $report['summary'] = [
-            'unique_spells' => collect(data_get($report, 'access_routes'))->pluck('spell_identity_id')->unique()->count(),
-            'access_routes' => count(data_get($report, 'access_routes')),
+            'unique_spells' => collect($accessRoutes)->pluck('spell_identity_id')->unique()->count(),
+            'access_routes' => count($accessRoutes),
             'warning_count' => count($warningAssessments) + count($invalid),
         ];
 
@@ -254,20 +270,39 @@ final readonly class CharacterWorkspaceBuilder
     /** @return list<array{id: int, name: string}> */
     private function subclasses(int $classDefinitionId): array
     {
-        return DB::table('subclass_definitions')->where('class_definition_id', $classDefinitionId)
+        return array_values(DB::table('subclass_definitions')->where('class_definition_id', $classDefinitionId)
             ->orderBy('name')->get(['id', 'name'])
             ->map(static fn (object $row): array => [
                 'id' => (int) data_get($row, 'id'), 'name' => (string) data_get($row, 'name'),
-            ])->all();
+            ])->all());
     }
 
-    private function sourceAbility(object $slot): ?string
+    /**
+     * @param  array<string, mixed>  $report
+     * @return list<array<string, mixed>>
+     */
+    private function reportList(array $report, string $key): array
+    {
+        $value = $report[$key] ?? null;
+        if (! is_array($value) || ! array_is_list($value)) {
+            throw new \UnexpectedValueException("Build report {$key} must be a list.");
+        }
+        foreach ($value as $item) {
+            if (! is_array($item)) {
+                throw new \UnexpectedValueException("Build report {$key} contains a non-object item.");
+            }
+        }
+
+        return $value;
+    }
+
+    private function sourceAbility(object $slot): ?Ability
     {
         $config = data_get($slot, 'source_config');
         $decoded = ($config === null || $config === '') ? [] : json_decode((string) $config, true, 512, JSON_THROW_ON_ERROR);
         $ability = data_get($decoded, 'spellcasting_ability');
 
-        return is_string($ability) && $ability !== '' ? strtolower($ability) : null;
+        return is_string($ability) && $ability !== '' ? Ability::tryFrom(strtolower($ability)) : null;
     }
 
     private function sourceConfigurationKind(object $definition): string
@@ -285,11 +320,6 @@ final readonly class CharacterWorkspaceBuilder
         }
 
         return 'none';
-    }
-
-    private function abilityModifier(int $score): int
-    {
-        return (int) floor(($score - 10) / 2);
     }
 
     private function slotLabel(object $slot): string

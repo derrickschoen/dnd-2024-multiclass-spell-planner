@@ -43,10 +43,10 @@ final class DuplicateWarningDetector
                 ->all());
 
             $category = match (true) {
-                count($selections) < 2 => 'none',
-                count($versionIds) > 1 => 'conflicting_version',
-                count($counting) > 1 => 'wasteful',
-                default => 'redundant_intentional',
+                count($selections) < 2 => DuplicateCategory::None,
+                count($versionIds) > 1 => DuplicateCategory::ConflictingVersion,
+                count($counting) > 1 => DuplicateCategory::Wasteful,
+                default => DuplicateCategory::RedundantIntentional,
             };
             $sourceNames = array_values(array_unique(array_map(
                 static fn (array $route): string => (string) data_get($route, 'source_name'),
@@ -58,9 +58,9 @@ final class DuplicateWarningDetector
             )));
             $name = (string) data_get($identityRoutes[0], 'identity_name');
             $explanation = match ($category) {
-                'wasteful' => "{$name} consumes limits in more than one selection.",
-                'redundant_intentional' => "{$name} has overlapping access, but fewer than two routes consume limits.",
-                'conflicting_version' => "{$name} has conflicting versions selected: ".implode(
+                DuplicateCategory::Wasteful => "{$name} consumes limits in more than one selection.",
+                DuplicateCategory::RedundantIntentional => "{$name} has overlapping access, but fewer than two routes consume limits.",
+                DuplicateCategory::ConflictingVersion => "{$name} has conflicting versions selected: ".implode(
                     ' and ',
                     array_map(static fn (array $version): string => (string) data_get($version, 'label'), $versions),
                 ).'.',
@@ -70,12 +70,12 @@ final class DuplicateWarningDetector
             $results[] = [
                 'spell_identity_id' => $identityId,
                 'spell_name' => $name,
-                'category' => $category,
+                'category' => $category->value,
                 'selection_count' => count($selections),
                 'sources' => $sourceNames,
                 'slots' => $selectionKeys,
                 'versions' => $versions,
-                'warning_fingerprint' => $category === 'conflicting_version'
+                'warning_fingerprint' => $category === DuplicateCategory::ConflictingVersion
                     ? 'conflicting_versions:'.hash('sha256', $identityId.':'.implode(':', array_map(
                         static fn (array $version): string => (string) data_get($version, 'content_key'),
                         $versions,

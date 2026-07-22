@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace App\Domain\Catalog;
 
+use App\Domain\Rules\EffectReliabilityCategory;
+use App\Domain\Rules\RulesEdition;
 use App\Domain\Spells\SpellSelectionEligibility;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
@@ -340,7 +342,18 @@ final class CatalogImporter
 
         $this->refreshAffectedSelections($activityChangedVersionIds);
 
-        return $summary;
+        return [
+            'created' => $summary['created'],
+            'updated' => $summary['updated'],
+            'tombstoned' => $summary['tombstoned'],
+            'identities_created' => $summary['identities_created'],
+            'identities_updated' => $summary['identities_updated'],
+            'publications_created' => $summary['publications_created'],
+            'memberships_created' => $summary['memberships_created'],
+            'tags_created' => $summary['tags_created'],
+            'attack_modes_created' => $summary['attack_modes_created'],
+            'save_abilities_created' => $summary['save_abilities_created'],
+        ];
     }
 
     /** @param list<int> $versionIds */
@@ -359,7 +372,10 @@ final class CatalogImporter
             ->each(fn (mixed $slotId) => $this->eligibility->refresh((int) $slotId));
     }
 
-    /** @param array<string, mixed> $record @param array<string, int> $summary */
+    /**
+     * @param  array<string, mixed>  $record
+     * @param  array<string, int>  $summary
+     */
     private function resolveIdentity(array $record, array &$summary): int
     {
         $contentKey = (string) data_get($record, 'identityKey');
@@ -414,14 +430,17 @@ final class CatalogImporter
         ]);
     }
 
-    /** @param array<string, mixed> $record @return array<string, mixed> */
+    /**
+     * @param  array<string, mixed>  $record
+     * @return array<string, mixed>
+     */
     private function versionAttributes(array $record, int $identityId): array
     {
         $attributes = [
             'content_key' => (string) data_get($record, 'versionKey'),
             'spell_identity_id' => $identityId,
             'display_name' => (string) data_get($record, 'name'),
-            'rules_edition' => (string) data_get($record, 'edition'),
+            'rules_edition' => RulesEdition::from((string) data_get($record, 'edition'))->value,
             'level' => (int) data_get($record, 'level'),
             'school' => (string) data_get($record, 'school'),
             'ritual' => (bool) data_get($record, 'ritual'),
@@ -432,7 +451,9 @@ final class CatalogImporter
             'duration' => data_get($record, 'duration'),
             'components' => data_get($record, 'components'),
             'healing' => (bool) data_get($record, 'healing', false),
-            'effect_reliability_category' => (string) data_get($record, 'effectReliabilityCategory', 'fixed_effect'),
+            'effect_reliability_category' => EffectReliabilityCategory::from(
+                (string) data_get($record, 'effectReliabilityCategory', EffectReliabilityCategory::FixedEffect->value),
+            )->value,
             'provenance' => 'import',
             'is_active' => true,
         ];
@@ -472,7 +493,10 @@ final class CatalogImporter
             || DB::table('character_spell_preferences')->where('spell_version_id', $versionId)->exists();
     }
 
-    /** @param array<string, array<string, mixed>> $desired @param array<string, int> $summary */
+    /**
+     * @param  array<string, array<string, mixed>>  $desired
+     * @param  array<string, int>  $summary
+     */
     private function syncPublications(int $versionId, array $desired, array &$summary): bool
     {
         $existing = DB::table('spell_version_publications')

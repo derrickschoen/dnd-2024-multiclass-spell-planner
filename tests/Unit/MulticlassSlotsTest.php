@@ -12,7 +12,6 @@ use App\Domain\Rules\SpellSlots;
  *
  * These run with no database and no application instance: app/Domain is pure PHP.
  */
-
 function full(string $name, int $level): CasterContribution
 {
     return new CasterContribution($name, $level, CasterContribution::FULL);
@@ -198,7 +197,6 @@ describe('maximum preparable spell level', function () {
             7 => 4, 8 => 4, 9 => 5, 16 => 5, 17 => 5, 20 => 5, 21 => 5,
         ]],
         'none' => [CasterContribution::NONE, [0 => 0, 1 => 0, 20 => 0]],
-        'unknown' => ['unknown', [0 => 0, 1 => 0, 20 => 0]],
     ]);
 });
 

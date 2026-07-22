@@ -6,6 +6,9 @@ namespace App\Domain\Spells;
 
 use App\Domain\Grants\GrantRule;
 use App\Domain\Grants\GrantRuleSlotGenerator;
+use App\Domain\Rules\Ability;
+use App\Domain\Rules\AbilityScores;
+use App\Domain\Rules\CastingMode;
 use App\Domain\Rules\SpellSlots;
 use Illuminate\Support\Facades\DB;
 
@@ -20,7 +23,7 @@ final readonly class SpellAccessBuilder
     public function buildForCharacter(int $characterId): array
     {
         $character = DB::table('characters')->find($characterId);
-        if ($character === null) {
+        if (! is_object($character)) {
             return [];
         }
 
@@ -70,6 +73,12 @@ final readonly class SpellAccessBuilder
 
         $routes = [];
         foreach ($rows as $row) {
+            SpellSlotAssignment::fromReferences(
+                data_get($row, 'fixed_spell_version_id') === null
+                    ? null : (int) data_get($row, 'fixed_spell_version_id'),
+                data_get($row, 'current_spell_version_id') === null
+                    ? null : (int) data_get($row, 'current_spell_version_id'),
+            );
             if (data_get($row, 'state') !== 'kept_override'
                 && data_get($this->eligibility->evaluate($row), 'status') !== 'valid') {
                 continue;
@@ -79,15 +88,15 @@ final readonly class SpellAccessBuilder
             $withSlots = (bool) data_get($row, 'with_slots');
             $spellLevel = (int) data_get($row, 'spell_level');
             $mode = match (true) {
-                $spellLevel === 0 => 'at_will',
-                $withSlots && $freeCast !== null => 'slots_and_free_cast',
-                $withSlots => 'with_slots',
-                $freeCast !== null => 'free_cast_only',
-                default => 'granted',
+                $spellLevel === 0 => CastingMode::AtWill,
+                $withSlots && $freeCast !== null => CastingMode::SlotsAndFreeCast,
+                $withSlots => CastingMode::WithSlots,
+                $freeCast !== null => CastingMode::FreeCastOnly,
+                default => CastingMode::Granted,
             };
             $routes[] = $this->route($character, $row, [
                 'origin' => 'slot',
-                'casting_mode' => $mode,
+                'casting_mode' => $mode->value,
                 'spell_version_id' => (int) data_get($row, 'route_spell_version_id'),
                 'source_instance_id' => (int) data_get($row, 'source_instance_id'),
                 'source_name' => (string) data_get($row, 'source_name'),
@@ -99,7 +108,7 @@ final readonly class SpellAccessBuilder
                 'is_selection' => true,
                 'counts_against_limit' => (bool) data_get($row, 'counts_against_limit'),
                 'free_cast' => $freeCast === null ? null : json_decode((string) $freeCast, true, 512, JSON_THROW_ON_ERROR),
-                'spellcasting_ability' => $ability,
+                'spellcasting_ability' => $ability?->value,
             ]);
         }
 
@@ -163,7 +172,7 @@ final readonly class SpellAccessBuilder
 
             $routes[] = $this->route($character, $entry, [
                 'origin' => 'capability',
-                'casting_mode' => 'ritual_only',
+                'casting_mode' => CastingMode::RitualOnly->value,
                 'spell_version_id' => (int) data_get($entry, 'spell_version_id'),
                 'source_instance_id' => (int) data_get($capability, 'source_instance_id'),
                 'source_name' => (string) data_get($capability, 'source_name'),
@@ -174,7 +183,7 @@ final readonly class SpellAccessBuilder
                 'is_selection' => false,
                 'counts_against_limit' => false,
                 'free_cast' => null,
-                'spellcasting_ability' => (string) data_get($capability, 'spellcasting_ability'),
+                'spellcasting_ability' => data_get($capability, 'spellcasting_ability'),
                 'spellbook_entry_id' => (int) data_get($entry, 'id'),
             ]);
         }
@@ -202,7 +211,7 @@ final readonly class SpellAccessBuilder
                 $capabilities[] = [
                     'source_instance_id' => (int) data_get($source, 'id'),
                     'source_name' => (string) data_get($source, 'display_name'),
-                    'spellcasting_ability' => $this->spellcastingAbility($source),
+                    'spellcasting_ability' => $this->spellcastingAbility($source)?->value,
                 ];
             }
         }
@@ -210,11 +219,14 @@ final readonly class SpellAccessBuilder
         return $capabilities;
     }
 
-    /** @param array<string, mixed> $specific */
+    /**
+     * @param  array<string, mixed>  $specific
+     * @return array<string, mixed>
+     */
     private function route(object $character, object $spell, array $specific): array
     {
-        $ability = data_get($specific, 'spellcasting_ability');
-        $modifier = is_string($ability) ? $this->abilityModifier($character, $ability) : null;
+        $abilityValue = data_get($specific, 'spellcasting_ability');
+        $ability = is_string($abilityValue) ? Ability::tryFrom($abilityValue) : null;
         $characterLevel = max(1, (int) DB::table('character_class_levels')
             ->where('character_id', data_get($character, 'id'))
             ->sum('level'));
@@ -222,6 +234,9 @@ final readonly class SpellAccessBuilder
         $proficiency = $proficiency === null
             ? SpellSlots::proficiencyBonus($characterLevel)
             : (int) $proficiency;
+        $abilityScore = $ability === null
+            ? null
+            : AbilityScores::fromArray(get_object_vars($character))->score($ability);
 
         return array_merge([
             'spell_identity_id' => (int) data_get($spell, 'spell_identity_id'),
@@ -230,13 +245,13 @@ final readonly class SpellAccessBuilder
             'spell_content_key' => (string) data_get($spell, 'spell_content_key'),
             'rules_edition' => (string) data_get($spell, 'spell_rules_edition'),
             'spell_level' => (int) data_get($spell, 'spell_level'),
-            'ability_modifier' => $modifier,
-            'attack_bonus' => $modifier === null ? null : $proficiency + $modifier,
-            'save_dc' => $modifier === null ? null : 8 + $proficiency + $modifier,
+            'ability_modifier' => $abilityScore?->modifier(),
+            'attack_bonus' => $abilityScore?->spellAttackBonus($proficiency)->value,
+            'save_dc' => $abilityScore?->spellSaveDC($proficiency)->value,
         ], $specific);
     }
 
-    private function spellcastingAbility(object $source): ?string
+    private function spellcastingAbility(object $source): ?Ability
     {
         $configJson = data_get($source, 'source_config', data_get($source, 'config'));
         $config = ($configJson === null || $configJson === '')
@@ -244,7 +259,7 @@ final readonly class SpellAccessBuilder
             : json_decode((string) $configJson, true, 512, JSON_THROW_ON_ERROR);
         $configured = data_get($config, 'spellcasting_ability');
         if (is_string($configured) && $configured !== '') {
-            return strtolower($configured);
+            return Ability::tryFrom(strtolower($configured));
         }
 
         $sourceType = data_get($source, 'source_type');
@@ -260,11 +275,6 @@ final readonly class SpellAccessBuilder
             ->where('id', data_get($source, 'source_definition_id'))
             ->value('spellcasting_ability');
 
-        return is_string($ability) ? strtolower($ability) : null;
-    }
-
-    private function abilityModifier(object $character, string $ability): int
-    {
-        return (int) floor(((int) data_get($character, strtolower($ability), 10) - 10) / 2);
+        return is_string($ability) ? Ability::tryFrom(strtolower($ability)) : null;
     }
 }

@@ -2,9 +2,9 @@
 import { computed } from 'vue';
 import { ref } from 'vue';
 import { useCharacterStore } from '@/stores/character';
-import type { BuildReport, DuplicateAssessment } from '@/types';
+import type { DuplicateAssessment, WorkspaceBuildReport } from '@/types';
 
-const props = defineProps<{ report: BuildReport }>();
+const props = defineProps<{ report: WorkspaceBuildReport }>();
 const store = useCharacterStore();
 const acknowledgementNotes = ref<Record<string, string>>({});
 

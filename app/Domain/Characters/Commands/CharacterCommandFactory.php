@@ -9,6 +9,7 @@ use App\Domain\Grants\GrantRuleSlotGenerator;
 use App\Domain\Spells\DuplicateWarningDetector;
 use App\Domain\Spells\SpellAccessBuilder;
 use App\Domain\Spells\SpellSelectionEligibility;
+use LogicException;
 
 final readonly class CharacterCommandFactory
 {
@@ -26,13 +27,17 @@ final readonly class CharacterCommandFactory
     public function make(int $characterId, array $payload): CharacterCommand
     {
         $payload = $this->validator->validate($payload);
-        if ((data_get($payload, 'type') === 'set_slot' && data_get($payload, 'mode') === 'restore')
-            || (data_get($payload, 'type') === 'acknowledge_warning' && data_get($payload, 'mode') === 'delete')
-            || data_get($payload, 'type') === 'restore_snapshot') {
+        $type = $payload['type'] ?? null;
+        if (! is_string($type)) {
+            throw new LogicException('Validated command payload has no command type.');
+        }
+        if (($type === 'set_slot' && data_get($payload, 'mode') === 'restore')
+            || ($type === 'acknowledge_warning' && data_get($payload, 'mode') === 'delete')
+            || $type === 'restore_snapshot') {
             $this->integrity->assertValid($characterId, $payload);
         }
 
-        return match (data_get($payload, 'type')) {
+        return match ($type) {
             'update_ability' => new UpdateAbilityCommand(
                 data_get($payload, 'ability'),
                 data_get($payload, 'score'),
@@ -72,6 +77,7 @@ final readonly class CharacterCommandFactory
                 $this->state,
                 $this->integrity,
             ),
+            default => throw new LogicException("Validated command type {$type} is not implemented."),
         };
     }
 }

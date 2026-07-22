@@ -1,11 +1,12 @@
 <script setup lang="ts">
 import { Head } from '@inertiajs/vue3';
+import type { Ability, CastingMode, RulesEdition } from '@/types';
 
 type Spell = {
     spell_version_id: number;
     spell_identity_id: number;
     name: string;
-    edition: string;
+    edition: RulesEdition;
     level: number;
     school: string;
     casting_time: string | null;
@@ -17,8 +18,8 @@ type Spell = {
     components: string | null;
     attack_modes: string[];
     save_abilities: string[];
-    casting_mode: string;
-    spellcasting_ability: string | null;
+    casting_mode: CastingMode;
+    spellcasting_ability: Ability | null;
     attack_bonus: number | null;
     save_dc: number | null;
     description: string | null;
@@ -41,7 +42,7 @@ type PrintableSpellList = {
     };
     source_groups: Array<{
         source: string;
-        ability: string | null;
+        ability: Ability | null;
         attack_bonus: number | null;
         save_dc: number | null;
         spells: Spell[];
@@ -49,7 +50,7 @@ type PrintableSpellList = {
     unprepared_sections: Array<{
         class_name: string;
         title: string;
-        ability: string | null;
+        ability: Ability | null;
         max_level: number;
         cantrip_note: string;
         spells: Spell[];

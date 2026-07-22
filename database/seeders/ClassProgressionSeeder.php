@@ -52,11 +52,9 @@ final class ClassProgressionSeeder extends Seeder
             $classId = $this->upsertClass($name, $ability, $type, $fraction, $rounding);
             for ($level = 1; $level <= 20; $level++) {
                 $contribution = new CasterContribution($name, $level, $type);
-                $slots = match ($type) {
-                    CasterContribution::FULL, CasterContribution::HALF_UP, CasterContribution::HALF_DOWN,
-                    CasterContribution::THIRD_UP, CasterContribution::THIRD_DOWN => SpellSlots::slots([$contribution]),
-                    default => [],
-                };
+                $slots = $contribution->progression->contributesToSharedSlots()
+                    ? SpellSlots::slots([$contribution])
+                    : [];
                 $pact = $type === CasterContribution::PACT
                     ? SpellSlots::pactMagic([$contribution])
                     : null;

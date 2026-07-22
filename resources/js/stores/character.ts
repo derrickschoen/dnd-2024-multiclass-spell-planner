@@ -1,5 +1,6 @@
 import { ref, computed } from 'vue';
 import { defineStore } from 'pinia';
+import { parseMutationResponse, responseMessage } from '@/inertia-boundary';
 import type { CharacterCommand, Workspace } from '@/types';
 
 interface MutationResponse {
@@ -46,12 +47,12 @@ export const useCharacterStore = defineStore('character', () => {
                 command,
             }),
         });
-        const body = await response.json() as MutationResponse & { message?: string };
+        const body: unknown = await response.json();
         if (!response.ok) {
             if (response.status === 409) stale.value = true;
-            throw new Error(body.message ?? 'The change could not be saved.');
+            throw new Error(responseMessage(body, 'The change could not be saved.'));
         }
-        return body;
+        return parseMutationResponse(body);
     }
 
     async function execute(command: CharacterCommand): Promise<void> {

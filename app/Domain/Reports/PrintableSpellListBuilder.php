@@ -65,7 +65,7 @@ final readonly class PrintableSpellListBuilder
             ->all();
 
         $unprepared = array_map(function (array $section) use ($facts, $withText): array {
-            $section['spells'] = collect(data_get($section, 'spells', []))->map(
+            $section['spells'] = collect($this->arrayList($section, 'spells'))->map(
                 fn (array $spell): array => $this->spellEntry(
                     $spell,
                     data_get($facts, (string) data_get($spell, 'spell_version_id'), []),
@@ -117,8 +117,9 @@ final readonly class PrintableSpellListBuilder
     private function unpreparedClassSpells(int $characterId, array $report, array $routes): array
     {
         $sections = [];
+        $classes = $this->reportList($report, 'classes');
         foreach (['Cleric', 'Druid'] as $className) {
-            $class = collect(data_get($report, 'classes', []))->firstWhere('name', $className);
+            $class = collect($classes)->firstWhere('name', $className);
             if (! is_array($class) || (int) data_get($class, 'max_preparable_level') < 1) {
                 continue;
             }
@@ -186,6 +187,44 @@ final readonly class PrintableSpellListBuilder
     }
 
     /**
+     * @param  array<string, mixed>  $report
+     * @return list<array<string, mixed>>
+     */
+    private function reportList(array $report, string $key): array
+    {
+        $value = $report[$key] ?? null;
+        if (! is_array($value) || ! array_is_list($value)) {
+            throw new \UnexpectedValueException("Build report {$key} must be a list.");
+        }
+        foreach ($value as $item) {
+            if (! is_array($item)) {
+                throw new \UnexpectedValueException("Build report {$key} contains a non-object item.");
+            }
+        }
+
+        return $value;
+    }
+
+    /**
+     * @param  array<string, mixed>  $source
+     * @return list<array<string, mixed>>
+     */
+    private function arrayList(array $source, string $key): array
+    {
+        $value = $source[$key] ?? null;
+        if (! is_array($value) || ! array_is_list($value)) {
+            throw new \UnexpectedValueException("{$key} must be a list.");
+        }
+        foreach ($value as $item) {
+            if (! is_array($item)) {
+                throw new \UnexpectedValueException("{$key} contains a non-object item.");
+            }
+        }
+
+        return $value;
+    }
+
+    /**
      * @param  list<int>  $versionIds
      * @return array<int, array<string, mixed>>
      */
@@ -243,7 +282,11 @@ final readonly class PrintableSpellListBuilder
             })->all();
     }
 
-    /** @param array<string, mixed> $route @param array<string, mixed> $facts @return array<string, mixed> */
+    /**
+     * @param  array<string, mixed>  $route
+     * @param  array<string, mixed>  $facts
+     * @return array<string, mixed>
+     */
     private function spellEntry(array $route, array $facts, bool $withText): array
     {
         $attacks = data_get($facts, 'attack_modes', []);

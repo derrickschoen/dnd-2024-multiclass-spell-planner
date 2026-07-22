@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Domain\Characters\Commands;
 
 use App\Domain\Characters\CharacterState;
+use App\Domain\Characters\SourceType;
 use App\Domain\Grants\GrantRuleSlotGenerator;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
@@ -34,18 +35,21 @@ final class AddSourceCommand implements CharacterCommand
     public function apply(int $characterId): void
     {
         $this->characterId = $characterId;
-        /** @var string $sourceType */
-        $sourceType = data_get($this->payload, 'source_type');
+        $sourceTypeValue = data_get($this->payload, 'source_type');
+        $sourceType = is_string($sourceTypeValue) ? SourceType::tryFrom($sourceTypeValue) : null;
+        if ($sourceType === null) {
+            throw new InvalidArgumentException('Unknown source type.');
+        }
         /** @var int $definitionId */
         $definitionId = data_get($this->payload, 'source_definition_id');
-        $definition = DB::table($this->definitionTable($sourceType))->find($definitionId);
-        if ($definition === null) {
+        $definition = DB::table($sourceType->definitionTable())->find($definitionId);
+        if (! is_object($definition)) {
             throw new InvalidArgumentException('Unknown source definition for the selected source type.');
         }
 
-        if (($sourceType === 'class' || ! data_get($definition, 'repeatable')) && DB::table('character_source_instances')
+        if (($sourceType === SourceType::CharacterClass || ! data_get($definition, 'repeatable')) && DB::table('character_source_instances')
             ->where('character_id', $characterId)
-            ->where('source_type', $sourceType)
+            ->where('source_type', $sourceType->value)
             ->where('source_definition_id', $definitionId)
             ->where('state', 'active')
             ->exists()) {
@@ -56,7 +60,7 @@ final class AddSourceCommand implements CharacterCommand
         if (! is_array($config)) {
             throw new InvalidArgumentException('Source config must be an object.');
         }
-        if ($sourceType === 'class') {
+        if ($sourceType === SourceType::CharacterClass) {
             $this->addClass($characterId, $definition, $config);
 
             return;
@@ -67,7 +71,7 @@ final class AddSourceCommand implements CharacterCommand
         $sourceId = DB::table('character_source_instances')->insertGetId([
             'character_id' => $characterId,
             'instance_uuid' => Str::uuid()->toString(),
-            'source_type' => $sourceType,
+            'source_type' => $sourceType->value,
             'source_definition_id' => $definitionId,
             'display_name' => $this->displayName($definition, $config),
             'config' => json_encode($config, JSON_THROW_ON_ERROR),
@@ -214,16 +218,6 @@ final class AddSourceCommand implements CharacterCommand
         if (! is_string($ability) || ! in_array($ability, self::MAGIC_INITIATE_ABILITIES, true)) {
             throw new InvalidArgumentException('Magic Initiate must use Intelligence, Wisdom, or Charisma.');
         }
-    }
-
-    private function definitionTable(string $sourceType): string
-    {
-        return match ($sourceType) {
-            'class' => 'class_definitions',
-            'feat' => 'feat_definitions',
-            'species' => 'species_definitions',
-            'background' => 'background_definitions',
-        };
     }
 
     /** @param array<string, mixed> $config */

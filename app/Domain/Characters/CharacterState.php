@@ -162,8 +162,8 @@ final class CharacterState
             ];
         }
         foreach (self::TABLES as $table) {
-            $old = collect(data_get($before, $table, []))->keyBy('id');
-            $new = collect(data_get($after, $table, []))->keyBy('id');
+            $old = collect($this->snapshotRows($before, $table))->keyBy('id');
+            $new = collect($this->snapshotRows($after, $table))->keyBy('id');
             foreach ($old->keys()->merge($new->keys())->unique()->sort() as $id) {
                 $previous = $old->get($id);
                 $next = $new->get($id);
@@ -180,5 +180,24 @@ final class CharacterState
         }
 
         return $changes;
+    }
+
+    /**
+     * @param  array<string, mixed>  $snapshot
+     * @return list<array<string, mixed>>
+     */
+    private function snapshotRows(array $snapshot, string $table): array
+    {
+        $rows = $snapshot[$table] ?? null;
+        if (! is_array($rows) || ! array_is_list($rows)) {
+            throw new RuntimeException("Snapshot table {$table} must be a list.");
+        }
+        foreach ($rows as $row) {
+            if (! is_array($row)) {
+                throw new RuntimeException("Snapshot table {$table} contains an invalid row.");
+            }
+        }
+
+        return $rows;
     }
 }

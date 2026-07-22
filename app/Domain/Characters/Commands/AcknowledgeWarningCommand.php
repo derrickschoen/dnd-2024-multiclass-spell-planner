@@ -43,7 +43,7 @@ final class AcknowledgeWarningCommand implements CharacterCommand
             if ($existing === null) {
                 throw new InvalidArgumentException('Warning acknowledgement does not belong to this character.');
             }
-            $this->previous = $existing === null ? null : (array) $existing;
+            $this->previous = (array) $existing;
             DB::table('warning_acknowledgements')
                 ->where('character_id', $characterId)
                 ->where('warning_fingerprint', $fingerprint)
