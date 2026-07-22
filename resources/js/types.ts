@@ -38,6 +38,7 @@ export interface WorkspaceSlot {
     spell_id: number | null;
     spell_name: string | null;
     spell_level: number | null;
+    spell_edition: string | null;
     ability: string | null;
     attack_bonus: number | null;
     save_dc: number | null;

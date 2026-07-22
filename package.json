@@ -5,6 +5,7 @@
     "scripts": {
         "build": "vite build",
         "dev": "vite",
+        "test:dice": "node --test resources/js/lib/dice.test.mjs",
         "typecheck": "vue-tsc --noEmit",
         "test:e2e": "playwright test",
         "scrape": "node scripts/scrape-spells.mjs",

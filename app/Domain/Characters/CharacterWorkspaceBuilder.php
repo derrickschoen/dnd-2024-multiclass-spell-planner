@@ -47,6 +47,7 @@ final readonly class CharacterWorkspaceBuilder
             ->select([
                 'slot.*', 'source.display_name as source_name', 'source.source_type', 'source.config as source_config',
                 'selected.display_name as spell_name', 'selected.level as spell_level',
+                'selected.rules_edition as spell_edition',
                 'selected.spell_identity_id', 'selected.ritual', 'selected.concentration',
             ])
             ->orderBy('source.display_name')
@@ -98,6 +99,7 @@ final readonly class CharacterWorkspaceBuilder
                     'spell_id' => data_get($slot, 'fixed_spell_version_id') ?? data_get($slot, 'current_spell_version_id'),
                     'spell_name' => data_get($slot, 'spell_name'),
                     'spell_level' => data_get($slot, 'spell_level'),
+                    'spell_edition' => data_get($slot, 'spell_edition'),
                     'ability' => $ability,
                     'attack_bonus' => $modifier === null || $selectedVersionId === null
                         || ! $attackVersionIds->has($selectedVersionId)
