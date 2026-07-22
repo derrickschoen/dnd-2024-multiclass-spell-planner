@@ -45,6 +45,7 @@ final readonly class SpellAccessBuilder
             })
             ->join('spell_identities as identity', 'identity.id', '=', 'version.spell_identity_id')
             ->where('slot.character_id', data_get($character, 'id'))
+            ->where('version.is_active', true)
             ->where(function ($query): void {
                 $query->where('slot.state', 'kept_override')
                     ->orWhere(function ($ordinary): void {
@@ -132,6 +133,7 @@ final readonly class SpellAccessBuilder
             ->join('spell_versions as version', 'version.id', '=', 'entry.spell_version_id')
             ->join('spell_identities as identity', 'identity.id', '=', 'version.spell_identity_id')
             ->where('entry.character_id', data_get($character, 'id'))
+            ->where('version.is_active', true)
             ->select([
                 'entry.*',
                 'version.spell_identity_id',

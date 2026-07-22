@@ -92,7 +92,7 @@ it('imports the real index into identities versions publications and normalized 
         ->and(DB::table('spell_versions')->orderBy('content_key')->pluck('id', 'content_key')->all())->toBe($versionIds);
 });
 
-it('keeps the entire referenced version snapshot byte-identical through removal and reappearance', function () {
+it('keeps referenced version metadata byte-identical while activity follows removal and reappearance', function () {
     $directory = writeCatalogFixture([catalogRecord()]);
     $importer = app(CatalogImporter::class);
     $importer->importDirectory($directory);
@@ -113,6 +113,7 @@ it('keeps the entire referenced version snapshot byte-identical through removal 
         'created_at' => now(), 'updated_at' => now(),
     ]);
     $snapshot = (array) DB::table('spell_versions')->where('id', data_get($version, 'id'))->sole();
+    $immutableSnapshot = array_diff_key($snapshot, array_flip(['is_active', 'updated_at']));
 
     file_put_contents($directory.'/catalog.json', json_encode([
         catalogRecord([
@@ -130,14 +131,19 @@ it('keeps the entire referenced version snapshot byte-identical through removal 
 
     file_put_contents($directory.'/catalog.json', '[]');
     $tombstone = $importer->importDirectory($directory);
-    expect(data_get($tombstone, 'tombstoned'))->toBe(0)
-        ->and((array) DB::table('spell_versions')->where('id', data_get($version, 'id'))->sole())->toBe($snapshot);
+    $removed = (array) DB::table('spell_versions')->where('id', data_get($version, 'id'))->sole();
+    expect(data_get($tombstone, 'tombstoned'))->toBe(1)
+        ->and((bool) data_get($removed, 'is_active'))->toBeFalse()
+        ->and(array_diff_key($removed, array_flip(['is_active', 'updated_at'])))->toBe($immutableSnapshot);
 
     file_put_contents($directory.'/catalog.json', json_encode([
         catalogRecord(['name' => 'Returned Again', 'school' => 'Necromancy']),
     ], JSON_THROW_ON_ERROR));
-    $importer->importDirectory($directory);
-    expect((array) DB::table('spell_versions')->where('id', data_get($version, 'id'))->sole())->toBe($snapshot);
+    $returned = $importer->importDirectory($directory);
+    $reactivated = (array) DB::table('spell_versions')->where('id', data_get($version, 'id'))->sole();
+    expect(data_get($returned, 'updated'))->toBe(1)
+        ->and((bool) data_get($reactivated, 'is_active'))->toBeTrue()
+        ->and(array_diff_key($reactivated, array_flip(['is_active', 'updated_at'])))->toBe($immutableSnapshot);
 });
 
 it('tombstones and reactivates unreferenced versions with an accurate dry-run diff', function () {

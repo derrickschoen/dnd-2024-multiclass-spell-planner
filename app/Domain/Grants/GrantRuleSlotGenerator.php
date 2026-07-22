@@ -200,9 +200,22 @@ final class GrantRuleSlotGenerator
                 ->where('content_key', data_get($data, 'spell_version_key'))
                 ->value('id');
         }
-        if ($spellVersionId === null) {
+        $version = $spellVersionId === null
+            ? null
+            : DB::table('spell_versions')->find((int) $spellVersionId);
+        if ($version === null) {
             throw new RuntimeException(
                 "Grant rule '{$rule->ruleKey}' references a spell version that does not exist."
+            );
+        }
+        $existingReference = DB::table('spell_selection_slots')
+            ->where('character_id', data_get($source, 'character_id'))
+            ->where('slot_key', $this->slotKey($source, $rule, 1))
+            ->where('fixed_spell_version_id', $spellVersionId)
+            ->exists();
+        if (! (bool) data_get($version, 'is_active', true) && ! $existingReference) {
+            throw new RuntimeException(
+                "Grant rule '{$rule->ruleKey}' references an inactive spell version."
             );
         }
 
@@ -448,6 +461,10 @@ final class GrantRuleSlotGenerator
                 'orphan_reason_code' => 'rule_no_longer_active',
                 'orphaned_at' => now(),
                 'prior_config' => data_get($source, 'config'),
+                'selection_eligibility' => $this->hasSpellReference($slot) ? 'invalid' : 'unselected',
+                'selection_invalid_reason' => $this->hasSpellReference($slot)
+                    ? 'Selection preserved because its grant rule is no longer active.'
+                    : null,
                 'updated_at' => now(),
             ]);
         }
@@ -480,16 +497,23 @@ final class GrantRuleSlotGenerator
             $this->deactivateSourceTree((int) data_get($child, 'id'));
         }
 
-        DB::table('spell_selection_slots')
+        $slots = DB::table('spell_selection_slots')
             ->where('source_instance_id', $sourceInstanceId)
-            ->where('state', 'active')
-            ->update([
+            ->whereIn('state', ['active', 'kept_override'])
+            ->get();
+        foreach ($slots as $slot) {
+            DB::table('spell_selection_slots')->where('id', data_get($slot, 'id'))->update([
                 'state' => 'orphaned',
                 'orphan_reason_code' => 'parent_rule_removed',
                 'orphaned_at' => now(),
                 'prior_config' => data_get($source, 'config'),
+                'selection_eligibility' => $this->hasSpellReference($slot) ? 'invalid' : 'unselected',
+                'selection_invalid_reason' => $this->hasSpellReference($slot)
+                    ? 'Selection preserved because its source is no longer active.'
+                    : null,
                 'updated_at' => now(),
             ]);
+        }
 
         if (data_get($source, 'state') !== 'tombstoned') {
             DB::table('character_source_instances')->where('id', $sourceInstanceId)->update([
@@ -497,6 +521,12 @@ final class GrantRuleSlotGenerator
                 'updated_at' => now(),
             ]);
         }
+    }
+
+    private function hasSpellReference(object $slot): bool
+    {
+        return data_get($slot, 'fixed_spell_version_id') !== null
+            || data_get($slot, 'current_spell_version_id') !== null;
     }
 
     private function classLevelForSource(object $source): int
@@ -597,6 +627,22 @@ final class GrantRuleSlotGenerator
                 );
             }
 
+            $version = DB::table('spell_versions')->find((int) $spellVersionId);
+            if ($version === null) {
+                throw new RuntimeException(
+                    "Spellbook rule '{$rule->ruleKey}' acquisition {$index} could not resolve its spell."
+                );
+            }
+            $existingEntry = DB::table('wizard_spellbook_entries')
+                ->where('character_id', data_get($source, 'character_id'))
+                ->where('spell_version_id', $spellVersionId)
+                ->exists();
+            if (! (bool) data_get($version, 'is_active', true) && ! $existingEntry) {
+                throw new RuntimeException(
+                    "Spellbook rule '{$rule->ruleKey}' acquisition {$index} references an inactive spell version."
+                );
+            }
+
             $acquisitionType = data_get($acquisition, 'acquisition');
             if (! in_array($acquisitionType, ['starting', 'level_up', 'copied', 'granted'], true)) {
                 throw new InvalidArgumentException(
@@ -618,7 +664,7 @@ final class GrantRuleSlotGenerator
                 'character_id' => (int) data_get($source, 'character_id'),
                 'spell_version_id' => (int) $spellVersionId,
             ];
-            if (! DB::table('wizard_spellbook_entries')->where($identity)->exists()) {
+            if (! $existingEntry) {
                 DB::table('wizard_spellbook_entries')->insert(array_merge($identity, [
                     'acquisition' => $acquisitionType,
                     'copy_cost_gp' => data_get($acquisition, 'copy_cost_gp'),

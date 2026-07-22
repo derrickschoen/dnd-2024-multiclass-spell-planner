@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Domain\Catalog;
 
+use App\Domain\Spells\SpellSelectionEligibility;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 use InvalidArgumentException;
@@ -13,6 +14,8 @@ use Throwable;
 
 final class CatalogImporter
 {
+    public function __construct(private readonly SpellSelectionEligibility $eligibility) {}
+
     /**
      * @return array{created: int, updated: int, tombstoned: int, identities_created: int, identities_updated: int, publications_created: int, memberships_created: int, tags_created: int, attack_modes_created: int, save_abilities_created: int}
      */
@@ -162,6 +165,7 @@ final class CatalogImporter
             'save_abilities_created' => 0,
         ];
         $seenVersionKeys = [];
+        $activityChangedVersionIds = [];
 
         foreach ($records as $record) {
             $identityId = $this->resolveIdentity($record, $summary);
@@ -180,8 +184,9 @@ final class CatalogImporter
                 $versionId = (int) data_get($version, 'id');
                 $referenced = $this->isReferenced($versionId);
                 $changes = [];
-                if (! $referenced && ! (bool) data_get($version, 'is_active')) {
+                if (! (bool) data_get($version, 'is_active')) {
                     $changes['is_active'] = true;
+                    $activityChangedVersionIds[] = $versionId;
                 }
                 if (! $referenced) {
                     foreach ($this->versionAttributes($record, $identityId) as $column => $value) {
@@ -250,17 +255,33 @@ final class CatalogImporter
             )
             ->get();
         foreach ($tombstones as $version) {
-            if ($this->isReferenced((int) data_get($version, 'id'))) {
-                continue;
-            }
             DB::table('spell_versions')->where('id', data_get($version, 'id'))->update([
                 'is_active' => false,
                 'updated_at' => now(),
             ]);
+            $activityChangedVersionIds[] = (int) data_get($version, 'id');
             $summary['tombstoned']++;
         }
 
+        $this->refreshAffectedSelections($activityChangedVersionIds);
+
         return $summary;
+    }
+
+    /** @param list<int> $versionIds */
+    private function refreshAffectedSelections(array $versionIds): void
+    {
+        if ($versionIds === []) {
+            return;
+        }
+
+        DB::table('spell_selection_slots')
+            ->where(function ($query) use ($versionIds): void {
+                $query->whereIn('fixed_spell_version_id', $versionIds)
+                    ->orWhereIn('current_spell_version_id', $versionIds);
+            })
+            ->pluck('id')
+            ->each(fn (mixed $slotId) => $this->eligibility->refresh((int) $slotId));
     }
 
     /** @param array<string, mixed> $record @param array<string, int> $summary */

@@ -247,6 +247,7 @@ final readonly class BuildReportBuilder
             ->select([
                 'entry.id', 'entry.acquisition', 'entry.copy_cost_gp', 'entry.copy_time_hours',
                 'version.id as spell_version_id', 'version.display_name as spell_name', 'version.level',
+                'version.is_active',
             ])
             ->get()
             ->map(static fn (object $entry): array => [
@@ -257,6 +258,7 @@ final readonly class BuildReportBuilder
                 'acquisition' => (string) data_get($entry, 'acquisition'),
                 'copy_cost_gp' => data_get($entry, 'copy_cost_gp'),
                 'copy_time_hours' => data_get($entry, 'copy_time_hours'),
+                'active' => (bool) data_get($entry, 'is_active'),
                 'prepared' => in_array((int) data_get($entry, 'spell_version_id'), $preparedVersionIds, true),
             ])
             ->all();

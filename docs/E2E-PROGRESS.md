@@ -132,6 +132,41 @@ Playwright — a browser adds nothing when the point is to bypass the browser.
 Each needs the same sensitivity treatment: break the guard, observe the test fail,
 restore.
 
+
+## Backlog tier 4 — guard-coverage sweep (evidence-driven)
+
+The recurring failure mode across this whole effort is NOT missing tests. It is
+**adjacent-path incompleteness**: a guard is added where a test happened to look,
+and the identical bug survives one door down.
+
+Evidence:
+- the scraper level parser was wrong FOUR times, each fix verified, each still wrong
+- snapshot restore was hardened against tombstoned spell versions; `set_slot`
+  restore accepted them until the next review
+- Magic Initiate list validation existed in the UI but not on the API
+
+So the next work is not more scenarios. It is a **matrix**: for each class of
+guard, enumerate EVERY path that should enforce it and prove each one does.
+
+- [ ] **G1 Tombstoned/inactive spell versions.** Only 5 files reference
+      `is_active`. But `GrantRuleSlotGenerator`, `SpellSelectionService` and
+      `SpellAccessBuilder` all handle spell-version references and do NOT. Can a
+      `fixed_spell` grant materialise a tombstoned version? Can an access route
+      surface one? Can a spellbook or prepared entry hold one?
+- [ ] **G2 Character ownership.** Every command, controller and query that takes
+      an id from the client: slots, sources, save points, acknowledgements,
+      spellbook entries, loadouts. Which verify the row belongs to the character
+      in the URL, and which rely on a composite FK to fail messily instead?
+- [ ] **G3 Eligibility revalidation triggers.** S13 proved a Magic Initiate list
+      change re-validates selections. What about a class LEVEL change, a SUBCLASS
+      change, toggling `allow_legacy` off while a legacy spell is selected, or a
+      catalog re-import that tombstones a selected version? Each should mark
+      affected selections invalid; any that silently leaves them valid is the same
+      bug in a new place.
+
+Deliver the matrix itself as documentation, not just tests: a table of guard x
+path with a verdict per cell, so the next gap is visible rather than discovered.
+
 ## Iteration log
 
 ### Iteration 1 — E2E-1 batch 1 complete

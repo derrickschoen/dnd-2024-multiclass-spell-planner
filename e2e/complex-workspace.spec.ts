@@ -193,9 +193,12 @@ test('S4: removing and restoring Magic Initiate: Wizard preserves its orphaned s
 
     expect(orphaned).toHaveLength(3);
     expect(orphaned.map(preservedSlotIdentity)).toEqual(before.map(preservedSlotIdentity));
-    expect(orphaned.map(withoutSlotLifecycle)).toEqual(before.map(withoutSlotLifecycle));
+    expect(orphaned.map(withoutSlotLifecycleOrEligibility)).toEqual(before.map(withoutSlotLifecycleOrEligibility));
     expect(orphaned.every((slot) => slot.state === 'orphaned')).toBe(true);
     expect(orphaned.every((slot) => slot.orphan_reason_code === 'parent_rule_removed')).toBe(true);
+    expect(orphaned.every((slot) => slot.selection_eligibility === 'invalid')).toBe(true);
+    expect(orphaned.every((slot) => slot.selection_invalid_reason
+        === 'Selection preserved because its source is no longer active.')).toBe(true);
     expect(orphaned.every((slot) => slot.orphaned_at !== null)).toBe(true);
     expect(slots().filter((slot) => slot.source_instance_id !== sourceId)).toEqual(otherSlotsBefore);
     expect(source('Magic Initiate: Druid')).toEqual(druidSourceBefore);
@@ -435,11 +438,17 @@ test('S9: level-down orphans surplus selected slots and level-up reactivates the
     const orphaned = slots().filter((slot) => surplus.some((candidate) => candidate.id === slot.id));
     expect(orphaned).toHaveLength(2);
     expect(orphaned.map(preservedSlotIdentity)).toEqual(identities);
-    expect(orphaned.map(withoutSlotLifecycle)).toEqual(semantics);
+    expect(orphaned.map(withoutSlotLifecycleOrEligibility))
+        .toEqual(selectedSurplus.map(withoutSlotLifecycleOrEligibility));
     expect(orphaned.map((slot) => slot.state)).toEqual(['orphaned', 'orphaned']);
     expect(orphaned.map((slot) => slot.orphan_reason_code)).toEqual([
         'rule_no_longer_active',
         'rule_no_longer_active',
+    ]);
+    expect(orphaned.map((slot) => slot.selection_eligibility)).toEqual(['invalid', 'invalid']);
+    expect(orphaned.map((slot) => slot.selection_invalid_reason)).toEqual([
+        'Selection preserved because its grant rule is no longer active.',
+        'Selection preserved because its grant rule is no longer active.',
     ]);
     for (const slot of orphaned) {
         await expect(slotRow(page, slot.id).locator('td').nth(10)).toHaveText(/Orphaned/);
@@ -560,9 +569,13 @@ test('S11: the slot grid is keyboard reachable, visibly focused, labelled, and w
         await expect(row.locator('td').nth(10)).toContainText('⚠ Orphaned');
         const warningRow = row.locator('xpath=following-sibling::tr[1]');
         await expect(warningRow).toContainText('Selection needs attention.');
-        await expect(warningRow).toContainText('parent_rule_removed');
+        await expect(warningRow).toContainText(slot.current_spell_version_id === null
+            ? 'parent_rule_removed'
+            : 'Selection preserved because its source is no longer active.');
     }
     const invalidReport = reportSection(page, 'Invalid or orphaned selections');
+    await expect(invalidReport.getByText('Selection preserved because its source is no longer active.').first())
+        .toBeVisible();
     await expect(invalidReport.getByText('parent_rule_removed').first()).toBeVisible();
     const orphanedLabelAudit = await labelledFormControls(page);
     expect(orphanedLabelAudit.total).toBeGreaterThan(labelled.total);
@@ -995,6 +1008,18 @@ function withoutSlotLifecycle(slot: ReturnType<typeof slots>[number]): Record<st
         updated_at: _updatedAt,
         ...semantics
     } = slot;
+
+    return semantics;
+}
+
+function withoutSlotLifecycleOrEligibility(
+    slot: ReturnType<typeof slots>[number],
+): Record<string, number | string | null> {
+    const {
+        selection_eligibility: _selectionEligibility,
+        selection_invalid_reason: _selectionInvalidReason,
+        ...semantics
+    } = withoutSlotLifecycle(slot);
 
     return semantics;
 }

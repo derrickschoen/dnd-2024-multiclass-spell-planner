@@ -89,8 +89,8 @@ export interface BuildReport {
     access_routes: SpellRoute[];
     duplicate_assessments: DuplicateAssessment[];
     wizard: {
-        spellbook: Array<{ spellbook_entry_id: number; spell_name: string }>;
-        prepared: Array<{ spellbook_entry_id: number; spell_name: string }>;
+        spellbook: Array<{ spellbook_entry_id: number; spell_name: string; active: boolean }>;
+        prepared: Array<{ spellbook_entry_id: number; spell_name: string; active: boolean }>;
         ritual_only: Array<{ spellbook_entry_id: number; spell_name: string }>;
         explanation: string;
     };
