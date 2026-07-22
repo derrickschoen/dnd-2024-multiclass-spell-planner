@@ -3,6 +3,7 @@ import { Head } from '@inertiajs/vue3';
 import { computed, nextTick, onBeforeUnmount, onMounted, ref, watch } from 'vue';
 import AppShell from '@/components/AppShell.vue';
 import BuildReportPanel from '@/components/BuildReportPanel.vue';
+import DiceRoller from '@/components/DiceRoller.vue';
 import SpellCombobox from '@/components/SpellCombobox.vue';
 import { useCharacterStore } from '@/stores/character';
 import type { CharacterClass, CharacterCommand, EligibleSpell, SourceType, Workspace, WorkspaceSlot } from '@/types';
@@ -266,6 +267,8 @@ onBeforeUnmount(() => window.removeEventListener('keydown', keyboardShortcuts));
 
         <main class="mx-auto grid max-w-[1800px] gap-5 px-4 py-5 sm:px-6 lg:grid-cols-[minmax(0,1fr)_23rem]">
             <div class="min-w-0 space-y-5">
+                <DiceRoller :slots="current.slots" :character-level="report.character.character_level" :abilities="report.character.abilities" />
+
                 <section class="panel">
                     <h2 class="section-title">Rules editions</h2>
                     <label class="mt-3 flex items-start gap-3 text-sm">

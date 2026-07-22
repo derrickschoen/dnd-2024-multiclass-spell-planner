@@ -201,7 +201,7 @@ it('builds the complete workspace editing contract for the seeded character', fu
     expect($slots)->toHaveCount(40)
         ->and($slots->map(static fn (array $slot): array => array_keys($slot))->unique()->values()->all())->toBe([[
             'id', 'slot_key', 'source', 'source_type', 'label', 'bucket', 'level_min', 'level_max',
-            'spell_id', 'spell_name', 'spell_level', 'ability', 'attack_bonus', 'save_dc', 'ritual',
+            'spell_id', 'spell_name', 'spell_level', 'spell_edition', 'ability', 'attack_bonus', 'save_dc', 'ritual',
             'concentration', 'duplicate_status', 'state', 'eligibility', 'invalid_reason', 'orphan_reason',
             'override_note', 'locked',
         ]]);
@@ -212,7 +212,7 @@ it('builds the complete workspace editing contract for the seeded character', fu
     expect(collect($bardCantrip)->except(['id', 'slot_key'])->all())->toBe([
         'source' => 'Bard 1', 'source_type' => 'class', 'label' => 'Cantrip Known 1',
         'bucket' => 'cantrip_known', 'level_min' => 0, 'level_max' => 0,
-        'spell_id' => null, 'spell_name' => null, 'spell_level' => null,
+        'spell_id' => null, 'spell_name' => null, 'spell_level' => null, 'spell_edition' => null,
         'ability' => 'charisma', 'attack_bonus' => null, 'save_dc' => null,
         'ritual' => false, 'concentration' => false, 'duplicate_status' => 'none',
         'state' => 'active', 'eligibility' => 'unselected', 'invalid_reason' => null,
@@ -229,7 +229,7 @@ it('shows only mechanically relevant casting math from each selected spell sourc
         'ability' => 'charisma', 'attack_bonus' => null, 'save_dc' => 14,
         'concentration' => true, 'ritual' => false,
     ])->and($slots->get('Chromatic Orb'))->toMatchArray([
-        'ability' => 'charisma', 'attack_bonus' => 6, 'save_dc' => null,
+        'ability' => 'charisma', 'attack_bonus' => 6, 'save_dc' => null, 'spell_edition' => '2024',
     ])->and($slots->get('Mage Hand'))->toMatchArray([
         'ability' => 'intelligence', 'attack_bonus' => null, 'save_dc' => null,
     ])->and($slots->get('Find Familiar'))->toMatchArray([
