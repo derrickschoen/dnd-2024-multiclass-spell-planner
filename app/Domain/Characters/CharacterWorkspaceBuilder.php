@@ -154,6 +154,40 @@ final readonly class CharacterWorkspaceBuilder
             })
             ->all();
 
+        $orderSources = DB::table('character_source_instances as source')
+            ->join('class_definitions as class', 'class.id', '=', 'source.source_definition_id')
+            ->where('source.character_id', $characterId)
+            ->where('source.source_type', 'class')
+            ->where('source.state', 'active')
+            ->whereIn('class.name', ['Cleric', 'Druid'])
+            ->orderBy('class.name')
+            ->get(['source.id', 'source.display_name', 'source.config', 'class.name as class_name'])
+            ->map(static function (object $source): array {
+                $className = (string) data_get($source, 'class_name');
+                $definition = $className === 'Cleric'
+                    ? [
+                        'key' => 'divine_order', 'name' => 'Divine Order',
+                        'options' => ['Protector', 'Thaumaturge'], 'bonus' => 'Thaumaturge',
+                    ]
+                    : [
+                        'key' => 'primal_order', 'name' => 'Primal Order',
+                        'options' => ['Warden', 'Magician'], 'bonus' => 'Magician',
+                    ];
+                $config = json_decode((string) data_get($source, 'config'), true, 512, JSON_THROW_ON_ERROR);
+                $chosenOption = data_get($config, data_get($definition, 'key').'.chosen_option');
+
+                return [
+                    'id' => (int) data_get($source, 'id'),
+                    'class_name' => $className,
+                    'display_name' => (string) data_get($source, 'display_name'),
+                    'order_name' => (string) data_get($definition, 'name'),
+                    'chosen_option' => is_string($chosenOption) ? $chosenOption : null,
+                    'options' => data_get($definition, 'options'),
+                    'bonus_option' => (string) data_get($definition, 'bonus'),
+                ];
+            })
+            ->all();
+
         $sourceCatalog = collect(['feat', 'species', 'background'])->mapWithKeys(
             function (string $sourceType): array {
                 $table = $sourceType.'_definitions';
@@ -199,6 +233,7 @@ final readonly class CharacterWorkspaceBuilder
                 ])->all(),
             'allow_legacy' => (bool) DB::table('characters')->where('id', $characterId)->value('allow_legacy'),
             'configurable_sources' => $configurableSources,
+            'order_sources' => $orderSources,
             'source_catalog' => $sourceCatalog,
             'removable_sources' => $removableSources,
             'spell_lists' => DB::table('class_definitions')->whereIn('name', ['Cleric', 'Druid', 'Wizard'])

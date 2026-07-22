@@ -40,6 +40,10 @@ it('accepts every complete command payload and preserves every allowed field', f
         'type' => 'update_source_config', 'source_instance_id' => 1,
         'chosen_list' => str_repeat('l', 80), 'reason' => str_repeat('r', 255),
     ]],
+    'order source config' => [[
+        'type' => 'update_source_config', 'source_instance_id' => 1,
+        'chosen_option' => str_repeat('o', 80), 'reason' => str_repeat('r', 255),
+    ]],
     'add source' => [[
         'type' => 'add_source', 'source_type' => 'background', 'source_definition_id' => 1,
         'config' => ['key' => 'value'], 'reason' => str_repeat('r', 255),
@@ -143,6 +147,9 @@ it('rejects exact string and scalar boundaries', function (array $payload, strin
     'chosen list above maximum' => [[
         'type' => 'update_source_config', 'source_instance_id' => 1, 'chosen_list' => str_repeat('l', 81),
     ], 'chosen_list must not exceed 80 characters.'],
+    'chosen option above maximum' => [[
+        'type' => 'update_source_config', 'source_instance_id' => 1, 'chosen_option' => str_repeat('o', 81),
+    ], 'chosen_option must not exceed 80 characters.'],
     'source type above longest enum' => [[
         'type' => 'add_source', 'source_type' => str_repeat('s', 11),
         'source_definition_id' => 1, 'config' => [],
@@ -251,6 +258,13 @@ it('rejects command-specific malformed fields before domain execution', function
     'source config missing id' => [[
         'type' => 'update_source_config', 'chosen_list' => 'Cleric',
     ], 'source_instance_id must be an integer.'],
+    'source config missing choice' => [[
+        'type' => 'update_source_config', 'source_instance_id' => 1,
+    ], 'Source configuration must provide exactly one of chosen_list or chosen_option.'],
+    'source config has both choices' => [[
+        'type' => 'update_source_config', 'source_instance_id' => 1,
+        'chosen_list' => 'Cleric', 'chosen_option' => 'Thaumaturge',
+    ], 'Source configuration must provide exactly one of chosen_list or chosen_option.'],
     'add source missing definition' => [[
         'type' => 'add_source', 'source_type' => 'feat', 'config' => [],
     ], 'source_definition_id must be an integer.'],

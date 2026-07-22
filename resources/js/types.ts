@@ -79,6 +79,23 @@ export interface RemovableSource {
     source_definition_id: number;
     display_name: string;
 }
+interface OrderSourceBase {
+    id: number;
+    display_name: string;
+}
+export type OrderSource = OrderSourceBase & ({
+    class_name: 'Cleric';
+    order_name: 'Divine Order';
+    chosen_option: 'Protector' | 'Thaumaturge' | null;
+    options: Array<'Protector' | 'Thaumaturge'>;
+    bonus_option: 'Thaumaturge';
+} | {
+    class_name: 'Druid';
+    order_name: 'Primal Order';
+    chosen_option: 'Warden' | 'Magician' | null;
+    options: Array<'Warden' | 'Magician'>;
+    bonus_option: 'Magician';
+});
 
 export interface BuildReport {
     character: {
@@ -125,6 +142,7 @@ export interface Workspace {
         chosen_list: string;
         spellcasting_ability: string;
     }>;
+    order_sources: OrderSource[];
     source_catalog: Record<SourceType, SourceDefinition[]>;
     removable_sources: RemovableSource[];
     spell_lists: string[];

@@ -33,6 +33,25 @@ function mutateCharacter($test, int $characterId, int $revision, array $command,
     ]);
 }
 
+/** @return array{character_id: int, source_id: int} */
+function orderClassSource($test, string $className = 'Cleric'): array
+{
+    $characterId = (int) DB::table('characters')->insertGetId([
+        'name' => "{$className} Order Authoring", 'created_at' => now(), 'updated_at' => now(),
+    ]);
+    $classId = (int) DB::table('class_definitions')->where('name', $className)->value('id');
+    mutateCharacter($test, $characterId, 0, [
+        'type' => 'add_source', 'source_type' => 'class',
+        'source_definition_id' => $classId, 'config' => ['level' => 1],
+    ])->assertOk()->assertJsonPath('revision', 1);
+
+    return [
+        'character_id' => $characterId,
+        'source_id' => (int) DB::table('character_source_instances')
+            ->where('character_id', $characterId)->where('source_type', 'class')->value('id'),
+    ];
+}
+
 it('serves the seeded character list and editable workspace', function () {
     $id = workspaceCharacterId();
     $this->get('/')->assertOk()->assertInertia(fn ($page) => $page
@@ -47,6 +66,7 @@ it('serves the seeded character list and editable workspace', function () {
         ->where('workspace.source_catalog.feat.0.configuration_kind', 'magic_initiate')
         ->where('workspace.source_catalog.species.0.configuration_kind', 'origin_feat_magic_initiate')
         ->where('workspace.source_catalog.background.0.configuration_kind', 'origin_feat_magic_initiate')
+        ->has('workspace.order_sources', 2)
         ->has('workspace.removable_sources', 4)
         ->has('workspace.slots')
     );
@@ -80,7 +100,7 @@ it('builds the complete workspace editing contract for the seeded character', fu
 
     expect(array_keys($workspace))->toBe([
         'revision', 'report', 'classes', 'available_classes', 'allow_legacy',
-        'configurable_sources', 'source_catalog', 'removable_sources', 'spell_lists',
+        'configurable_sources', 'order_sources', 'source_catalog', 'removable_sources', 'spell_lists',
         'slots', 'save_points',
     ])->and(data_get($workspace, 'revision'))->toBe(0)
         ->and(data_get($workspace, 'allow_legacy'))->toBeFalse()
@@ -142,6 +162,23 @@ it('builds the complete workspace editing contract for the seeded character', fu
     expect(collect(data_get($workspace, 'configurable_sources'))->pluck('id')->every(
         static fn (mixed $id): bool => is_int($id) && $id > 0,
     ))->toBeTrue();
+
+    $orderSources = collect(data_get($workspace, 'order_sources'));
+    expect($orderSources->map(static fn (array $source): array => collect($source)->except('id')->all())->all())
+        ->toBe([
+            [
+                'class_name' => 'Cleric', 'display_name' => 'Cleric 1',
+                'order_name' => 'Divine Order', 'chosen_option' => null,
+                'options' => ['Protector', 'Thaumaturge'], 'bonus_option' => 'Thaumaturge',
+            ],
+            [
+                'class_name' => 'Druid', 'display_name' => 'Druid 1',
+                'order_name' => 'Primal Order', 'chosen_option' => null,
+                'options' => ['Warden', 'Magician'], 'bonus_option' => 'Magician',
+            ],
+        ])->and($orderSources->pluck('id')->every(
+            static fn (mixed $id): bool => is_int($id) && $id > 0,
+        ))->toBeTrue();
 
     $removable = collect(data_get($workspace, 'removable_sources'))->map(
         static fn (array $source): array => [
@@ -1107,6 +1144,116 @@ it('updates a standalone Magic Initiate source and regenerates its slot constrai
         ->pluck('allowed_spell_lists')->unique()->all())->toBe(['["Wizard"]']);
 });
 
+it('selecting each bonus class Order materialises exactly one cantrip slot', function () {
+    foreach ([
+        ['Cleric', 'Thaumaturge', 'divine_order', 'cleric-divine-order-cantrip'],
+        ['Druid', 'Magician', 'primal_order', 'druid-primal-order-cantrip'],
+    ] as [$className, $chosenOption, $configKey, $ruleKey]) {
+        ['character_id' => $characterId, 'source_id' => $sourceId] = orderClassSource($this, $className);
+        $beforeCount = DB::table('spell_selection_slots')->where('source_instance_id', $sourceId)->count();
+
+        mutateCharacter($this, $characterId, 1, [
+            'type' => 'update_source_config', 'source_instance_id' => $sourceId,
+            'chosen_option' => $chosenOption,
+        ])->assertOk()
+            ->assertJsonPath('revision', 2)
+            ->assertJsonPath('workspace.order_sources.0.chosen_option', $chosenOption);
+
+        $slots = DB::table('spell_selection_slots')->where('source_instance_id', $sourceId)->get();
+        $bonus = $slots->where('rule_key', $ruleKey);
+        $source = DB::table('character_source_instances')->find($sourceId);
+        expect($slots)->toHaveCount($beforeCount + 1)
+            ->and($bonus)->toHaveCount(1)
+            ->and(data_get($bonus->first(), 'state'))->toBe('active')
+            ->and((int) data_get($bonus->first(), 'spell_level_min'))->toBe(0)
+            ->and((int) data_get($bonus->first(), 'spell_level_max'))->toBe(0)
+            ->and(data_get($bonus->first(), 'allowed_spell_lists'))
+            ->toBe(json_encode([$className], JSON_THROW_ON_ERROR))
+            ->and(data_get(
+                json_decode((string) data_get($source, 'config'), true, 512, JSON_THROW_ON_ERROR),
+                $configKey,
+            ))->toBe(['chosen_option' => $chosenOption, 'chosen_list' => $className]);
+    }
+});
+
+it('switching Thaumaturge to Protector orphans its selected cantrip without clearing it', function () {
+    ['character_id' => $characterId, 'source_id' => $sourceId] = orderClassSource($this);
+    mutateCharacter($this, $characterId, 1, [
+        'type' => 'update_source_config', 'source_instance_id' => $sourceId,
+        'chosen_option' => 'Thaumaturge',
+    ])->assertOk();
+    $slot = DB::table('spell_selection_slots')->where('source_instance_id', $sourceId)
+        ->where('rule_key', 'cleric-divine-order-cantrip')->sole();
+    $guidanceId = (int) DB::table('spell_versions')->where('content_key', '2024:guidance')->value('id');
+    mutateCharacter($this, $characterId, 2, [
+        'type' => 'set_slot', 'slot_id' => data_get($slot, 'id'), 'mode' => 'select',
+        'spell_version_id' => $guidanceId,
+    ])->assertOk();
+
+    mutateCharacter($this, $characterId, 3, [
+        'type' => 'update_source_config', 'source_instance_id' => $sourceId,
+        'chosen_option' => 'Protector',
+    ])->assertOk()->assertJsonPath('revision', 4);
+
+    $orphan = DB::table('spell_selection_slots')->where('id', data_get($slot, 'id'))->sole();
+    $config = json_decode(
+        (string) DB::table('character_source_instances')->where('id', $sourceId)->value('config'),
+        true,
+        512,
+        JSON_THROW_ON_ERROR,
+    );
+    expect((int) data_get($orphan, 'current_spell_version_id'))->toBe($guidanceId)
+        ->and(data_get($orphan, 'slot_key'))->toBe(data_get($slot, 'slot_key'))
+        ->and(data_get($orphan, 'state'))->toBe('orphaned')
+        ->and(data_get($orphan, 'orphan_reason_code'))->toBe('rule_no_longer_active')
+        ->and(data_get($orphan, 'selection_eligibility'))->toBe('invalid')
+        ->and(data_get($orphan, 'selection_invalid_reason'))
+        ->toBe('Selection preserved because its grant rule is no longer active.')
+        ->and(data_get($config, 'divine_order'))->toBe(['chosen_option' => 'Protector']);
+
+    mutateCharacter($this, $characterId, 4, [
+        'type' => 'update_source_config', 'source_instance_id' => $sourceId,
+        'chosen_option' => 'Thaumaturge',
+    ])->assertOk()->assertJsonPath('revision', 5);
+    $reactivated = DB::table('spell_selection_slots')->where('id', data_get($slot, 'id'))->sole();
+    expect((int) data_get($reactivated, 'current_spell_version_id'))->toBe($guidanceId)
+        ->and(data_get($reactivated, 'slot_key'))->toBe(data_get($slot, 'slot_key'))
+        ->and(data_get($reactivated, 'state'))->toBe('active')
+        ->and(data_get($reactivated, 'orphan_reason_code'))->toBeNull()
+        ->and(data_get($reactivated, 'orphaned_at'))->toBeNull()
+        ->and(data_get($reactivated, 'selection_eligibility'))->toBe('valid')
+        ->and(data_get($reactivated, 'selection_invalid_reason'))->toBeNull();
+});
+
+it('undoing an Order switch restores the identical selected cantrip row', function () {
+    ['character_id' => $characterId, 'source_id' => $sourceId] = orderClassSource($this);
+    mutateCharacter($this, $characterId, 1, [
+        'type' => 'update_source_config', 'source_instance_id' => $sourceId,
+        'chosen_option' => 'Thaumaturge',
+    ])->assertOk();
+    $slot = DB::table('spell_selection_slots')->where('source_instance_id', $sourceId)
+        ->where('rule_key', 'cleric-divine-order-cantrip')->sole();
+    $guidanceId = (int) DB::table('spell_versions')->where('content_key', '2024:guidance')->value('id');
+    mutateCharacter($this, $characterId, 2, [
+        'type' => 'set_slot', 'slot_id' => data_get($slot, 'id'), 'mode' => 'select',
+        'spell_version_id' => $guidanceId,
+    ])->assertOk();
+    $before = (array) DB::table('spell_selection_slots')->where('id', data_get($slot, 'id'))->sole();
+
+    $switched = mutateCharacter($this, $characterId, 3, [
+        'type' => 'update_source_config', 'source_instance_id' => $sourceId,
+        'chosen_option' => 'Protector',
+    ])->assertOk()->assertJsonPath('revision', 4);
+    expect((array) DB::table('spell_selection_slots')->where('id', data_get($slot, 'id'))->sole())
+        ->not->toBe($before);
+
+    $undone = mutateCharacter($this, $characterId, 4, $switched->json('inverse'))
+        ->assertOk()->assertJsonPath('revision', 5);
+    expect((array) DB::table('spell_selection_slots')->where('id', data_get($slot, 'id'))->sole())
+        ->toBe($before);
+    $undone->assertJsonPath('workspace.order_sources.0.chosen_option', 'Thaumaturge');
+});
+
 it('rejects every invalid configurable-source boundary with its domain message', function () {
     $characterId = workspaceCharacterId();
     $source = DB::table('character_source_instances')->where('character_id', $characterId)
@@ -1134,6 +1281,21 @@ it('rejects every invalid configurable-source boundary with its domain message',
             'chosen_list' => 'Cleric',
         ])->assertUnprocessable()->assertJsonPath('message', $message);
     }
+
+    $sorcererSourceId = (int) DB::table('character_source_instances')
+        ->where('character_id', $characterId)->where('display_name', 'Sorcerer 1')->value('id');
+    mutateCharacter($this, $characterId, 0, [
+        'type' => 'update_source_config', 'source_instance_id' => $sorcererSourceId,
+        'chosen_option' => 'Protector',
+    ])->assertUnprocessable()
+        ->assertJsonPath('message', 'Only Cleric or Druid class sources can configure an Order.');
+    $clericSourceId = (int) DB::table('character_source_instances')
+        ->where('character_id', $characterId)->where('display_name', 'Cleric 1')->value('id');
+    mutateCharacter($this, $characterId, 0, [
+        'type' => 'update_source_config', 'source_instance_id' => $clericSourceId,
+        'chosen_option' => 'Magician',
+    ])->assertUnprocessable()
+        ->assertJsonPath('message', 'Cleric divine_order has an invalid chosen option.');
 
     DB::table('character_source_instances')->where('id', $sourceId)->update(['config' => '"scalar"']);
     mutateCharacter($this, $characterId, 0, [
