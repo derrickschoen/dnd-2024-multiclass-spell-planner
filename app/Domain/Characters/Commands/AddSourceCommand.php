@@ -108,6 +108,7 @@ final class AddSourceCommand implements CharacterCommand
         if ($acquisitions !== null && (! is_array($acquisitions) || ! array_is_list($acquisitions))) {
             throw new InvalidArgumentException('Wizard spellbook acquisitions must be a list.');
         }
+        $orderConfig = $this->validatedOrderConfig((string) data_get($definition, 'name'), $config);
 
         $this->before = $this->state->capture($characterId);
         DB::table('character_class_levels')->insert([
@@ -122,6 +123,9 @@ final class AddSourceCommand implements CharacterCommand
         if ($acquisitions !== null) {
             $sourceConfig['wizard_spellbook_acquisitions'] = $acquisitions;
         }
+        if ($orderConfig !== null) {
+            $sourceConfig[data_get($orderConfig, 'key')] = data_get($orderConfig, 'value');
+        }
         $sourceId = DB::table('character_source_instances')->insertGetId([
             'character_id' => $characterId,
             'instance_uuid' => Str::uuid()->toString(),
@@ -135,6 +139,54 @@ final class AddSourceCommand implements CharacterCommand
             'updated_at' => now(),
         ]);
         $this->generator->generateForSource($sourceId);
+    }
+
+    /** @param array<string, mixed> $config
+     * @return array{key: string, value: array<string, string>}|null
+     */
+    private function validatedOrderConfig(string $className, array $config): ?array
+    {
+        if (array_key_exists('divine_order', $config) && $className !== 'Cleric') {
+            throw new InvalidArgumentException('Only a Cleric class source can configure Divine Order.');
+        }
+        if (array_key_exists('primal_order', $config) && $className !== 'Druid') {
+            throw new InvalidArgumentException('Only a Druid class source can configure Primal Order.');
+        }
+        $definition = match ($className) {
+            'Cleric' => ['key' => 'divine_order', 'options' => ['Protector', 'Thaumaturge'], 'bonus' => 'Thaumaturge'],
+            'Druid' => ['key' => 'primal_order', 'options' => ['Warden', 'Magician'], 'bonus' => 'Magician'],
+            default => null,
+        };
+        if ($definition === null) {
+            return null;
+        }
+
+        $key = (string) data_get($definition, 'key');
+        $value = data_get($config, $key);
+        if ($value === null) {
+            return null;
+        }
+        if (! is_array($value)) {
+            throw new InvalidArgumentException("{$className} {$key} config must be an object.");
+        }
+        $chosenOption = data_get($value, 'chosen_option');
+        if (! is_string($chosenOption) || ! in_array($chosenOption, data_get($definition, 'options'), true)) {
+            throw new InvalidArgumentException("{$className} {$key} has an invalid chosen option.");
+        }
+        $chosenList = data_get($value, 'chosen_list');
+        if ($chosenOption === data_get($definition, 'bonus') && $chosenList !== $className) {
+            throw new InvalidArgumentException("{$className} {$chosenOption} must use the {$className} spell list.");
+        }
+        if ($chosenOption !== data_get($definition, 'bonus') && $chosenList !== null) {
+            throw new InvalidArgumentException("{$className} {$chosenOption} must not configure a spell list.");
+        }
+
+        $normalized = ['chosen_option' => $chosenOption];
+        if (is_string($chosenList)) {
+            $normalized['chosen_list'] = $chosenList;
+        }
+
+        return ['key' => $key, 'value' => $normalized];
     }
 
     /** @param array<string, mixed> $config */

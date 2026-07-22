@@ -69,7 +69,7 @@ it('builds the complete character list card contract in deterministic order', fu
             'name' => 'Mutt',
             'level' => 6,
             'classes' => ['Bard 1', 'Cleric 1', 'Druid 1', 'Paladin 1', 'Sorcerer 1', 'Wizard 1'],
-            'warning_count' => 3,
+            'warning_count' => 0,
         ],
     ]);
 });
@@ -1196,6 +1196,81 @@ it('adds a class source through the command with its level, DSL slots, and spell
         ->assertOk()->assertJsonPath('revision', 3);
     expect(app(CharacterState::class)->capture($characterId))->toBe($before);
 });
+
+it('adds Divine and Primal Order options through class source config with exact bonus slots', function (
+    string $className,
+    string $configKey,
+    string $chosenOption,
+    int $expectedSlots,
+): void {
+    $characterId = (int) DB::table('characters')->insertGetId([
+        'name' => "{$className} Order", 'created_at' => now(), 'updated_at' => now(),
+    ]);
+    $classId = (int) DB::table('class_definitions')->where('name', $className)->value('id');
+    $order = ['chosen_option' => $chosenOption, 'chosen_list' => $className];
+
+    mutateCharacter($this, $characterId, 0, [
+        'type' => 'add_source', 'source_type' => 'class',
+        'source_definition_id' => $classId,
+        'config' => ['level' => 1, $configKey => $order],
+    ])->assertOk()->assertJsonPath('revision', 1);
+
+    $source = DB::table('character_source_instances')
+        ->where('character_id', $characterId)->where('display_name', "{$className} 1")->sole();
+    expect(json_decode((string) data_get($source, 'config'), true, 512, JSON_THROW_ON_ERROR))->toBe([
+        'spellcasting_ability' => 'wisdom', $configKey => $order,
+    ])->and(DB::table('spell_selection_slots')
+        ->where('source_instance_id', data_get($source, 'id'))->count())->toBe($expectedSlots);
+
+    $bonus = DB::table('spell_selection_slots')
+        ->where('source_instance_id', data_get($source, 'id'))
+        ->where('rule_key', $className === 'Cleric'
+            ? 'cleric-divine-order-cantrip'
+            : 'druid-primal-order-cantrip')
+        ->sole();
+    expect(data_get($bonus, 'allowed_spell_lists'))->toBe(json_encode([$className], JSON_THROW_ON_ERROR))
+        ->and((int) data_get($bonus, 'spell_level_min'))->toBe(0)
+        ->and((int) data_get($bonus, 'spell_level_max'))->toBe(0);
+})->with([
+    'Divine Order: Thaumaturge' => ['Cleric', 'divine_order', 'Thaumaturge', 8],
+    'Primal Order: Magician' => ['Druid', 'primal_order', 'Magician', 7],
+]);
+
+it('rejects mismatched or malformed class Order config atomically', function (
+    string $className,
+    array $config,
+    string $message,
+): void {
+    $characterId = (int) DB::table('characters')->insertGetId([
+        'name' => 'Invalid Order', 'created_at' => now(), 'updated_at' => now(),
+    ]);
+    $classId = (int) DB::table('class_definitions')->where('name', $className)->value('id');
+
+    mutateCharacter($this, $characterId, 0, [
+        'type' => 'add_source', 'source_type' => 'class',
+        'source_definition_id' => $classId, 'config' => ['level' => 1, ...$config],
+    ])->assertUnprocessable()->assertJsonPath('message', $message);
+    expect(DB::table('characters')->where('id', $characterId)->value('revision'))->toBe(0)
+        ->and(DB::table('character_source_instances')->where('character_id', $characterId)->count())->toBe(0)
+        ->and(DB::table('character_class_levels')->where('character_id', $characterId)->count())->toBe(0);
+})->with([
+    'wrong class' => [
+        'Sorcerer', ['divine_order' => ['chosen_option' => 'Thaumaturge', 'chosen_list' => 'Cleric']],
+        'Only a Cleric class source can configure Divine Order.',
+    ],
+    'bad option' => [
+        'Cleric', ['divine_order' => ['chosen_option' => 'Magician', 'chosen_list' => 'Cleric']],
+        'Cleric divine_order has an invalid chosen option.',
+    ],
+    'wrong list' => [
+        'Druid', ['primal_order' => ['chosen_option' => 'Magician', 'chosen_list' => 'Wizard']],
+        'Druid Magician must use the Druid spell list.',
+    ],
+    'nonbonus list' => [
+        'Cleric', ['divine_order' => ['chosen_option' => 'Protector', 'chosen_list' => 'Cleric']],
+        'Cleric Protector must not configure a spell list.',
+    ],
+]);
 
 it('adds Magic Initiate through the DSL with independent list and ability config and exact undo redo', function () {
     $characterId = workspaceCharacterId();

@@ -17,7 +17,9 @@
       "constitution"
     ],
     "effectReliabilityCategory": "saving_throw",
-    "spellLists": [],
+    "spellLists": [
+      "Wizard (Dunamancy)"
+    ],
     "sourceBooks": [
       "Explorer's Guide to Wildemount"
     ],
@@ -40,7 +42,9 @@
     "attackModes": [],
     "saveAbilities": [],
     "effectReliabilityCategory": "fixed_effect",
-    "spellLists": [],
+    "spellLists": [
+      "Wizard (Dunamancy)"
+    ],
     "sourceBooks": [
       "Explorer's Guide to Wildemount"
     ],
@@ -65,7 +69,9 @@
       "constitution"
     ],
     "effectReliabilityCategory": "saving_throw",
-    "spellLists": [],
+    "spellLists": [
+      "Wizard (Dunamancy)"
+    ],
     "sourceBooks": [
       "Explorer's Guide to Wildemount"
     ],
@@ -88,7 +94,9 @@
     "attackModes": [],
     "saveAbilities": [],
     "effectReliabilityCategory": "fixed_effect",
-    "spellLists": [],
+    "spellLists": [
+      "Wizard (Dunamancy)"
+    ],
     "sourceBooks": [
       "Explorer's Guide to Wildemount"
     ],
@@ -111,7 +119,9 @@
     "attackModes": [],
     "saveAbilities": [],
     "effectReliabilityCategory": "fixed_effect",
-    "spellLists": [],
+    "spellLists": [
+      "Wizard (Graviturgy)"
+    ],
     "sourceBooks": [
       "Explorer's Guide to Wildemount"
     ],
@@ -134,7 +144,9 @@
     "attackModes": [],
     "saveAbilities": [],
     "effectReliabilityCategory": "fixed_effect",
-    "spellLists": [],
+    "spellLists": [
+      "Wizard (Dunamancy)"
+    ],
     "sourceBooks": [
       "Explorer's Guide to Wildemount"
     ],

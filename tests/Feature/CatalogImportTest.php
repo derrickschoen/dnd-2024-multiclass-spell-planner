@@ -81,6 +81,29 @@ it('imports the real index into identities versions publications and normalized 
             "Sword Coast Adventurer's Guide",
             "Tasha's Cauldron of Everything",
         ]);
+    expect(DB::table('spell_list_memberships')
+        ->where('spell_version_id', $greenFlameBladeId)
+        ->orderBy('spell_list_key')
+        ->pluck('spell_list_key')->all())->toBe([
+            'Artificer', 'Sorcerer (Optional)', 'Warlock (Optional)', 'Wizard (Optional)',
+        ])
+        ->and(DB::table('spell_list_memberships')
+            ->where('spell_version_id', $greenFlameBladeId)
+            ->where('spell_list_key', 'Sorcerer')->exists())->toBeFalse();
+
+    $fastFriendsId = DB::table('spell_versions')->where('content_key', '2014:fast-friends')->value('id');
+    expect(DB::table('spell_list_memberships')
+        ->where('spell_version_id', $fastFriendsId)
+        ->orderBy('spell_list_key')
+        ->pluck('spell_list_key')->all())->toBe(['Bard', 'Cleric', 'Wizard'])
+        ->and(DB::table('spell_list_memberships')
+            ->where('spell_version_id', DB::table('spell_versions')
+                ->where('content_key', '2014:encode-thoughts')->value('id'))
+            ->count())->toBe(0)
+        ->and(DB::table('spell_list_memberships')->where('spell_list_key', 'None')->count())->toBe(0)
+        ->and(DB::table('spell_list_memberships')->where('spell_list_key', 'like', '% (Optional)')->count())->toBe(122)
+        ->and(DB::table('spell_list_memberships')
+            ->whereIn('spell_list_key', ['Wizard (Dunamancy)', 'Wizard (Graviturgy)'])->count())->toBe(6);
     $detectMagicId = DB::table('spell_versions')->where('content_key', '2024:detect-magic')->value('id');
     expect(DB::table('spell_version_tags')
         ->where('spell_version_id', $detectMagicId)
@@ -418,9 +441,9 @@ it('updates every mutable version field and synchronizes publication and pivot r
         ])->and(DB::table('spell_version_publications')->where('spell_version_id', data_get($version, 'id'))
         ->orderBy('source_book')->get(['source_book', 'source_page', 'source_reference'])
         ->map(static fn (object $row): array => (array) $row)->all())->toBe([
-                ['source_book' => 'New Book', 'source_page' => 77, 'source_reference' => 'updated-reference'],
-                ['source_book' => 'Retained Book', 'source_page' => 77, 'source_reference' => 'updated-reference'],
-            ])
+            ['source_book' => 'New Book', 'source_page' => 77, 'source_reference' => 'updated-reference'],
+            ['source_book' => 'Retained Book', 'source_page' => 77, 'source_reference' => 'updated-reference'],
+        ])
         ->and(DB::table('spell_list_memberships')->where('spell_version_id', data_get($version, 'id'))
             ->pluck('spell_list_key')->all())->toBe(['Cleric'])
         ->and(DB::table('spell_version_tags')->where('spell_version_id', data_get($version, 'id'))

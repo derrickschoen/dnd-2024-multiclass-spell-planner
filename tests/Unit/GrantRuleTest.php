@@ -110,6 +110,39 @@ it('round-trips validated JSON for storage', function () {
     expect(GrantRule::fromJson($rule->toJson())->toArray())->toBe($rule->toArray());
 });
 
+it('normalizes an exact source-config activation predicate', function () {
+    $rule = GrantRule::fromArray([
+        'kind' => 'choice_from_list', 'rule_key' => 'divine-order-cantrip', 'count' => 1,
+        'bucket' => 'cantrip_known', 'list' => '$config.divine_order.chosen_list',
+        'level_min' => 0, 'level_max' => 0,
+        'active_if_config' => [
+            'equals' => 'Thaumaturge',
+            'key' => 'divine_order.chosen_option',
+        ],
+    ]);
+
+    expect($rule->activeIfConfig)->toBe([
+        'key' => 'divine_order.chosen_option',
+        'equals' => 'Thaumaturge',
+    ])->and(data_get($rule->toArray(), 'active_if_config'))->toBe($rule->activeIfConfig);
+});
+
+it('rejects malformed source-config activation predicates', function (mixed $predicate, string $message) {
+    expect(fn () => GrantRule::fromArray([
+        'kind' => 'choice_from_list', 'rule_key' => 'conditional', 'count' => 1,
+        'bucket' => 'cantrip_known', 'list' => 'Cleric',
+        'active_if_config' => $predicate,
+    ]))->toThrow(InvalidArgumentException::class, $message);
+})->with([
+    'scalar' => ['Thaumaturge', "Grant rule 'conditional' field 'active_if_config' must contain exactly key and equals."],
+    'extra field' => [[
+        'key' => 'divine_order.chosen_option', 'equals' => 'Thaumaturge', 'or' => 'Protector',
+    ], "Grant rule 'conditional' field 'active_if_config' must contain exactly key and equals."],
+    'empty key' => [[
+        'key' => ' ', 'equals' => 'Thaumaturge',
+    ], "Grant rule 'conditional' active_if_config key and equals must be non-empty strings."],
+]);
+
 it('normalizes documented defaults for every kind', function (array $input, array $expected) {
     $rule = GrantRule::fromArray($input);
 

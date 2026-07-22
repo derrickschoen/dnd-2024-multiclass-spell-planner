@@ -88,6 +88,53 @@ it('pins every class caster-relevant breakpoint', function (string $class, int $
     ['Rogue', 1, 0, 0, [], []], ['Rogue', 20, 0, 0, [], []],
 ]);
 
+it('adds Divine Order and Primal Order without inflating the base level-one counts', function () {
+    $this->seed(ClassProgressionSeeder::class);
+
+    foreach ([
+        'Cleric' => [
+            'cantrips' => 3,
+            'rule_key' => 'cleric-divine-order-cantrip',
+            'config_key' => 'divine_order',
+            'option' => 'Thaumaturge',
+        ],
+        'Druid' => [
+            'cantrips' => 2,
+            'rule_key' => 'druid-primal-order-cantrip',
+            'config_key' => 'primal_order',
+            'option' => 'Magician',
+        ],
+    ] as $className => $expected) {
+        $progression = DB::table('class_progressions as progression')
+            ->join('class_definitions as class', 'class.id', '=', 'progression.class_definition_id')
+            ->where('class.name', $className)
+            ->where('progression.class_level', 1)
+            ->select('progression.*')
+            ->sole();
+        $rule = collect(json_decode(
+            (string) data_get($progression, 'grant_rules'), true, 512, JSON_THROW_ON_ERROR,
+        ))->firstWhere('rule_key', data_get($expected, 'rule_key'));
+
+        expect((int) data_get($progression, 'cantrips_known'))->toBe(data_get($expected, 'cantrips'))
+            ->and((int) data_get($progression, 'prepared_count'))->toBe(4)
+            ->and($rule)->toMatchArray([
+                'kind' => 'choice_from_list',
+                'rule_key' => data_get($expected, 'rule_key'),
+                'count' => 1,
+                'bucket' => 'cantrip_known',
+                'list' => '$config.'.data_get($expected, 'config_key').'.chosen_list',
+                'level_min' => 0,
+                'level_max' => 0,
+                'with_slots' => false,
+                'active_from_class_level' => 1,
+                'active_if_config' => [
+                    'key' => data_get($expected, 'config_key').'.chosen_option',
+                    'equals' => data_get($expected, 'option'),
+                ],
+            ]);
+    }
+});
+
 it('takes prepared counts from the class table regardless of ability score', function () {
     $this->seed(ClassProgressionSeeder::class);
     $wizardId = DB::table('class_definitions')->where('name', 'Wizard')->value('id');

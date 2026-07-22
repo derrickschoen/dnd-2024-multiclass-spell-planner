@@ -35,8 +35,8 @@ bless,2014:bless,Bless,2014,1,Enchantment,1 Action,30 feet,"V, S, M","Concentrat
 burning-hands,2014:burning-hands,Burning Hands,2014,1,Evocation,1 Action,Self (15-foot cone),"V, S",Instantaneous,false,false,,dexterity,saving_throw,Sorcerer;Wizard,Player's Handbook,,burning-hands
 charm-person,2014:charm-person,Charm Person,2014,1,Enchantment,1 Action,30 feet,"V, S",1 hour,false,false,,wisdom,saving_throw,Bard;Druid;Sorcerer;Warlock;Wizard,Player's Handbook,,charm-person
 chromatic-orb,2014:chromatic-orb,Chromatic Orb,2014,1,Evocation,1 Action,90 feet,"V, S, M",Instantaneous,false,false,ranged_spell,,attack_roll,Sorcerer;Wizard,Player's Handbook,,chromatic-orb
-color-spray,2014:color-spray,Color Spray,2014,1,Illusion,1 Action,Self (15-foot cone),"V, S, M",1 round,false,false,,,fixed_effect,Sorcerer;Wizard,Player's Handbook,,color-spray
-command,2014:command,Command,2014,1,Enchantment,1 Action,60 feet,V,1 round,false,false,,wisdom,saving_throw,Cleric;Paladin,Player's Handbook,,command
+color-spray,2014:color-spray,Color Spray,2014,1,Illusion,1 Action,Self (15-foot cone),"V, S, M",1 round,false,false,,,fixed_effect,Bard (Optional);Sorcerer;Wizard,Player's Handbook,,color-spray
+command,2014:command,Command,2014,1,Enchantment,1 Action,60 feet,V,1 round,false,false,,wisdom,saving_throw,Bard (Optional);Cleric;Paladin,Player's Handbook,,command
 compelled-duel,2014:compelled-duel,Compelled Duel,2014,1,Enchantment,1 Bonus Action,30 feet,V,"Concentration, up to 1 minute",true,false,,wisdom,saving_throw,Paladin,Player's Handbook,,compelled-duel
 comprehend-languages,2014:comprehend-languages,Comprehend Languages,2014,1,Divination,1 Action R,Self,"V, S, M",1 hour,false,false,,,fixed_effect,Bard;Sorcerer;Warlock;Wizard,Player's Handbook,,comprehend-languages
 create-or-destroy-water,2014:create-or-destroy-water,Create or Destroy Water,2014,1,Transmutation,1 Action,30 feet,"V, S, M",Instantaneous,false,false,,,fixed_effect,Cleric;Druid,Player's Handbook,,create-or-destroy-water
@@ -48,7 +48,7 @@ disguise-self,2014:disguise-self,Disguise Self,2014,1,Illusion,1 Action,Self,"V,
 dissonant-whispers,2014:dissonant-whispers,Dissonant Whispers,2014,1,Enchantment,1 Action,60 feet,V,Instantaneous,false,false,,wisdom,saving_throw,Bard,Player's Handbook,,dissonant-whispers
 divine-favor,2014:divine-favor,Divine Favor,2014,1,Evocation,1 Bonus Action,Self,"V, S","Concentration, up to 1 minute",true,false,,,fixed_effect,Paladin,Player's Handbook,,divine-favor
 ensnaring-strike,2014:ensnaring-strike,Ensnaring Strike,2014,1,Conjuration,1 Bonus Action,Self,V,"Concentration, up to 1 minute",true,false,,strength,saving_throw,Ranger,Player's Handbook,,ensnaring-strike
-entangle,2014:entangle,Entangle,2014,1,Conjuration,1 Action,90 feet,"V, S","Concentration, up to 1 minute",true,false,,strength,saving_throw,Druid,Player's Handbook,,entangle
+entangle,2014:entangle,Entangle,2014,1,Conjuration,1 Action,90 feet,"V, S","Concentration, up to 1 minute",true,false,,strength,saving_throw,Druid;Ranger (Optional),Player's Handbook,,entangle
 expeditious-retreat,2014:expeditious-retreat,Expeditious Retreat,2014,1,Transmutation,1 Bonus Action,Self,"V, S","Concentration, up to 10 minutes",true,false,,,fixed_effect,Artificer;Sorcerer;Warlock;Wizard,Player's Handbook,,expeditious-retreat
 faerie-fire,2014:faerie-fire,Faerie Fire,2014,1,Evocation,1 Action,60 feet,V,"Concentration, up to 1 minute",true,false,,dexterity,saving_throw,Artificer;Bard;Druid,Player's Handbook,,faerie-fire
 false-life,2014:false-life,False Life,2014,1,Necromancy,1 Action,Self,"V, S, M",1 hour,false,false,,,fixed_effect,Artificer;Sorcerer;Wizard,Player's Handbook,,false-life
@@ -56,7 +56,7 @@ feather-fall,2014:feather-fall,Feather Fall,2014,1,Transmutation,1 Reaction,60 f
 find-familiar,2014:find-familiar,Find Familiar,2014,1,Conjuration,1 Hour R,10 feet,"V, S, M",Instantaneous,false,false,,,fixed_effect,Wizard,Player's Handbook,,find-familiar
 fog-cloud,2014:fog-cloud,Fog Cloud,2014,1,Conjuration,1 Action,120 feet,"V, S","Concentration, up to 1 hour",true,false,,,fixed_effect,Druid;Ranger;Sorcerer;Wizard,Player's Handbook,,fog-cloud
 goodberry,2014:goodberry,Goodberry,2014,1,Transmutation,1 Action,Touch,"V, S, M",Instantaneous,false,false,,,fixed_effect,Druid;Ranger,Player's Handbook,,goodberry
-grease,2014:grease,Grease,2014,1,Conjuration,1 Action,60 feet,"V, S, M",1 minute,false,false,,dexterity,saving_throw,Artificer;Wizard,Player's Handbook,,grease
+grease,2014:grease,Grease,2014,1,Conjuration,1 Action,60 feet,"V, S, M",1 minute,false,false,,dexterity,saving_throw,Artificer;Sorcerer (Optional);Wizard,Player's Handbook,,grease
 guiding-bolt,2014:guiding-bolt,Guiding Bolt,2014,1,Evocation,1 Action,120 feet,"V, S",1 round,false,false,ranged_spell,,attack_roll,Cleric,Player's Handbook,,guiding-bolt
 hail-of-thorns,2014:hail-of-thorns,Hail of Thorns,2014,1,Conjuration,1 Bonus Action,Self,V,"Concentration, up to 1 minute",true,false,,dexterity,saving_throw,Ranger,Player's Handbook,,hail-of-thorns
 healing-word,2014:healing-word,Healing Word,2014,1,Evocation,1 Bonus Action,60 feet,V,Instantaneous,false,false,,,modifier_scaled,Bard;Cleric;Druid,Player's Handbook,,healing-word
@@ -71,11 +71,11 @@ jump,2014:jump,Jump,2014,1,Transmutation,1 Action,Touch,"V, S, M",1 minute,false
 longstrider,2014:longstrider,Longstrider,2014,1,Transmutation,1 Action,Touch,"V, S, M",1 hour,false,false,,,fixed_effect,Artificer;Bard;Druid;Ranger;Wizard,Player's Handbook,,longstrider
 mage-armor,2014:mage-armor,Mage Armor,2014,1,Abjuration,1 Action,Touch,"V, S, M",8 hours,false,false,,,fixed_effect,Sorcerer;Wizard,Player's Handbook,,mage-armor
 magic-missile,2014:magic-missile,Magic Missile,2014,1,Evocation,1 Action,120 feet,"V, S",Instantaneous,false,false,,,fixed_effect,Sorcerer;Wizard,Player's Handbook,,magic-missile
-protection-from-evil-and-good,2014:protection-from-evil-and-good,Protection from Evil and Good,2014,1,Abjuration,1 Action,Touch,"V, S, M","Concentration, up to 10 minutes",true,false,,,fixed_effect,Cleric;Paladin;Warlock;Wizard,Player's Handbook,,protection-from-evil-and-good
+protection-from-evil-and-good,2014:protection-from-evil-and-good,Protection from Evil and Good,2014,1,Abjuration,1 Action,Touch,"V, S, M","Concentration, up to 10 minutes",true,false,,,fixed_effect,Cleric;Druid (Optional);Paladin;Warlock;Wizard,Player's Handbook,,protection-from-evil-and-good
 purify-food-and-drink,2014:purify-food-and-drink,Purify Food and Drink,2014,1,Transmutation,1 Action R,10 feet,"V, S",Instantaneous,false,false,,,fixed_effect,Artificer;Cleric;Druid;Paladin,Player's Handbook,,purify-food-and-drink
 ray-of-sickness,2014:ray-of-sickness,Ray of Sickness,2014,1,Necromancy,1 Action,60 feet,"V, S",Instantaneous,false,false,ranged_spell,constitution,mixed,Sorcerer;Wizard,Player's Handbook,,ray-of-sickness
 sanctuary,2014:sanctuary,Sanctuary,2014,1,Abjuration,1 Bonus Action,30 feet,"V, S, M",1 minute,false,false,,wisdom,saving_throw,Artificer;Cleric,Player's Handbook,,sanctuary
-searing-smite,2014:searing-smite,Searing Smite,2014,1,Evocation,1 Bonus Action,Self,V,"Concentration, up to 1 minute",true,false,,constitution,saving_throw,Paladin,Player's Handbook,,searing-smite
+searing-smite,2014:searing-smite,Searing Smite,2014,1,Evocation,1 Bonus Action,Self,V,"Concentration, up to 1 minute",true,false,,constitution,saving_throw,Paladin;Ranger (Optional),Player's Handbook,,searing-smite
 shield,2014:shield,Shield,2014,1,Abjuration,1 Reaction,Self,"V, S",1 round,false,false,,,fixed_effect,Sorcerer;Wizard,Player's Handbook,,shield
 shield-of-faith,2014:shield-of-faith,Shield of Faith,2014,1,Abjuration,1 Bonus Action,60 feet,"V, S, M","Concentration, up to 10 minutes",true,false,,,fixed_effect,Cleric;Paladin,Player's Handbook,,shield-of-faith
 silent-image,2014:silent-image,Silent Image,2014,1,Illusion,1 Action,60 feet,"V, S, M","Concentration, up to 10 minutes",true,false,,,fixed_effect,Bard;Sorcerer;Wizard,Player's Handbook,,silent-image
@@ -88,11 +88,11 @@ thunderwave,2014:thunderwave,Thunderwave,2014,1,Evocation,1 Action,Self (15-foot
 unseen-servant,2014:unseen-servant,Unseen Servant,2014,1,Conjuration,1 Action R,60 feet,"V, S, M",1 hour,false,false,,,fixed_effect,Bard;Warlock;Wizard,Player's Handbook,,unseen-servant
 witch-bolt,2014:witch-bolt,Witch Bolt,2014,1,Evocation,1 Action,30 feet,"V, S, M","Concentration, up to 1 minute",true,false,ranged_spell,,attack_roll,Sorcerer;Warlock;Wizard,Player's Handbook,,witch-bolt
 wrathful-smite,2014:wrathful-smite,Wrathful Smite,2014,1,Evocation,1 Bonus Action,Self,V,"Concentration, up to 1 minute",true,false,,wisdom,saving_throw,Paladin,Player's Handbook,,wrathful-smite
-aid,2014:aid,Aid,2014,2,Abjuration,1 Action,30 Feet,"V, S, M",8 hours,false,false,,,fixed_effect,Artificer;Cleric;Paladin,Player's Handbook,,aid
+aid,2014:aid,Aid,2014,2,Abjuration,1 Action,30 Feet,"V, S, M",8 hours,false,false,,,fixed_effect,Artificer;Bard (Optional);Cleric;Paladin;Ranger (Optional),Player's Handbook,,aid
 alter-self,2014:alter-self,Alter Self,2014,2,Transmutation,1 Action,Self,"V, S","Concentration, up to 1 hour",true,false,,,fixed_effect,Artificer;Sorcerer;Wizard,Player's Handbook,,alter-self
 animal-messenger,2014:animal-messenger,Animal Messenger,2014,2,Enchantment,1 Action R,30 Feet,"V, S, M",24 hours,false,false,,,fixed_effect,Bard;Druid;Ranger,Player's Handbook,,animal-messenger
 arcane-lock,2014:arcane-lock,Arcane Lock,2014,2,Abjuration,1 Action,Touch,"V, S, M",Until dispelled,false,false,,,fixed_effect,Artificer;Wizard,Player's Handbook,,arcane-lock
-augury,2014:augury,Augury,2014,2,Divination,1 Minute R,Self,"V, S, M",Instantaneous,false,false,,,fixed_effect,Cleric,Player's Handbook,,augury
+augury,2014:augury,Augury,2014,2,Divination,1 Minute R,Self,"V, S, M",Instantaneous,false,false,,,fixed_effect,Cleric;Druid (Optional);Wizard (Optional),Player's Handbook,,augury
 barkskin,2014:barkskin,Barkskin,2014,2,Transmutation,1 Action,Touch,"V, S, M","Concentration, up to 1 hour",true,false,,,fixed_effect,Druid;Ranger,Player's Handbook,,barkskin
 beast-sense,2014:beast-sense,Beast Sense,2014,2,Divination,1 Action R,Touch,S,"Concentration, up to 1 hour",true,false,,,fixed_effect,Druid;Ranger,Player's Handbook,,beast-sense
 blindness-deafness,2014:blindness-deafness,Blindness/Deafness,2014,2,Necromancy,1 Action,30 Feet,V,1 minute,false,false,,constitution,saving_throw,Bard;Cleric;Sorcerer;Wizard,Player's Handbook,,blindness-deafness
@@ -100,21 +100,21 @@ blur,2014:blur,Blur,2014,2,Illusion,1 Action,Self,V,"Concentration, up to 1 minu
 branding-smite,2014:branding-smite,Branding Smite,2014,2,Evocation,1 Bonus Action,Self,V,"Concentration, up to 1 minute",true,false,,,fixed_effect,Paladin,Player's Handbook,,branding-smite
 calm-emotions,2014:calm-emotions,Calm Emotions,2014,2,Enchantment,1 Action,60 feet,"V, S","Concentration, up to 1 minute",true,false,,charisma,saving_throw,Bard;Cleric,Player's Handbook,,calm-emotions
 cloud-of-daggers,2014:cloud-of-daggers,Cloud of Daggers,2014,2,Conjuration,1 Action,60 feet,"V, S, M","Concentration, up to 1 minute",true,false,,,fixed_effect,Bard;Sorcerer;Warlock;Wizard,Player's Handbook,,cloud-of-daggers
-continual-flame,2014:continual-flame,Continual Flame,2014,2,Evocation,1 Action,Touch,"V, S, M",Until dispelled,false,false,,,fixed_effect,Artificer;Cleric;Wizard,Player's Handbook,,continual-flame
+continual-flame,2014:continual-flame,Continual Flame,2014,2,Evocation,1 Action,Touch,"V, S, M",Until dispelled,false,false,,,fixed_effect,Artificer;Cleric;Druid (Optional);Wizard,Player's Handbook,,continual-flame
 cordon-of-arrows,2014:cordon-of-arrows,Cordon of Arrows,2014,2,Transmutation,1 Action,5 feet,"V, S, M",8 hours,false,false,,dexterity,saving_throw,Ranger,Player's Handbook,,cordon-of-arrows
 crown-of-madness,2014:crown-of-madness,Crown of Madness,2014,2,Enchantment,1 Action,120 feet,"V, S","Concentration, up to 1 minute",true,false,,wisdom,saving_throw,Bard;Sorcerer;Warlock;Wizard,Player's Handbook,,crown-of-madness
 darkness,2014:darkness,Darkness,2014,2,Evocation,1 Action,60 feet,"V, M","Concentration, up to 10 minutes",true,false,,,fixed_effect,Sorcerer;Warlock;Wizard,Player's Handbook,,darkness
 darkvision,2014:darkvision,Darkvision,2014,2,Transmutation,1 Action,Touch,"V, S, M",8 hours,false,false,,,fixed_effect,Artificer;Druid;Ranger;Sorcerer;Wizard,Player's Handbook,,darkvision
 detect-thoughts,2014:detect-thoughts,Detect Thoughts,2014,2,Divination,1 Action,Self,"V, S, M","Concentration, up to 1 minute",true,false,,wisdom,saving_throw,Bard;Sorcerer;Wizard,Player's Handbook,,detect-thoughts
-enhance-ability,2014:enhance-ability,Enhance Ability,2014,2,Transmutation,1 Action,Touch,"V, S, M","Concentration, up to 1 hour",true,false,,,fixed_effect,Artificer;Bard;Cleric;Druid;Sorcerer,Player's Handbook,,enhance-ability
-enlarge-reduce,2014:enlarge-reduce,Enlarge/Reduce,2014,2,Transmutation,1 Action,30 feet,"V, S, M","Concentration, up to 1 minute",true,false,,constitution;strength,saving_throw,Artificer;Sorcerer;Wizard,Player's Handbook,,enlarge-reduce
+enhance-ability,2014:enhance-ability,Enhance Ability,2014,2,Transmutation,1 Action,Touch,"V, S, M","Concentration, up to 1 hour",true,false,,,fixed_effect,Artificer;Bard;Cleric;Druid;Ranger (Optional);Sorcerer;Wizard (Optional),Player's Handbook,,enhance-ability
+enlarge-reduce,2014:enlarge-reduce,Enlarge/Reduce,2014,2,Transmutation,1 Action,30 feet,"V, S, M","Concentration, up to 1 minute",true,false,,constitution;strength,saving_throw,Artificer;Bard (Optional);Druid (Optional);Sorcerer;Wizard,Player's Handbook,,enlarge-reduce
 enthrall,2014:enthrall,Enthrall,2014,2,Enchantment,1 Action,60 feet,"V, S",1 minute,false,false,,wisdom,saving_throw,Bard;Warlock,Player's Handbook,,enthrall
 find-steed,2014:find-steed,Find Steed,2014,2,Conjuration,10 Minutes,30 feet,"V, S",Instantaneous,false,false,,,fixed_effect,Paladin,Player's Handbook,,find-steed
 find-traps,2014:find-traps,Find Traps,2014,2,Divination,1 Action,120 feet,"V, S",Instantaneous,false,false,,,fixed_effect,Cleric;Druid;Ranger,Player's Handbook,,find-traps
-flame-blade,2014:flame-blade,Flame Blade,2014,2,Evocation,1 Bonus Action,Self,"V, S, M","Concentration, up to 10 minutes",true,false,melee_spell,,attack_roll,Druid,Player's Handbook,,flame-blade
-flaming-sphere,2014:flaming-sphere,Flaming Sphere,2014,2,Conjuration,1 Action,60 feet,"V, S, M","Concentration, up to 1 minute",true,false,,dexterity,saving_throw,Druid;Wizard,Player's Handbook,,flaming-sphere
-gentle-repose,2014:gentle-repose,Gentle Repose,2014,2,Necromancy,1 Action R,Touch,"V, S, M",10 days,false,false,,,fixed_effect,Cleric;Wizard,Player's Handbook,,gentle-repose
-gust-of-wind,2014:gust-of-wind,Gust of Wind,2014,2,Evocation,1 Action,Self (60-foot line),"V, S, M","Concentration, up to 1 minute",true,false,,strength,saving_throw,Druid;Sorcerer;Wizard,Player's Handbook,,gust-of-wind
+flame-blade,2014:flame-blade,Flame Blade,2014,2,Evocation,1 Bonus Action,Self,"V, S, M","Concentration, up to 10 minutes",true,false,melee_spell,,attack_roll,Druid;Sorcerer (Optional),Player's Handbook,,flame-blade
+flaming-sphere,2014:flaming-sphere,Flaming Sphere,2014,2,Conjuration,1 Action,60 feet,"V, S, M","Concentration, up to 1 minute",true,false,,dexterity,saving_throw,Druid;Sorcerer (Optional);Wizard,Player's Handbook,,flaming-sphere
+gentle-repose,2014:gentle-repose,Gentle Repose,2014,2,Necromancy,1 Action R,Touch,"V, S, M",10 days,false,false,,,fixed_effect,Cleric;Paladin (Optional);Wizard,Player's Handbook,,gentle-repose
+gust-of-wind,2014:gust-of-wind,Gust of Wind,2014,2,Evocation,1 Action,Self (60-foot line),"V, S, M","Concentration, up to 1 minute",true,false,,strength,saving_throw,Druid;Ranger (Optional);Sorcerer;Wizard,Player's Handbook,,gust-of-wind
 heat-metal,2014:heat-metal,Heat Metal,2014,2,Transmutation,1 Action,60 feet,"V, S, M","Concentration, up to 1 minute",true,false,,constitution,saving_throw,Artificer;Bard;Druid,Player's Handbook,,heat-metal
 hold-person,2014:hold-person,Hold Person,2014,2,Enchantment,1 Action,60 feet,"V, S, M","Concentration, up to 1 minute",true,false,,wisdom,saving_throw,Bard;Cleric;Druid;Sorcerer;Warlock;Wizard,Player's Handbook,,hold-person
 invisibility,2014:invisibility,Invisibility,2014,2,Illusion,1 Action,Touch,"V, S, M","Concentration, up to 1 hour",true,false,,,fixed_effect,Artificer;Bard;Sorcerer;Warlock;Wizard,Player's Handbook,,invisibility
@@ -124,15 +124,15 @@ levitate,2014:levitate,Levitate,2014,2,Transmutation,1 Action,60 feet,"V, S, M",
 locate-animals-or-plants,2014:locate-animals-or-plants,Locate Animals or Plants,2014,2,Divination,1 Action R,Self,"V, S, M",Instantaneous,false,false,,,fixed_effect,Bard;Druid;Ranger,Player's Handbook,,locate-animals-or-plants
 locate-object,2014:locate-object,Locate Object,2014,2,Divination,1 Action,Self,"V, S, M","Concentration, up to 10 minutes",true,false,,,fixed_effect,Bard;Cleric;Druid;Paladin;Ranger;Wizard,Player's Handbook,,locate-object
 magic-mouth,2014:magic-mouth,Magic Mouth,2014,2,Illusion,1 Minute R,30 feet,"V, S, M",Until dispelled,false,false,,,fixed_effect,Artificer;Bard;Wizard,Player's Handbook,,magic-mouth
-magic-weapon,2014:magic-weapon,Magic Weapon,2014,2,Transmutation,1 Bonus Action,Touch,"V, S","Concentration, up to 1 hour",true,false,,,fixed_effect,Artificer;Paladin;Wizard,Player's Handbook,,magic-weapon
+magic-weapon,2014:magic-weapon,Magic Weapon,2014,2,Transmutation,1 Bonus Action,Touch,"V, S","Concentration, up to 1 hour",true,false,,,fixed_effect,Artificer;Paladin;Ranger (Optional);Sorcerer (Optional);Wizard,Player's Handbook,,magic-weapon
 melf-s-acid-arrow,2014:melf-s-acid-arrow,Melf's Acid Arrow,2014,2,Evocation,1 Action,90 feet,"V, S, M",Instantaneous,false,false,ranged_spell,,attack_roll,Wizard,Player's Handbook,,melfs-acid-arrow
-mirror-image,2014:mirror-image,Mirror Image,2014,2,Illusion,1 Action,Self,"V, S",1 minute,false,false,,,fixed_effect,Sorcerer;Warlock;Wizard,Player's Handbook,,mirror-image
+mirror-image,2014:mirror-image,Mirror Image,2014,2,Illusion,1 Action,Self,"V, S",1 minute,false,false,,,fixed_effect,Bard (Optional);Sorcerer;Warlock;Wizard,Player's Handbook,,mirror-image
 misty-step,2014:misty-step,Misty Step,2014,2,Conjuration,1 Bonus Action,Self,V,Instantaneous,false,false,,,fixed_effect,Sorcerer;Warlock;Wizard,Player's Handbook,,misty-step
 moonbeam,2014:moonbeam,Moonbeam,2014,2,Evocation,1 Action,120 feet,"V, S, M","Concentration, up to 1 minute",true,false,,constitution,saving_throw,Druid,Player's Handbook,,moonbeam
 nystul-s-magic-aura,2014:nystul-s-magic-aura,Nystul's Magic Aura,2014,2,Illusion,1 Action,Touch,"V, S, M",24 hours,false,false,,,fixed_effect,Wizard,Player's Handbook,,nystuls-magic-aura
 pass-without-trace,2014:pass-without-trace,Pass Without Trace,2014,2,Abjuration,1 Action,Self,"V, S, M","Concentration, up to 1 hour",true,false,,,fixed_effect,Druid;Ranger,Player's Handbook,,pass-without-trace
 phantasmal-force,2014:phantasmal-force,Phantasmal Force,2014,2,Illusion,1 Action,60 feet,"V, S, M","Concentration, up to 1 minute",true,false,,intelligence,saving_throw,Bard;Sorcerer;Wizard,Player's Handbook,,phantasmal-force
-prayer-of-healing,2014:prayer-of-healing,Prayer of Healing,2014,2,Evocation,10 Minutes,30 feet,V,Instantaneous,false,false,,,modifier_scaled,Cleric,Player's Handbook,,prayer-of-healing
+prayer-of-healing,2014:prayer-of-healing,Prayer of Healing,2014,2,Evocation,10 Minutes,30 feet,V,Instantaneous,false,false,,,modifier_scaled,Cleric;Paladin (Optional),Player's Handbook,,prayer-of-healing
 protection-from-poison,2014:protection-from-poison,Protection from Poison,2014,2,Abjuration,1 Action,Touch,"V, S",1 hour,false,false,,,fixed_effect,Artificer;Cleric;Druid;Paladin;Ranger,Player's Handbook,,protection-from-poison
 ray-of-enfeeblement,2014:ray-of-enfeeblement,Ray of Enfeeblement,2014,2,Necromancy,1 Action,60 feet,"V, S","Concentration, up to 1 minute",true,false,ranged_spell,constitution,mixed,Warlock;Wizard,Player's Handbook,,ray-of-enfeeblement
 rope-trick,2014:rope-trick,Rope Trick,2014,2,Transmutation,1 Action,Touch,"V, S, M",1 hour,false,false,,,fixed_effect,Artificer;Wizard,Player's Handbook,,rope-trick
@@ -144,11 +144,11 @@ spider-climb,2014:spider-climb,Spider Climb,2014,2,Transmutation,1 Action,Touch,
 spike-growth,2014:spike-growth,Spike Growth,2014,2,Transmutation,1 Action,150 feet,"V, S, M","Concentration, up to 10 minutes",true,false,,,fixed_effect,Druid;Ranger,Player's Handbook,,spike-growth
 spiritual-weapon,2014:spiritual-weapon,Spiritual Weapon,2014,2,Evocation,1 Bonus Action,60 feet,"V, S",1 minute,false,false,melee_spell,,attack_roll,Cleric,Player's Handbook,,spiritual-weapon
 suggestion,2014:suggestion,Suggestion,2014,2,Enchantment,1 Action,30 feet,"V, M","Concentration, up to 8 hours",true,false,,wisdom,saving_throw,Bard;Sorcerer;Warlock;Wizard,Player's Handbook,,suggestion
-warding-bond,2014:warding-bond,Warding Bond,2014,2,Abjuration,1 Action,Touch,"V, S, M",1 hour,false,false,,,fixed_effect,Cleric,Player's Handbook,,warding-bond
+warding-bond,2014:warding-bond,Warding Bond,2014,2,Abjuration,1 Action,Touch,"V, S, M",1 hour,false,false,,,fixed_effect,Cleric;Paladin (Optional),Player's Handbook,,warding-bond
 web,2014:web,Web,2014,2,Conjuration,1 Action,60 feet,"V, S, M","Concentration, up to 1 hour",true,false,,dexterity,saving_throw,Artificer;Sorcerer;Wizard,Player's Handbook,,web
 zone-of-truth,2014:zone-of-truth,Zone of Truth,2014,2,Enchantment,1 Action,60 feet,"V, S",10 minutes,false,false,,charisma,saving_throw,Bard;Cleric;Paladin,Player's Handbook,,zone-of-truth
 animate-dead,2014:animate-dead,Animate Dead,2014,3,Necromancy,1 Minute,10 feet,"V, S, M",Instantaneous,false,false,,,fixed_effect,Cleric;Wizard,Player's Handbook,,animate-dead
-aura-of-vitality,2014:aura-of-vitality,Aura of Vitality,2014,3,Evocation,1 Action,Self (30-foot radius),V,"Concentration, up to 1 minute",true,false,,,fixed_effect,Paladin,Player's Handbook,,aura-of-vitality
+aura-of-vitality,2014:aura-of-vitality,Aura of Vitality,2014,3,Evocation,1 Action,Self (30-foot radius),V,"Concentration, up to 1 minute",true,false,,,fixed_effect,Cleric (Optional);Druid (Optional);Paladin,Player's Handbook,,aura-of-vitality
 beacon-of-hope,2014:beacon-of-hope,Beacon of Hope,2014,3,Abjuration,1 Action,30 feet,"V, S","Concentration, up to 1 minute",true,false,,wisdom,saving_throw,Cleric,Player's Handbook,,beacon-of-hope
 bestow-curse,2014:bestow-curse,Bestow Curse,2014,3,Necromancy,1 Action,Touch,"V, S","Concentration, up to 1 minute",true,false,,wisdom,saving_throw,Bard;Cleric;Wizard,Player's Handbook,,bestow-curse
 blinding-smite,2014:blinding-smite,Blinding Smite,2014,3,Evocation,1 Bonus Action,Self,V,"Concentration, up to 1 minute",true,false,,constitution,saving_throw,Paladin,Player's Handbook,,blinding-smite
@@ -162,7 +162,7 @@ create-food-and-water,2014:create-food-and-water,Create Food and Water,2014,3,Co
 crusader-s-mantle,2014:crusader-s-mantle,Crusader's Mantle,2014,3,Evocation,1 Action,Self,V,"Concentration, up to 1 minute",true,false,,,fixed_effect,Paladin,Player's Handbook,,crusaders-mantle
 daylight,2014:daylight,Daylight,2014,3,Evocation,1 Action,60 feet,"V, S",1 hour,false,false,,,fixed_effect,Cleric;Druid;Paladin;Ranger;Sorcerer,Player's Handbook,,daylight
 dispel-magic,2014:dispel-magic,Dispel Magic,2014,3,Abjuration,1 Action,120 feet,"V, S",Instantaneous,false,false,,,fixed_effect,Artificer;Bard;Cleric;Druid;Paladin;Sorcerer;Warlock;Wizard,Player's Handbook,,dispel-magic
-elemental-weapon,2014:elemental-weapon,Elemental Weapon,2014,3,Transmutation,1 Action,Touch,"V, S","Concentration, up to 1 hour",true,false,,,fixed_effect,Artificer;Paladin,Player's Handbook,,elemental-weapon
+elemental-weapon,2014:elemental-weapon,Elemental Weapon,2014,3,Transmutation,1 Action,Touch,"V, S","Concentration, up to 1 hour",true,false,,,fixed_effect,Artificer;Druid (Optional);Paladin;Ranger (Optional),Player's Handbook,,elemental-weapon
 fear,2014:fear,Fear,2014,3,Illusion,1 Action,Self (30-foot cone),"V, S, M","Concentration, up to 1 minute",true,false,,wisdom,saving_throw,Bard;Sorcerer;Warlock;Wizard,Player's Handbook,,fear
 feign-death,2014:feign-death,Feign Death,2014,3,Necromancy,1 Action R,Touch,"V, S, M",1 hour,false,false,,,fixed_effect,Bard;Cleric;Druid;Wizard,Player's Handbook,,feign-death
 fireball,2014:fireball,Fireball,2014,3,Evocation,1 Action,150 feet,"V, S, M",Instantaneous,false,false,,dexterity,saving_throw,Sorcerer;Wizard,Player's Handbook,,fireball
@@ -177,29 +177,29 @@ lightning-arrow,2014:lightning-arrow,Lightning Arrow,2014,3,Transmutation,1 Bonu
 lightning-bolt,2014:lightning-bolt,Lightning Bolt,2014,3,Evocation,1 Action,Self (100-foot line),"V, S, M",Instantaneous,false,false,,dexterity,saving_throw,Sorcerer;Wizard,Player's Handbook,,lightning-bolt
 magic-circle,2014:magic-circle,Magic Circle,2014,3,Abjuration,1 Minute,10 feet,"V, S, M",1 hour,false,false,,,fixed_effect,Cleric;Paladin;Warlock;Wizard,Player's Handbook,,magic-circle
 major-image,2014:major-image,Major Image,2014,3,Illusion,1 Action,120 feet,"V, S, M","Concentration, up to 10 minutes",true,false,,,fixed_effect,Bard;Sorcerer;Warlock;Wizard,Player's Handbook,,major-image
-mass-healing-word,2014:mass-healing-word,Mass Healing Word,2014,3,Evocation,1 Bonus Action,60 feet,V,Instantaneous,false,false,,,modifier_scaled,Cleric,Player's Handbook,,mass-healing-word
-meld-into-stone,2014:meld-into-stone,Meld into Stone,2014,3,Transmutation,1 Action R,Touch,"V, S",8 hours,false,false,,,fixed_effect,Cleric;Druid,Player's Handbook,,meld-into-stone
+mass-healing-word,2014:mass-healing-word,Mass Healing Word,2014,3,Evocation,1 Bonus Action,60 feet,V,Instantaneous,false,false,,,modifier_scaled,Bard (Optional);Cleric,Player's Handbook,,mass-healing-word
+meld-into-stone,2014:meld-into-stone,Meld into Stone,2014,3,Transmutation,1 Action R,Touch,"V, S",8 hours,false,false,,,fixed_effect,Cleric;Druid;Ranger (Optional),Player's Handbook,,meld-into-stone
 nondetection,2014:nondetection,Nondetection,2014,3,Abjuration,1 Action,Touch,"V, S, M",8 hours,false,false,,,fixed_effect,Bard;Ranger;Wizard,Player's Handbook,,nondetection
 phantom-steed,2014:phantom-steed,Phantom Steed,2014,3,Illusion,1 Minute R,30 feet,"V, S",1 hour,false,false,,,fixed_effect,Wizard,Player's Handbook,,phantom-steed
 plant-growth,2014:plant-growth,Plant Growth,2014,3,Transmutation,1 Action or 8 Hours,150 feet,"V, S",Instantaneous,false,false,,,fixed_effect,Bard;Druid;Ranger,Player's Handbook,,plant-growth
 protection-from-energy,2014:protection-from-energy,Protection from Energy,2014,3,Abjuration,1 Action,Touch,"V, S","Concentration, up to 1 hour",true,false,,,fixed_effect,Artificer;Cleric;Druid;Ranger;Sorcerer;Wizard,Player's Handbook,,protection-from-energy
 remove-curse,2014:remove-curse,Remove Curse,2014,3,Abjuration,1 Action,Touch,"V, S",Instantaneous,false,false,,,fixed_effect,Cleric;Paladin;Warlock;Wizard,Player's Handbook,,remove-curse
-revivify,2014:revivify,Revivify,2014,3,Necromancy,1 Action,Touch,"V, S, M",Instantaneous,false,false,,,fixed_effect,Artificer;Cleric;Paladin,Player's Handbook,,revivify
+revivify,2014:revivify,Revivify,2014,3,Necromancy,1 Action,Touch,"V, S, M",Instantaneous,false,false,,,fixed_effect,Artificer;Cleric;Druid (Optional);Paladin;Ranger (Optional),Player's Handbook,,revivify
 sending,2014:sending,Sending,2014,3,Evocation,1 Action,Unlimited,"V, S, M",1 round,false,false,,,fixed_effect,Bard;Cleric;Wizard,Player's Handbook,,sending
 sleet-storm,2014:sleet-storm,Sleet Storm,2014,3,Conjuration,1 Action,150 feet,"V, S, M","Concentration, up to 1 minute",true,false,,dexterity;constitution,saving_throw,Druid;Sorcerer;Wizard,Player's Handbook,,sleet-storm
-slow,2014:slow,Slow,2014,3,Transmutation,1 Action,120 feet,"V, S, M","Concentration, up to 1 minute",true,false,,wisdom;dexterity,saving_throw,Sorcerer;Wizard,Player's Handbook,,slow
-speak-with-dead,2014:speak-with-dead,Speak with Dead,2014,3,Necromancy,1 Action,10 feet,"V, S, M",10 minutes,false,false,,,fixed_effect,Bard;Cleric,Player's Handbook,,speak-with-dead
+slow,2014:slow,Slow,2014,3,Transmutation,1 Action,120 feet,"V, S, M","Concentration, up to 1 minute",true,false,,wisdom;dexterity,saving_throw,Bard (Optional);Sorcerer;Wizard,Player's Handbook,,slow
+speak-with-dead,2014:speak-with-dead,Speak with Dead,2014,3,Necromancy,1 Action,10 feet,"V, S, M",10 minutes,false,false,,,fixed_effect,Bard;Cleric;Wizard (Optional),Player's Handbook,,speak-with-dead
 speak-with-plants,2014:speak-with-plants,Speak with Plants,2014,3,Transmutation,1 Action,Self (30-foot radius),"V, S",10 minutes,false,false,,,fixed_effect,Bard;Druid;Ranger,Player's Handbook,,speak-with-plants
 spirit-guardians,2014:spirit-guardians,Spirit Guardians,2014,3,Conjuration,1 Action,Self (15-foot radius),"V, S, M","Concentration, up to 10 minutes",true,false,,wisdom,saving_throw,Cleric,Player's Handbook,,spirit-guardians
 stinking-cloud,2014:stinking-cloud,Stinking Cloud,2014,3,Conjuration,1 Action,90 feet,"V, S, M","Concentration, up to 1 minute",true,false,,constitution,saving_throw,Bard;Sorcerer;Wizard,Player's Handbook,,stinking-cloud
 tongues,2014:tongues,Tongues,2014,3,Divination,1 Action,Touch,"V, M",1 hour,false,false,,,fixed_effect,Bard;Cleric;Sorcerer;Warlock;Wizard,Player's Handbook,,tongues
-vampiric-touch,2014:vampiric-touch,Vampiric Touch,2014,3,Necromancy,1 Action,Self,"V, S","Concentration, up to 1 minute",true,false,melee_spell,,attack_roll,Warlock;Wizard,Player's Handbook,,vampiric-touch
+vampiric-touch,2014:vampiric-touch,Vampiric Touch,2014,3,Necromancy,1 Action,Self,"V, S","Concentration, up to 1 minute",true,false,melee_spell,,attack_roll,Sorcerer (Optional);Warlock;Wizard,Player's Handbook,,vampiric-touch
 water-breathing,2014:water-breathing,Water Breathing,2014,3,Transmutation,1 Action R,30 feet,"V, S, M",24 hours,false,false,,,fixed_effect,Artificer;Druid;Ranger;Sorcerer;Wizard,Player's Handbook,,water-breathing
 water-walk,2014:water-walk,Water Walk,2014,3,Transmutation,1 Action R,30 feet,"V, S, M",1 hour,false,false,,,fixed_effect,Artificer;Cleric;Druid;Ranger;Sorcerer,Player's Handbook,,water-walk
 wind-wall,2014:wind-wall,Wind Wall,2014,3,Evocation,1 Action,120 feet,"V, S, M","Concentration, up to 1 minute",true,false,,strength,saving_throw,Druid;Ranger,Player's Handbook,,wind-wall
 arcane-eye,2014:arcane-eye,Arcane Eye,2014,4,Divination,1 Action,30 feet,"V, S, M","Concentration, up to 1 hour",true,false,,,fixed_effect,Artificer;Wizard,Player's Handbook,,arcane-eye
-aura-of-life,2014:aura-of-life,Aura of Life,2014,4,Abjuration,1 Action,Self (30-foot radius),V,"Concentration, up to 10 minutes",true,false,,,fixed_effect,Paladin,Player's Handbook,,aura-of-life
-aura-of-purity,2014:aura-of-purity,Aura of Purity,2014,4,Abjuration,1 Action,Self (30-foot radius),V,"Concentration, up to 10 minutes",true,false,,,fixed_effect,Paladin,Player's Handbook,,aura-of-purity
+aura-of-life,2014:aura-of-life,Aura of Life,2014,4,Abjuration,1 Action,Self (30-foot radius),V,"Concentration, up to 10 minutes",true,false,,,fixed_effect,Cleric (Optional);Paladin,Player's Handbook,,aura-of-life
+aura-of-purity,2014:aura-of-purity,Aura of Purity,2014,4,Abjuration,1 Action,Self (30-foot radius),V,"Concentration, up to 10 minutes",true,false,,,fixed_effect,Cleric (Optional);Paladin,Player's Handbook,,aura-of-purity
 banishment,2014:banishment,Banishment,2014,4,Abjuration,1 Action,60 feet,"V, S, M","Concentration, up to 1 minutes",true,false,,charisma,saving_throw,Cleric;Paladin;Sorcerer;Warlock;Wizard,Player's Handbook,,banishment
 blight,2014:blight,Blight,2014,4,Necromancy,1 Action,30 feet,"V, S",Instantaneous,false,false,,constitution,saving_throw,Druid;Sorcerer;Warlock;Wizard,Player's Handbook,,blight
 compulsion,2014:compulsion,Compulsion,2014,4,Enchantment,1 Action,30 feet,"V, S","Concentration, up to 1 minute",true,false,,wisdom,saving_throw,Bard,Player's Handbook,,compulsion
@@ -209,11 +209,11 @@ conjure-woodland-beings,2014:conjure-woodland-beings,Conjure Woodland Beings,201
 control-water,2014:control-water,Control Water,2014,4,Transmutation,1 Action,300 feet,"V, S, M","Concentration, up to 10 minutes",true,false,,strength,saving_throw,Cleric;Druid;Wizard,Player's Handbook,,control-water
 death-ward,2014:death-ward,Death Ward,2014,4,Abjuration,1 Action,Touch,"V, S",8 hours,false,false,,,fixed_effect,Cleric;Paladin,Player's Handbook,,death-ward
 dimension-door,2014:dimension-door,Dimension Door,2014,4,Conjuration,1 Action,500 feet,V,Instantaneous,false,false,,,fixed_effect,Bard;Sorcerer;Warlock;Wizard,Player's Handbook,,dimension-door
-divination,2014:divination,Divination,2014,4,Divination,1 Action R,Self,"V, S, M",Instantaneous,false,false,,,fixed_effect,Cleric,Player's Handbook,,divination
-dominate-beast,2014:dominate-beast,Dominate Beast,2014,4,Enchantment,1 Action,60 feet,"V, S","Concentration, up to 1 minute",true,false,,wisdom,saving_throw,Druid;Sorcerer,Player's Handbook,,dominate-beast
+divination,2014:divination,Divination,2014,4,Divination,1 Action R,Self,"V, S, M",Instantaneous,false,false,,,fixed_effect,Cleric;Druid (Optional);Wizard (Optional),Player's Handbook,,divination
+dominate-beast,2014:dominate-beast,Dominate Beast,2014,4,Enchantment,1 Action,60 feet,"V, S","Concentration, up to 1 minute",true,false,,wisdom,saving_throw,Druid;Ranger (Optional);Sorcerer,Player's Handbook,,dominate-beast
 evard-s-black-tentacles,2014:evard-s-black-tentacles,Evard's Black Tentacles,2014,4,Conjuration,1 Action,90 feet,"V, S, M","Concentration, up to 1 minute",true,false,,dexterity,saving_throw,Wizard,Player's Handbook,,evards-black-tentacles
 fabricate,2014:fabricate,Fabricate,2014,4,Transmutation,10 Minutes,120 feet,"V, S",Instantaneous,false,false,,,fixed_effect,Artificer;Wizard,Player's Handbook,,fabricate
-fire-shield,2014:fire-shield,Fire Shield,2014,4,Evocation,1 Action,Self,"V, S, M",10 minutes,false,false,,,fixed_effect,Wizard,Player's Handbook,,fire-shield
+fire-shield,2014:fire-shield,Fire Shield,2014,4,Evocation,1 Action,Self,"V, S, M",10 minutes,false,false,,,fixed_effect,Druid (Optional);Sorcerer (Optional);Wizard,Player's Handbook,,fire-shield
 freedom-of-movement,2014:freedom-of-movement,Freedom of Movement,2014,4,Abjuration,1 Action,Touch,"V, S, M",1 hour,false,false,,,fixed_effect,Artificer;Bard;Cleric;Druid;Ranger,Player's Handbook,,freedom-of-movement
 giant-insect,2014:giant-insect,Giant Insect,2014,4,Transmutation,1 Action,30 feet,"V, S","Concentration, up to 10 minutes",true,false,,,fixed_effect,Druid,Player's Handbook,,giant-insect
 grasping-vine,2014:grasping-vine,Grasping Vine,2014,4,Conjuration,1 Bonus Action,30 feet,"V, S","Concentration, up to 1 minute",true,false,,dexterity,saving_throw,Druid;Ranger,Player's Handbook,,grasping-vine
@@ -226,7 +226,7 @@ locate-creature,2014:locate-creature,Locate Creature,2014,4,Divination,1 Action,
 mordenkainen-s-faithful-hound,2014:mordenkainen-s-faithful-hound,Mordenkainen's Faithful Hound,2014,4,Conjuration,1 Action,30 feet,"V, S, M",8 hours,false,false,,,modifier_scaled,Artificer;Wizard,Player's Handbook,,mordenkainens-faithful-hound
 mordenkainen-s-private-sanctum,2014:mordenkainen-s-private-sanctum,Mordenkainen's Private Sanctum,2014,4,Abjuration,10 minutes,120 feet,"V, S, M",24 hours,false,false,,,fixed_effect,Artificer;Wizard,Player's Handbook,,mordenkainens-private-sanctum
 otiluke-s-resilient-sphere,2014:otiluke-s-resilient-sphere,Otiluke's Resilient Sphere,2014,4,Evocation,1 Action,30 feet,"V, S, M","Concentration, up to 1 minute",true,false,,dexterity,saving_throw,Artificer;Wizard,Player's Handbook,,otilukes-resilient-sphere
-phantasmal-killer,2014:phantasmal-killer,Phantasmal Killer,2014,4,Illusion,1 Action,120 feet,"V, S","Concentration, up to 1 minute",true,false,,wisdom,saving_throw,Wizard,Player's Handbook,,phantasmal-killer
+phantasmal-killer,2014:phantasmal-killer,Phantasmal Killer,2014,4,Illusion,1 Action,120 feet,"V, S","Concentration, up to 1 minute",true,false,,wisdom,saving_throw,Bard (Optional);Wizard,Player's Handbook,,phantasmal-killer
 polymorph,2014:polymorph,Polymorph,2014,4,Transmutation,1 Action,60 feet,"V, S, M","Concentration, up to 1 hour",true,false,,wisdom,saving_throw,Bard;Druid;Sorcerer;Wizard,Player's Handbook,,polymorph
 staggering-smite,2014:staggering-smite,Staggering Smite,2014,4,Evocation,1 Bonus Action,Self,V,"Concentration, up to 1 minute",true,false,,wisdom,saving_throw,Paladin,Player's Handbook,,staggering-smite
 stone-shape,2014:stone-shape,Stone Shape,2014,4,Transmutation,1 Action,Touch,"V, S, M",Instantaneous,false,false,,,fixed_effect,Artificer;Cleric;Druid;Wizard,Player's Handbook,,stone-shape
@@ -236,12 +236,12 @@ animate-objects,2014:animate-objects,Animate Objects,2014,5,Transmutation,1 Acti
 antilife-shell,2014:antilife-shell,Antilife Shell,2014,5,Abjuration,1 Action,Self (10-foot radius),"V, S","Concentration, up to 1 hour",true,false,,,fixed_effect,Druid,Player's Handbook,,antilife-shell
 awaken,2014:awaken,Awaken,2014,5,Transmutation,8 Hours,Touch,"V, S, M",Instantaneous,false,false,,,fixed_effect,Bard;Druid,Player's Handbook,,awaken
 banishing-smite,2014:banishing-smite,Banishing Smite,2014,5,Abjuration,1 Bonus Action,Self,V,"Concentration, up to 1 minute",true,false,,,fixed_effect,Paladin,Player's Handbook,,banishing-smite
-bigby-s-hand,2014:bigby-s-hand,Bigby's Hand,2014,5,Evocation,1 Action,120 feet,"V, S, M","Concentration, up to 1 minute",true,false,,,fixed_effect,Artificer;Wizard,Player's Handbook,,bigbys-hand
+bigby-s-hand,2014:bigby-s-hand,Bigby's Hand,2014,5,Evocation,1 Action,120 feet,"V, S, M","Concentration, up to 1 minute",true,false,,,fixed_effect,Artificer;Sorcerer (Optional);Wizard,Player's Handbook,,bigbys-hand
 circle-of-power,2014:circle-of-power,Circle of Power,2014,5,Abjuration,1 Action,Self (30-foot radius),V,"Concentration, up to 10 minutes",true,false,,,fixed_effect,Paladin,Player's Handbook,,circle-of-power
 cloudkill,2014:cloudkill,Cloudkill,2014,5,Conjuration,1 Action,120 feet,"V, S","Concentration, up to 10 minutes",true,false,,constitution,saving_throw,Sorcerer;Wizard,Player's Handbook,,cloudkill
 commune,2014:commune,Commune,2014,5,Divination,1 Minute R,Self,"V, S, M",1 minute,false,false,,,fixed_effect,Cleric,Player's Handbook,,commune
 commune-with-nature,2014:commune-with-nature,Commune with Nature,2014,5,Divination,1 Minute R,Self,"V, S",Instantaneous,false,false,,,fixed_effect,Druid;Ranger,Player's Handbook,,commune-with-nature
-cone-of-cold,2014:cone-of-cold,Cone of Cold,2014,5,Evocation,1 Action,Self (60-foot cone),"V, S, M",Instantaneous,false,false,,constitution,saving_throw,Sorcerer;Wizard,Player's Handbook,,cone-of-cold
+cone-of-cold,2014:cone-of-cold,Cone of Cold,2014,5,Evocation,1 Action,Self (60-foot cone),"V, S, M",Instantaneous,false,false,,constitution,saving_throw,Druid (Optional);Sorcerer;Wizard,Player's Handbook,,cone-of-cold
 conjure-elemental,2014:conjure-elemental,Conjure Elemental,2014,5,Conjuration,1 Minute,90 feet,"V, S, M","Concentration, up to 1 hour",true,false,,,fixed_effect,Druid;Wizard,Player's Handbook,,conjure-elemental
 conjure-volley,2014:conjure-volley,Conjure Volley,2014,5,Conjuration,1 Action,150 feet,"V, S, M",Instantaneous,false,false,,dexterity,saving_throw,Ranger,Player's Handbook,,conjure-volley
 contact-other-plane,2014:contact-other-plane,Contact Other Plane,2014,5,Divination,1 Minute R,Self,V,1 minute,false,false,,intelligence,saving_throw,Warlock;Wizard,Player's Handbook,,contact-other-plane
@@ -253,24 +253,24 @@ dominate-person,2014:dominate-person,Dominate Person,2014,5,Enchantment,1 Action
 dream,2014:dream,Dream,2014,5,Illusion,1 Minute,Special,"V, S, M",8 hours,false,false,,wisdom,saving_throw,Bard;Warlock;Wizard,Player's Handbook,,dream
 flame-strike,2014:flame-strike,Flame Strike,2014,5,Evocation,1 Action,60 feet,"V, S, M",Instantaneous,false,false,,dexterity,saving_throw,Cleric,Player's Handbook,,flame-strike
 geas,2014:geas,Geas,2014,5,Enchantment,1 Minute,60 feet,V,30 days,false,false,,wisdom,saving_throw,Bard;Cleric;Druid;Paladin;Wizard,Player's Handbook,,geas
-greater-restoration,2014:greater-restoration,Greater Restoration,2014,5,Abjuration,1 Action,Touch,"V, S, M",Instantaneous,false,false,,,fixed_effect,Artificer;Bard;Cleric;Druid,Player's Handbook,,greater-restoration
+greater-restoration,2014:greater-restoration,Greater Restoration,2014,5,Abjuration,1 Action,Touch,"V, S, M",Instantaneous,false,false,,,fixed_effect,Artificer;Bard;Cleric;Druid;Ranger (Optional),Player's Handbook,,greater-restoration
 hallow,2014:hallow,Hallow,2014,5,Evocation,24 Hours,Touch,"V, S, M",Until dispelled,false,false,,charisma,saving_throw,Cleric,Player's Handbook,,hallow
 hold-monster,2014:hold-monster,Hold Monster,2014,5,Enchantment,1 Action,90 feet,"V, S, M","Concentration, up to 1 minute",true,false,,wisdom,saving_throw,Bard;Sorcerer;Warlock;Wizard,Player's Handbook,,hold-monster
 insect-plague,2014:insect-plague,Insect Plague,2014,5,Conjuration,1 Action,300 feet,"V, S, M","Concentration, up to 10 minutes",true,false,,constitution,saving_throw,Cleric;Druid;Sorcerer,Player's Handbook,,insect-plague
 legend-lore,2014:legend-lore,Legend Lore,2014,5,Divination,10 Minutes,Self,"V, S, M",Instantaneous,false,false,,,fixed_effect,Bard;Cleric;Wizard,Player's Handbook,,legend-lore
 mass-cure-wounds,2014:mass-cure-wounds,Mass Cure Wounds,2014,5,Evocation,1 Action,60 feet,"V, S",Instantaneous,false,false,,,modifier_scaled,Bard;Cleric;Druid,Player's Handbook,,mass-cure-wounds
-mislead,2014:mislead,Mislead,2014,5,Illusion,1 Action,Self,S,"Concentration, up to 1 hour",true,false,,,fixed_effect,Bard;Wizard,Player's Handbook,,mislead
+mislead,2014:mislead,Mislead,2014,5,Illusion,1 Action,Self,S,"Concentration, up to 1 hour",true,false,,,fixed_effect,Bard;Warlock (Optional);Wizard,Player's Handbook,,mislead
 modify-memory,2014:modify-memory,Modify Memory,2014,5,Enchantment,1 Action,30 feet,"V, S","Concentration, up to 1 minute",true,false,,wisdom,saving_throw,Bard;Wizard,Player's Handbook,,modify-memory
 passwall,2014:passwall,Passwall,2014,5,Transmutation,1 Action,30 feet,"V, S, M",1 hour,false,false,,,fixed_effect,Wizard,Player's Handbook,,passwall
-planar-binding,2014:planar-binding,Planar Binding,2014,5,Abjuration,1 Hour,60 feet,"V, S, M",24 hours,false,false,,charisma,saving_throw,Bard;Cleric;Druid;Wizard,Player's Handbook,,planar-binding
+planar-binding,2014:planar-binding,Planar Binding,2014,5,Abjuration,1 Hour,60 feet,"V, S, M",24 hours,false,false,,charisma,saving_throw,Bard;Cleric;Druid;Warlock (Optional);Wizard,Player's Handbook,,planar-binding
 raise-dead,2014:raise-dead,Raise Dead,2014,5,Necromancy,1 Hour,Touch,"V, S, M",Instantaneous,false,false,,,fixed_effect,Bard;Cleric;Paladin,Player's Handbook,,raise-dead
-rary-s-telepathic-bond,2014:rary-s-telepathic-bond,Rary's Telepathic Bond,2014,5,Divination,1 Action R,30 feet,"V, S, M",1 hour,false,false,,,fixed_effect,Wizard,Player's Handbook,,rarys-telepathic-bond
+rary-s-telepathic-bond,2014:rary-s-telepathic-bond,Rary's Telepathic Bond,2014,5,Divination,1 Action R,30 feet,"V, S, M",1 hour,false,false,,,fixed_effect,Bard (Optional);Wizard,Player's Handbook,,rarys-telepathic-bond
 reincarnate,2014:reincarnate,Reincarnate,2014,5,Transmutation,1 hour,Touch,"V, S, M",Instantaneous,false,false,,,fixed_effect,Druid,Player's Handbook,,reincarnate
 scrying,2014:scrying,Scrying,2014,5,Divination,10 Minutes,Self,"V, S, M","Concentration, up to 10 minutes",true,false,,wisdom,saving_throw,Bard;Cleric;Druid;Warlock;Wizard,Player's Handbook,,scrying
 seeming,2014:seeming,Seeming,2014,5,Illusion,1 Action,30 feet,"V, S",8 hours,false,false,,charisma,saving_throw,Bard;Sorcerer;Wizard,Player's Handbook,,seeming
 swift-quiver,2014:swift-quiver,Swift Quiver,2014,5,Transmutation,1 Bonus Action,Touch,"V, S, M","Concentration, up to 1 minute",true,false,,,fixed_effect,Ranger,Player's Handbook,,swift-quiver
 telekinesis,2014:telekinesis,Telekinesis,2014,5,Transmutation,1 Action,60 feet,"V, S","Concentration, up to 10 minutes",true,false,,,fixed_effect,Sorcerer;Wizard,Player's Handbook,,telekinesis
-teleportation-circle,2014:teleportation-circle,Teleportation Circle,2014,5,Conjuration,1 Minute,10 feet,"V, M",1 round,false,false,,,fixed_effect,Bard;Sorcerer;Wizard,Player's Handbook,,teleportation-circle
+teleportation-circle,2014:teleportation-circle,Teleportation Circle,2014,5,Conjuration,1 Minute,10 feet,"V, M",1 round,false,false,,,fixed_effect,Bard;Sorcerer;Warlock (Optional);Wizard,Player's Handbook,,teleportation-circle
 tree-stride,2014:tree-stride,Tree Stride,2014,5,Conjuration,1 Action,Self,"V, S","Concentration, up to 1 minute",true,false,,,fixed_effect,Druid;Ranger,Player's Handbook,,tree-stride
 wall-of-force,2014:wall-of-force,Wall of Force,2014,5,Evocation,1 Action,120 feet,"V, S, M","Concentration, up to 10 minutes",true,false,,,fixed_effect,Wizard,Player's Handbook,,wall-of-force
 wall-of-stone,2014:wall-of-stone,Wall of Stone,2014,5,Evocation,1 Action,120 feet,"V, S, M","Concentration, up to 10 minutes",true,false,,dexterity,saving_throw,Artificer;Druid;Sorcerer;Wizard,Player's Handbook,,wall-of-stone
@@ -285,21 +285,21 @@ disintegrate,2014:disintegrate,Disintegrate,2014,6,Transmutation,1 Action,60 fee
 drawmij-s-instant-summons,2014:drawmij-s-instant-summons,Drawmij's Instant Summons,2014,6,Conjuration,1 Minute R,Touch,"V, S, M",Until dispelled,false,false,,,fixed_effect,Wizard,Player's Handbook,,drawmijs-instant-summons
 eyebite,2014:eyebite,Eyebite,2014,6,Necromancy,1 Action,Self,"V, S","Concentration, up to 1 minute",true,false,,wisdom,saving_throw,Bard;Sorcerer;Warlock;Wizard,Player's Handbook,,eyebite
 find-the-path,2014:find-the-path,Find the Path,2014,6,Divination,1 Minute,Self,"V, S, M","Concentration, up to 1 day",true,false,,,fixed_effect,Bard;Cleric;Druid,Player's Handbook,,find-the-path
-flesh-to-stone,2014:flesh-to-stone,Flesh to Stone,2014,6,Transmutation,1 Action,60 feet,"V, S, M","Concentration, up to 1 minute",true,false,,constitution,saving_throw,Warlock;Wizard,Player's Handbook,,flesh-to-stone
+flesh-to-stone,2014:flesh-to-stone,Flesh to Stone,2014,6,Transmutation,1 Action,60 feet,"V, S, M","Concentration, up to 1 minute",true,false,,constitution,saving_throw,Druid (Optional);Sorcerer (Optional);Warlock;Wizard,Player's Handbook,,flesh-to-stone
 forbiddance,2014:forbiddance,Forbiddance,2014,6,Abjuration,10 Minutes R,Touch,"V, S, M",1 day,false,false,,,fixed_effect,Cleric,Player's Handbook,,forbiddance
 globe-of-invulnerability,2014:globe-of-invulnerability,Globe of Invulnerability,2014,6,Abjuration,1 Action,Self (10-foot radius),"V, S, M","Concentration, up to 1 minute",true,false,,,fixed_effect,Sorcerer;Wizard,Player's Handbook,,globe-of-invulnerability
 guards-and-wards,2014:guards-and-wards,Guards and Wards,2014,6,Abjuration,10 Minutes,Touch,"V, S, M",24 hours,false,false,,,fixed_effect,Bard;Wizard,Player's Handbook,,guards-and-wards
 harm,2014:harm,Harm,2014,6,Necromancy,1 Action,60 feet,"V, S",Instantaneous,false,false,,constitution,saving_throw,Cleric,Player's Handbook,,harm
 heal,2014:heal,Heal,2014,6,Evocation,1 Action,60 feet,"V, S",Instantaneous,false,false,,,fixed_effect,Cleric;Druid,Player's Handbook,,heal
-heroes-feast,2014:heroes-feast,Heroes' Feast,2014,6,Conjuration,10 Minutes,30 feet,"V, S, M",Instantaneous,false,false,,wisdom,saving_throw,Cleric;Druid,Player's Handbook,,heroes-feast
+heroes-feast,2014:heroes-feast,Heroes' Feast,2014,6,Conjuration,10 Minutes,30 feet,"V, S, M",Instantaneous,false,false,,wisdom,saving_throw,Bard (Optional);Cleric;Druid,Player's Handbook,,heroes-feast
 magic-jar,2014:magic-jar,Magic Jar,2014,6,Necromancy,1 Minute,Self,"V, S, M",Until dispelled,false,false,,charisma,saving_throw,Wizard,Player's Handbook,,magic-jar
 mass-suggestion,2014:mass-suggestion,Mass Suggestion,2014,6,Enchantment,1 Action,60 feet,"V, M",24 hours,false,false,,wisdom,saving_throw,Bard;Sorcerer;Warlock;Wizard,Player's Handbook,,mass-suggestion
 move-earth,2014:move-earth,Move Earth,2014,6,Transmutation,1 Action,120 feet,"V, S, M","Concentration, up to 2 hours",true,false,,,fixed_effect,Druid;Sorcerer;Wizard,Player's Handbook,,move-earth
-otiluke-s-freezing-sphere,2014:otiluke-s-freezing-sphere,Otiluke's Freezing Sphere,2014,6,Evocation,1 Action,300 feet,"V, S, M",Instantaneous,false,false,,constitution,saving_throw,Wizard,Player's Handbook,,otilukes-freezing-sphere
+otiluke-s-freezing-sphere,2014:otiluke-s-freezing-sphere,Otiluke's Freezing Sphere,2014,6,Evocation,1 Action,300 feet,"V, S, M",Instantaneous,false,false,,constitution,saving_throw,Sorcerer (Optional);Wizard,Player's Handbook,,otilukes-freezing-sphere
 otto-s-irresistible-dance,2014:otto-s-irresistible-dance,Otto's Irresistible Dance,2014,6,Enchantment,1 Action,30 feet,V,"Concentration, up to 1 minute",true,false,,dexterity;wisdom,saving_throw,Bard;Wizard,Player's Handbook,,ottos-irresistible-dance
 planar-ally,2014:planar-ally,Planar Ally,2014,6,Conjuration,1 Action,60 feet,"V, S",Instantaneous,false,false,,,fixed_effect,Cleric,Player's Handbook,,planar-ally
 programmed-illusion,2014:programmed-illusion,Programmed Illusion,2014,6,Illusion,1 Action,120 feet,"V, S, M",Until dispelled,false,false,,,fixed_effect,Bard;Wizard,Player's Handbook,,programmed-illusion
-sunbeam,2014:sunbeam,Sunbeam,2014,6,Evocation,1 Action,Self (60-foot line),"V, S, M","Concentration, up to 1 minute",true,false,,constitution,saving_throw,Druid;Sorcerer;Wizard,Player's Handbook,,sunbeam
+sunbeam,2014:sunbeam,Sunbeam,2014,6,Evocation,1 Action,Self (60-foot line),"V, S, M","Concentration, up to 1 minute",true,false,,constitution,saving_throw,Cleric (Optional);Druid;Sorcerer;Wizard,Player's Handbook,,sunbeam
 transport-via-plants,2014:transport-via-plants,Transport via Plants,2014,6,Conjuration,1 Action,10 feet,"V, S",1 round,false,false,,,fixed_effect,Druid,Player's Handbook,,transport-via-plants
 true-seeing,2014:true-seeing,True Seeing,2014,6,Divination,1 Action,Touch,"V, S, M",1 hour,false,false,,,fixed_effect,Bard;Cleric;Sorcerer;Warlock;Wizard,Player's Handbook,,true-seeing
 wall-of-ice,2014:wall-of-ice,Wall of Ice,2014,6,Evocation,1 Action,120 feet,"V, S, M","Concentration, up to 10 minutes",true,false,,dexterity;constitution,saving_throw,Wizard,Player's Handbook,,wall-of-ice
@@ -324,39 +324,39 @@ resurrection,2014:resurrection,Resurrection,2014,7,Necromancy,1 Hour,Touch,"V, S
 reverse-gravity,2014:reverse-gravity,Reverse Gravity,2014,7,Transmutation,1 Action,100 feet,"V, S, M","Concentration, up to 1 minute",true,false,,dexterity,saving_throw,Druid;Sorcerer;Wizard,Player's Handbook,,reverse-gravity
 sequester,2014:sequester,Sequester,2014,7,Transmutation,1 Action,Touch,"V, S, M",Until dispelled,false,false,,,fixed_effect,Wizard,Player's Handbook,,sequester
 simulacrum,2014:simulacrum,Simulacrum,2014,7,Illusion,12 hours,Touch,"V, S, M",Until dispelled,false,false,,,fixed_effect,Wizard,Player's Handbook,,simulacrum
-symbol,2014:symbol,Symbol,2014,7,Abjuration,1 Minute,Touch,"V, S, M",Until dispelled or triggered,false,false,,,fixed_effect,Bard;Cleric;Wizard,Player's Handbook,,symbol
+symbol,2014:symbol,Symbol,2014,7,Abjuration,1 Minute,Touch,"V, S, M",Until dispelled or triggered,false,false,,,fixed_effect,Bard;Cleric;Druid (Optional);Wizard,Player's Handbook,,symbol
 teleport,2014:teleport,Teleport,2014,7,Conjuration,1 Action,10 feet,V,Instantaneous,false,false,,,fixed_effect,Bard;Sorcerer;Wizard,Player's Handbook,,teleport
 animal-shapes,2014:animal-shapes,Animal Shapes,2014,8,Transmutation,1 Action,30 feet,"V, S","Concentration, up to 24 hours",true,false,,,fixed_effect,Druid,Player's Handbook,,animal-shapes
 antimagic-field,2014:antimagic-field,Antimagic Field,2014,8,Abjuration,1 Action,Self (10-foot radius sphere),"V, S, M","Concentration, up to 1 hour",true,false,,,fixed_effect,Cleric;Wizard,Player's Handbook,,antimagic-field
-antipathy-sympathy,2014:antipathy-sympathy,Antipathy/Sympathy,2014,8,Enchantment,1 Hour,60 feet,"V, S, M",10 Days,false,false,,,fixed_effect,Druid;Wizard,Player's Handbook,,antipathy-sympathy
+antipathy-sympathy,2014:antipathy-sympathy,Antipathy/Sympathy,2014,8,Enchantment,1 Hour,60 feet,"V, S, M",10 Days,false,false,,,fixed_effect,Bard (Optional);Druid;Wizard,Player's Handbook,,antipathy-sympathy
 clone,2014:clone,Clone,2014,8,Necromancy,1 Hour,Touch,"V, S, M",Instantaneous,false,false,,,fixed_effect,Wizard,Player's Handbook,,clone
 control-weather,2014:control-weather,Control Weather,2014,8,Transmutation,10 Minutes,Self (5 mile radius),"V, S, M","Concentration, Up to 8 hours",true,false,,,fixed_effect,Cleric;Druid;Wizard,Player's Handbook,,control-weather
-demiplane,2014:demiplane,Demiplane,2014,8,Conjuration,1 Action,60 feet,S,1 hour,false,false,,,fixed_effect,Warlock;Wizard,Player's Handbook,,demiplane
+demiplane,2014:demiplane,Demiplane,2014,8,Conjuration,1 Action,60 feet,S,1 hour,false,false,,,fixed_effect,Sorcerer (Optional);Warlock;Wizard,Player's Handbook,,demiplane
 dominate-monster,2014:dominate-monster,Dominate Monster,2014,8,Enchantment,1 Action,60 feet,"V, S","Concentration, up to 1 hour",true,false,,wisdom,saving_throw,Bard;Sorcerer;Warlock;Wizard,Player's Handbook,,dominate-monster
 earthquake,2014:earthquake,Earthquake,2014,8,Evocation,1 Action,500 feet,"V, S, M","Concentration, up to 1 minute",true,false,,constitution;dexterity,saving_throw,Cleric;Druid;Sorcerer,Player's Handbook,,earthquake
 feeblemind,2014:feeblemind,Feeblemind,2014,8,Enchantment,1 Action,150 feet,"V, S, M",Instantaneous,false,false,,intelligence,saving_throw,Bard;Druid;Warlock;Wizard,Player's Handbook,,feeblemind
 glibness,2014:glibness,Glibness,2014,8,Transmutation,1 Action,Self,V,1 hour,false,false,,,fixed_effect,Bard;Warlock,Player's Handbook,,glibness
 holy-aura,2014:holy-aura,Holy Aura,2014,8,Abjuration,1 Action,Self,"V, S, M","Concentration, up to 1 minute",true,false,,constitution,saving_throw,Cleric,Player's Handbook,,holy-aura
-incendiary-cloud,2014:incendiary-cloud,Incendiary Cloud,2014,8,Conjuration,1 Action,150 feet,"V, S","Concentration, up to 1 minute",true,false,,dexterity,saving_throw,Sorcerer;Wizard,Player's Handbook,,incendiary-cloud
+incendiary-cloud,2014:incendiary-cloud,Incendiary Cloud,2014,8,Conjuration,1 Action,150 feet,"V, S","Concentration, up to 1 minute",true,false,,dexterity,saving_throw,Druid (Optional);Sorcerer;Wizard,Player's Handbook,,incendiary-cloud
 maze,2014:maze,Maze,2014,8,Conjuration,1 Action,60 feet,"V, S","Concentration, up to 10 minutes",true,false,,,fixed_effect,Wizard,Player's Handbook,,maze
 mind-blank,2014:mind-blank,Mind Blank,2014,8,Abjuration,1 Action,Touch,"V, S",24 hours,false,false,,,fixed_effect,Bard;Wizard,Player's Handbook,,mind-blank
 power-word-stun,2014:power-word-stun,Power Word: Stun,2014,8,Enchantment,1 Action,60 feet,"V, S",Instantaneous,false,false,,constitution,saving_throw,Bard;Sorcerer;Warlock;Wizard,Player's Handbook,,power-word-stun
-sunburst,2014:sunburst,Sunburst,2014,8,Evocation,1 Action,150 feet,"V, S, M",Instantaneous,false,false,,constitution,saving_throw,Druid;Sorcerer;Wizard,Player's Handbook,,sunburst
+sunburst,2014:sunburst,Sunburst,2014,8,Evocation,1 Action,150 feet,"V, S, M",Instantaneous,false,false,,constitution,saving_throw,Cleric (Optional);Druid;Sorcerer;Wizard,Player's Handbook,,sunburst
 telepathy,2014:telepathy,Telepathy,2014,8,Evocation,1 Action,Unlimited,"V, S, M",24 hours,false,false,,,fixed_effect,Wizard,Player's Handbook,,telepathy
 tsunami,2014:tsunami,Tsunami,2014,8,Conjuration,1 Action,Sight,"V, S","Concentration, up to 6 rounds",true,false,,strength,saving_throw,Druid,Player's Handbook,,tsunami
 astral-projection,2014:astral-projection,Astral Projection,2014,9,Evocation,1 Hour,10 feet,"V, S, M",Special,false,false,,,fixed_effect,Cleric;Warlock;Wizard,Player's Handbook,,astral-projection
 foresight,2014:foresight,Foresight,2014,9,Divination,1 Minute,Touch,"V, S, M",8 hours,false,false,,,fixed_effect,Bard;Druid;Warlock;Wizard,Player's Handbook,,foresight
-gate,2014:gate,Gate,2014,9,Conjuration,1 Action,60 feet,"V, S, M","Concentration, up to 1 minute",true,false,,,fixed_effect,Cleric;Sorcerer;Wizard,Player's Handbook,,gate
+gate,2014:gate,Gate,2014,9,Conjuration,1 Action,60 feet,"V, S, M","Concentration, up to 1 minute",true,false,,,fixed_effect,Cleric;Sorcerer;Warlock (Optional);Wizard,Player's Handbook,,gate
 imprisonment,2014:imprisonment,Imprisonment,2014,9,Abjuration,1 Minute,30 feet,"V, S, M",Until dispelled,false,false,,wisdom,saving_throw,Warlock;Wizard,Player's Handbook,,imprisonment
 mass-heal,2014:mass-heal,Mass Heal,2014,9,Evocation,1 Action,60 feet,"V, S",Instantaneous,false,false,,,fixed_effect,Cleric,Player's Handbook,,mass-heal
 meteor-swarm,2014:meteor-swarm,Meteor Swarm,2014,9,Evocation,1 Action,1 mile,"V, S",Instantaneous,false,false,,dexterity,saving_throw,Sorcerer;Wizard,Player's Handbook,,meteor-swarm
-power-word-heal,2014:power-word-heal,Power Word: Heal,2014,9,Evocation,1 Action,Touch,"V, S",Instantaneous,false,false,,,fixed_effect,Bard,Player's Handbook,,power-word-heal
+power-word-heal,2014:power-word-heal,Power Word: Heal,2014,9,Evocation,1 Action,Touch,"V, S",Instantaneous,false,false,,,fixed_effect,Bard;Cleric (Optional),Player's Handbook,,power-word-heal
 power-word-kill,2014:power-word-kill,Power Word: Kill,2014,9,Enchantment,1 Action,60 feet,V,Instantaneous,false,false,,,fixed_effect,Bard;Sorcerer;Warlock;Wizard,Player's Handbook,,power-word-kill
-prismatic-wall,2014:prismatic-wall,Prismatic Wall,2014,9,Abjuration,1 Action,60 feet,"V, S",10 minutes,false,false,,constitution;dexterity,saving_throw,Wizard,Player's Handbook,,prismatic-wall
+prismatic-wall,2014:prismatic-wall,Prismatic Wall,2014,9,Abjuration,1 Action,60 feet,"V, S",10 minutes,false,false,,constitution;dexterity,saving_throw,Bard (Optional);Wizard,Player's Handbook,,prismatic-wall
 shapechange,2014:shapechange,Shapechange,2014,9,Transmutation,1 Action,Self,"V, S, M","Concentration, up to 1 hour",true,false,,,fixed_effect,Druid;Wizard,Player's Handbook,,shapechange
 storm-of-vengeance,2014:storm-of-vengeance,Storm of Vengeance,2014,9,Conjuration,1 Action,Sight,"V, S",Concentration up to 1 minute,true,false,,constitution,saving_throw,Druid,Player's Handbook,,storm-of-vengeance
 time-stop,2014:time-stop,Time Stop,2014,9,Transmutation,1 Action,Self,V,Instantaneous,false,false,,,fixed_effect,Sorcerer;Wizard,Player's Handbook,,time-stop
 true-polymorph,2014:true-polymorph,True Polymorph,2014,9,Transmutation,1 Action,30 feet,"V, S, M","Concentration, up to 1 hour",true,false,,wisdom,saving_throw,Bard;Warlock;Wizard,Player's Handbook,,true-polymorph
 true-resurrection,2014:true-resurrection,True Resurrection,2014,9,Necromancy,1 Hour,Touch,"V, S, M",Instantaneous,false,false,,,fixed_effect,Cleric;Druid,Player's Handbook,,true-resurrection
-weird,2014:weird,Weird,2014,9,Illusion,1 Action,120 feet,"V, S","Concentration, up to 1 minute",true,false,,wisdom,saving_throw,Wizard,Player's Handbook,,weird
+weird,2014:weird,Weird,2014,9,Illusion,1 Action,120 feet,"V, S","Concentration, up to 1 minute",true,false,,wisdom,saving_throw,Warlock (Optional);Wizard,Player's Handbook,,weird
 wish,2014:wish,Wish,2014,9,Conjuration,1 Action,Self,V,Instantaneous,false,false,,,fixed_effect,Sorcerer;Wizard,Player's Handbook,,wish

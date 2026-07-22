@@ -900,18 +900,18 @@ test('S17: removing a feat in the browser orphans selections and undo restores i
     }
 });
 
-test('T10: Mutt exposes five-class duplicates and all six class preparation ceilings', async ({ page }) => {
+test('T10: Mutt matches the authoritative sheet attribution with zero duplicates', async ({ page }) => {
     const muttId = 2;
     await page.goto(`/characters/${muttId}`);
     await expect(page.getByRole('heading', { name: 'Mutt', level: 1 })).toBeVisible();
-    await expect(page.getByText(/revision 41$/)).toBeVisible();
+    await expect(page.getByText(/revision 42$/)).toBeVisible();
     await expect(page.getByRole('checkbox', { name: /Allow legacy 2014 spell versions/ })).toBeChecked();
 
     const mutt = character(muttId);
     expect(mutt).toEqual(expect.objectContaining({
         id: muttId,
         name: 'Mutt',
-        revision: 41,
+        revision: 42,
         allow_legacy: 1,
         intelligence: 13,
         wisdom: 13,
@@ -920,6 +920,7 @@ test('T10: Mutt exposes five-class duplicates and all six class preparation ceil
     expect(String(mutt.notes)).toContain('sheet:max_hp=43');
     expect(String(mutt.notes)).toContain('sheet:advancement=milestone');
     expect(String(mutt.notes)).toContain('INFERRED abilities (PDF has no scores)');
+    expect(String(mutt.notes)).toContain('AUTHORITATIVE spell attribution');
 
     const report = buildReport<DatabaseBuildReport>(muttId);
     expect(report.caster).toEqual({
@@ -945,34 +946,71 @@ test('T10: Mutt exposes five-class duplicates and all six class preparation ceil
     ]);
 
     const muttSlots = slotFixtures(muttId);
-    expect(muttSlots).toHaveLength(34);
+    expect(muttSlots).toHaveLength(35);
     expect(muttSlots.every((slot) => slot.current_spell_version_id !== null)).toBe(true);
     expect(muttSlots.every((slot) => slot.selection_eligibility === 'valid')).toBe(true);
-    const expectedDuplicateSources: Record<string, string[]> = {
-        Bane: ['Bard 1', 'Cleric 1'],
-        'Healing Word': ['Cleric 1', 'Druid 1'],
-        Shield: ['Sorcerer 1', 'Wizard 1'],
+    const expectedByClass: Record<string, Record<string, string[]>> = {
+        'Bard 1': {
+            'bard-cantrips': ['Thunderclap', 'Vicious Mockery'],
+            'bard-prepared': ['Bane', 'Dissonant Whispers', 'Sleep', 'Thunderwave'],
+        },
+        'Cleric 1': {
+            'cleric-cantrips': ['Light', 'Spare the Dying', 'Thaumaturgy'],
+            'cleric-divine-order-cantrip': ['Guidance'],
+            'cleric-prepared': ['Create or Destroy Water', 'Cure Wounds', 'Healing Word', 'Sanctuary'],
+        },
+        'Druid 1': {
+            'druid-cantrips': ['Shape Water', 'Shillelagh'],
+            'druid-prepared': ['Absorb Elements', 'Goodberry', 'Jump', 'Speak with Animals'],
+        },
+        'Paladin 1': {
+            'paladin-prepared': ['Thunderous Smite', 'Wrathful Smite'],
+        },
+        'Sorcerer 1': {
+            'sorcerer-cantrips': ['Chill Touch', 'Ray of Frost', 'Shocking Grasp', 'True Strike'],
+            'sorcerer-prepared': ['Chromatic Orb', 'Ray of Sickness'],
+        },
+        'Wizard 1': {
+            'wizard-cantrips': ['Mage Hand', 'Minor Illusion', 'Mold Earth'],
+            'wizard-prepared': ['Feather Fall', 'Find Familiar', 'Shield', 'Unseen Servant'],
+        },
     };
-    const duplicateSources = Object.fromEntries(Object.keys(expectedDuplicateSources).map((spellName) => [
-        spellName,
-        muttSlots.filter((slot) => slot.spell_name === spellName).map((slot) => slot.source_name).sort(),
+    const actualByClass = Object.fromEntries(Object.entries(expectedByClass).map(([sourceName, rules]) => [
+        sourceName,
+        Object.fromEntries(Object.keys(rules).map((ruleKey) => [
+            ruleKey,
+            muttSlots
+                .filter((slot) => slot.source_name === sourceName && slot.rule_key === ruleKey)
+                .map((slot) => slot.spell_name),
+        ])),
     ]));
-    expect(duplicateSources).toEqual(expectedDuplicateSources);
-    expect(new Set(Object.values(duplicateSources).flat())).toEqual(new Set([
-        'Bard 1', 'Cleric 1', 'Druid 1', 'Sorcerer 1', 'Wizard 1',
-    ]));
-    for (const [spellName, sourceNames] of Object.entries(expectedDuplicateSources)) {
-        const assessment = report.duplicate_assessments.find((item) => item.spell_name === spellName);
-        expect(assessment).toEqual(expect.objectContaining({
-            category: 'wasteful',
-            selection_count: 2,
-            explanation: `${spellName} consumes limits in more than one selection.`,
-        }));
-        expect(assessment?.sources.toSorted()).toEqual(sourceNames);
-        await expect(duplicateWarning(page, spellName)).toContainText(
-            `${spellName} consumes limits in more than one selection.`,
-        );
+    expect(actualByClass).toEqual(expectedByClass);
+    expect(new Set(muttSlots.map((slot) => slot.spell_name)).size).toBe(35);
+    expect(report.duplicate_assessments.filter((item) => item.category !== 'none')).toEqual([]);
+    for (const [spellName, sourceName] of [
+        ['Bane', 'Bard 1'], ['Healing Word', 'Cleric 1'], ['Shield', 'Wizard 1'],
+    ]) {
+        expect(muttSlots.filter((slot) => slot.spell_name === spellName).map((slot) => slot.source_name))
+            .toEqual([sourceName]);
+        await expect(duplicateWarning(page, spellName)).toHaveCount(0);
     }
+    await expect(duplicateWarningsSection(page)).toContainText('No duplicate spell warnings.');
+
+    expect(JSON.parse(String(source('Cleric 1', muttId).config))).toEqual({
+        spellcasting_ability: 'wisdom',
+        divine_order: { chosen_option: 'Thaumaturge', chosen_list: 'Cleric' },
+    });
+    expect(JSON.parse(String(source('Druid 1', muttId).config))).toEqual({
+        spellcasting_ability: 'wisdom',
+        primal_order: { chosen_option: 'Warden' },
+    });
+    expect(report.wizard.spellbook.map((entry) => entry.spell_name)).toEqual([
+        'Comprehend Languages', 'Feather Fall', 'Find Familiar',
+        'Shield', "Tenser's Floating Disk", 'Unseen Servant',
+    ]);
+    expect(report.wizard.prepared.map((entry) => entry.spell_name)).toEqual([
+        'Feather Fall', 'Find Familiar', 'Shield', 'Unseen Servant',
+    ]);
 
     const shapeWater = requireSlot(
         muttSlots.find((slot) => slot.spell_name === 'Shape Water'),
@@ -992,17 +1030,22 @@ test('T10: Mutt exposes five-class duplicates and all six class preparation ceil
         version: moldEarth.current_spell_version_id,
         lists: moldEarth.allowed_spell_lists,
     }).toEqual({ source: 'Wizard 1', version: spellVersionId('2014:mold-earth'), lists: '["Wizard"]' });
+    const absorbElements = requireSlot(
+        muttSlots.find((slot) => slot.spell_name === 'Absorb Elements'),
+        "Mutt's Absorb Elements slot",
+    );
+    expect(absorbElements.current_spell_version_id).toBe(spellVersionId('2014:absorb-elements'));
 
     const muttAudit = auditLog(muttId);
     const operationCount = (actionType: string): number => new Set(
         muttAudit.filter((entry) => entry.action_type === actionType).map((entry) => entry.operation_uuid),
     ).size;
-    expect(characterOperations(muttId)).toHaveLength(41);
+    expect(characterOperations(muttId)).toHaveLength(42);
     expect({
         add_source: operationCount('add_source'),
         set_slot: operationCount('set_slot'),
         update_character_rules: operationCount('update_character_rules'),
-    }).toEqual({ add_source: 6, set_slot: 34, update_character_rules: 1 });
+    }).toEqual({ add_source: 6, set_slot: 35, update_character_rules: 1 });
 
     // Reassert every pre-existing seed golden from a fresh database-level report:
     // adding Mutt must not perturb character 1.

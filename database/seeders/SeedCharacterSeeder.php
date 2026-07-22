@@ -164,7 +164,7 @@ final class SeedCharacterSeeder extends Seeder
                 'sheet:advancement=milestone',
                 'INFERRED abilities (PDF has no scores): CHA 17 / INT 13 / WIS 13 from PB 3 and +6/+4 spell attacks.',
                 'UNSPECIFIED abilities defaulted for this planner: STR 10 / DEX 10 / CON 10.',
-                'INFERRED leveled-spell class attribution: see seedMutt() assignments; the sheet does not expose it reliably.',
+                'AUTHORITATIVE spell attribution: user-confirmed per-class sheet assignments in seedMutt().',
             ]),
             'created_at' => now(),
             'updated_at' => now(),
@@ -187,13 +187,24 @@ final class SeedCharacterSeeder extends Seeder
                 '2024:find-familiar',
                 '2024:shield',
                 '2024:tenser-s-floating-disk',
-                '2024:thunderwave',
+                '2024:unseen-servant',
             ],
         );
         $classSources = [];
         foreach (['Sorcerer', 'Bard', 'Cleric', 'Druid', 'Paladin', 'Wizard'] as $className) {
             $classId = (int) DB::table('class_definitions')->where('name', $className)->value('id');
             $config = ['level' => 1];
+            if ($className === 'Cleric') {
+                $config['divine_order'] = [
+                    'chosen_option' => 'Thaumaturge',
+                    'chosen_list' => 'Cleric',
+                ];
+            }
+            if ($className === 'Druid') {
+                $config['primal_order'] = [
+                    'chosen_option' => 'Warden',
+                ];
+            }
             if ($className === 'Wizard') {
                 $config['wizard_spellbook_acquisitions'] = $wizardSpellbook;
             }
@@ -235,19 +246,27 @@ final class SeedCharacterSeeder extends Seeder
             }
         }
 
-        // The sheet does not reliably expose leveled-spell attribution. Every
-        // assignment below is INFERRED by real class-list/level eligibility.
-        // The three repeated choices intentionally preserve the sheet's useful
-        // five-class duplicate signal: Bane, Healing Word, and Shield.
-        $inferredLeveledAssignments = [
-            'Sorcerer' => ['2024:chromatic-orb', '2024:shield'],
-            'Bard' => ['2024:bane', '2024:cure-wounds', '2024:dissonant-whispers', '2024:unseen-servant'],
-            'Cleric' => ['2024:bane', '2024:create-or-destroy-water', '2024:healing-word', '2024:sanctuary'],
-            'Druid' => ['2024:goodberry', '2024:healing-word', '2024:jump', '2024:speak-with-animals'],
+        $this->selectMutt(
+            $characterId,
+            $revision,
+            (int) data_get($classSources, 'Cleric'),
+            'cleric-divine-order-cantrip',
+            1,
+            '2024:guidance',
+            'User-confirmed Divine Order (Thaumaturge) bonus cantrip.',
+        );
+
+        // These assignments are authoritative user-confirmed sheet data. Do not
+        // infer alternatives from class eligibility or duplicate spell names.
+        $authoritativeLeveledAssignments = [
+            'Sorcerer' => ['2024:chromatic-orb', '2024:ray-of-sickness'],
+            'Bard' => ['2024:bane', '2024:dissonant-whispers', '2024:sleep', '2024:thunderwave'],
+            'Cleric' => ['2024:create-or-destroy-water', '2024:cure-wounds', '2024:healing-word', '2024:sanctuary'],
+            'Druid' => ['2014:absorb-elements', '2024:goodberry', '2024:jump', '2024:speak-with-animals'],
             'Paladin' => ['2024:thunderous-smite', '2024:wrathful-smite'],
-            'Wizard' => ['2024:shield', '2024:feather-fall', '2024:find-familiar', '2024:tenser-s-floating-disk'],
+            'Wizard' => ['2024:feather-fall', '2024:find-familiar', '2024:shield', '2024:unseen-servant'],
         ];
-        foreach ($inferredLeveledAssignments as $className => $versions) {
+        foreach ($authoritativeLeveledAssignments as $className => $versions) {
             foreach ($versions as $index => $versionKey) {
                 $this->selectMutt(
                     $characterId,
@@ -256,7 +275,7 @@ final class SeedCharacterSeeder extends Seeder
                     strtolower($className).'-prepared',
                     $index + 1,
                     $versionKey,
-                    'INFERRED leveled-spell class attribution by eligibility.',
+                    'Authoritative user-confirmed sheet attribution.',
                 );
             }
         }

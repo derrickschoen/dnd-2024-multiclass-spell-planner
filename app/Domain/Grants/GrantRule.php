@@ -49,6 +49,8 @@ final readonly class GrantRule
         /** @var array{uses: int, recovery: string, pool_scope: string}|null */
         public ?array $freeCast,
         public ?int $activeFromClassLevel,
+        /** @var array{key: string, equals: string}|null */
+        public ?array $activeIfConfig,
         public ?string $distinctConfigBy,
         private array $data,
     ) {}
@@ -95,6 +97,7 @@ final readonly class GrantRule
         $withSlots = self::boolean($input, 'with_slots', true, $ruleKey);
         $freeCast = self::freeCast($input, $ruleKey);
         $activeFromClassLevel = self::positiveInteger($input, 'active_from_class_level', null, $ruleKey, false);
+        $activeIfConfig = self::activeIfConfig($input, $ruleKey);
         $distinctConfigBy = self::optionalNonEmptyString($input, 'distinct_config_by', $ruleKey);
 
         $levelMin = self::level($input, 'level_min', 0, $ruleKey);
@@ -122,6 +125,9 @@ final readonly class GrantRule
         if ($activeFromClassLevel !== null) {
             $normalized['active_from_class_level'] = $activeFromClassLevel;
         }
+        if ($activeIfConfig !== null) {
+            $normalized['active_if_config'] = $activeIfConfig;
+        }
         if ($distinctConfigBy !== null) {
             $normalized['distinct_config_by'] = $distinctConfigBy;
         }
@@ -139,6 +145,7 @@ final readonly class GrantRule
             $withSlots,
             $freeCast,
             $activeFromClassLevel,
+            $activeIfConfig,
             $distinctConfigBy,
             $normalized,
         );
@@ -328,6 +335,31 @@ final readonly class GrantRule
         }
 
         return ['uses' => $uses, 'recovery' => $recovery, 'pool_scope' => $poolScope];
+    }
+
+    /** @return array{key: string, equals: string}|null */
+    private static function activeIfConfig(array $input, string $ruleKey): ?array
+    {
+        $value = data_get($input, 'active_if_config');
+        if ($value === null) {
+            return null;
+        }
+        $keys = is_array($value) ? array_keys($value) : [];
+        sort($keys);
+        if (! is_array($value) || $keys !== ['equals', 'key']) {
+            throw new InvalidArgumentException(
+                "Grant rule '{$ruleKey}' field 'active_if_config' must contain exactly key and equals."
+            );
+        }
+        $key = data_get($value, 'key');
+        $equals = data_get($value, 'equals');
+        if (! is_string($key) || trim($key) === '' || ! is_string($equals) || trim($equals) === '') {
+            throw new InvalidArgumentException(
+                "Grant rule '{$ruleKey}' active_if_config key and equals must be non-empty strings."
+            );
+        }
+
+        return ['key' => trim($key), 'equals' => trim($equals)];
     }
 
     /** @param array<string, mixed> $input */

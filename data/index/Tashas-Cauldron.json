@@ -16,7 +16,10 @@
     "saveAbilities": [],
     "effectReliabilityCategory": "fixed_effect",
     "spellLists": [
-      "Artificer"
+      "Artificer",
+      "Sorcerer (Optional)",
+      "Warlock (Optional)",
+      "Wizard (Optional)"
     ],
     "sourceBooks": [
       "Tasha's Cauldron of Everything"
@@ -41,7 +44,10 @@
     "saveAbilities": [],
     "effectReliabilityCategory": "modifier_scaled",
     "spellLists": [
-      "Artificer"
+      "Artificer",
+      "Sorcerer (Optional)",
+      "Warlock (Optional)",
+      "Wizard (Optional)"
     ],
     "sourceBooks": [
       "Tasha's Cauldron of Everything",
@@ -69,7 +75,10 @@
     ],
     "effectReliabilityCategory": "saving_throw",
     "spellLists": [
-      "Artificer"
+      "Artificer",
+      "Sorcerer (Optional)",
+      "Warlock (Optional)",
+      "Wizard (Optional)"
     ],
     "sourceBooks": [
       "Tasha's Cauldron of Everything"
@@ -95,7 +104,11 @@
       "intelligence"
     ],
     "effectReliabilityCategory": "saving_throw",
-    "spellLists": [],
+    "spellLists": [
+      "Sorcerer (Optional)",
+      "Warlock (Optional)",
+      "Wizard (Optional)"
+    ],
     "sourceBooks": [
       "Tasha's Cauldron of Everything"
     ],
@@ -121,7 +134,10 @@
     ],
     "effectReliabilityCategory": "saving_throw",
     "spellLists": [
-      "Artificer"
+      "Artificer",
+      "Sorcerer (Optional)",
+      "Warlock (Optional)",
+      "Wizard (Optional)"
     ],
     "sourceBooks": [
       "Tasha's Cauldron of Everything"
@@ -148,7 +164,9 @@
     ],
     "effectReliabilityCategory": "saving_throw",
     "spellLists": [
-      "Artificer"
+      "Artificer",
+      "Sorcerer (Optional)",
+      "Wizard (Optional)"
     ],
     "sourceBooks": [
       "Tasha's Cauldron of Everything"
@@ -172,7 +190,10 @@
     "attackModes": [],
     "saveAbilities": [],
     "effectReliabilityCategory": "fixed_effect",
-    "spellLists": [],
+    "spellLists": [
+      "Druid (Optional)",
+      "Ranger (Optional)"
+    ],
     "sourceBooks": [
       "Tasha's Cauldron of Everything"
     ],
@@ -197,7 +218,10 @@
       "intelligence"
     ],
     "effectReliabilityCategory": "saving_throw",
-    "spellLists": [],
+    "spellLists": [
+      "Sorcerer (Optional)",
+      "Wizard (Optional)"
+    ],
     "sourceBooks": [
       "Tasha's Cauldron of Everything"
     ],
@@ -222,7 +246,13 @@
       "charisma"
     ],
     "effectReliabilityCategory": "saving_throw",
-    "spellLists": [],
+    "spellLists": [
+      "Artificer",
+      "Bard (Optional)",
+      "Sorcerer (Optional)",
+      "Warlock (Optional)",
+      "Wizard (Optional)"
+    ],
     "sourceBooks": [
       "Tasha's Cauldron of Everything"
     ],
@@ -245,7 +275,12 @@
     "attackModes": [],
     "saveAbilities": [],
     "effectReliabilityCategory": "fixed_effect",
-    "spellLists": [],
+    "spellLists": [
+      "Cleric (Optional)",
+      "Paladin (Optional)",
+      "Warlock (Optional)",
+      "Wizard (Optional)"
+    ],
     "sourceBooks": [
       "Tasha's Cauldron of Everything"
     ],
@@ -268,7 +303,12 @@
     "attackModes": [],
     "saveAbilities": [],
     "effectReliabilityCategory": "fixed_effect",
-    "spellLists": [],
+    "spellLists": [
+      "Druid (Optional)",
+      "Ranger (Optional)",
+      "Warlock (Optional)",
+      "Wizard (Optional)"
+    ],
     "sourceBooks": [
       "Tasha's Cauldron of Everything"
     ],
@@ -291,7 +331,10 @@
     "attackModes": [],
     "saveAbilities": [],
     "effectReliabilityCategory": "fixed_effect",
-    "spellLists": [],
+    "spellLists": [
+      "Warlock (Optional)",
+      "Wizard (Optional)"
+    ],
     "sourceBooks": [
       "Tasha's Cauldron of Everything"
     ],
@@ -314,7 +357,10 @@
     "attackModes": [],
     "saveAbilities": [],
     "effectReliabilityCategory": "fixed_effect",
-    "spellLists": [],
+    "spellLists": [
+      "Warlock (Optional)",
+      "Wizard (Optional)"
+    ],
     "sourceBooks": [
       "Tasha's Cauldron of Everything"
     ],
@@ -337,7 +383,10 @@
     "attackModes": [],
     "saveAbilities": [],
     "effectReliabilityCategory": "fixed_effect",
-    "spellLists": [],
+    "spellLists": [
+      "Warlock (Optional)",
+      "Wizard (Optional)"
+    ],
     "sourceBooks": [
       "Tasha's Cauldron of Everything"
     ],
@@ -360,7 +409,10 @@
     "attackModes": [],
     "saveAbilities": [],
     "effectReliabilityCategory": "fixed_effect",
-    "spellLists": [],
+    "spellLists": [
+      "Artificer",
+      "Wizard (Optional)"
+    ],
     "sourceBooks": [
       "Tasha's Cauldron of Everything"
     ],
@@ -383,7 +435,11 @@
     "attackModes": [],
     "saveAbilities": [],
     "effectReliabilityCategory": "fixed_effect",
-    "spellLists": [],
+    "spellLists": [
+      "Druid (Optional)",
+      "Ranger (Optional)",
+      "Wizard (Optional)"
+    ],
     "sourceBooks": [
       "Tasha's Cauldron of Everything"
     ],
@@ -406,7 +462,10 @@
     "attackModes": [],
     "saveAbilities": [],
     "effectReliabilityCategory": "fixed_effect",
-    "spellLists": [],
+    "spellLists": [
+      "Cleric (Optional)",
+      "Paladin (Optional)"
+    ],
     "sourceBooks": [
       "Tasha's Cauldron of Everything"
     ],
@@ -429,7 +488,10 @@
     "attackModes": [],
     "saveAbilities": [],
     "effectReliabilityCategory": "fixed_effect",
-    "spellLists": [],
+    "spellLists": [
+      "Warlock (Optional)",
+      "Wizard (Optional)"
+    ],
     "sourceBooks": [
       "Tasha's Cauldron of Everything"
     ],
@@ -452,7 +514,11 @@
     "attackModes": [],
     "saveAbilities": [],
     "effectReliabilityCategory": "fixed_effect",
-    "spellLists": [],
+    "spellLists": [
+      "Sorcerer (Optional)",
+      "Warlock (Optional)",
+      "Wizard (Optional)"
+    ],
     "sourceBooks": [
       "Tasha's Cauldron of Everything"
     ],
@@ -475,7 +541,12 @@
     "attackModes": [],
     "saveAbilities": [],
     "effectReliabilityCategory": "fixed_effect",
-    "spellLists": [],
+    "spellLists": [
+      "Bard (Optional)",
+      "Sorcerer (Optional)",
+      "Warlock (Optional)",
+      "Wizard (Optional)"
+    ],
     "sourceBooks": [
       "Tasha's Cauldron of Everything"
     ],
@@ -500,7 +571,11 @@
     ],
     "saveAbilities": [],
     "effectReliabilityCategory": "attack_roll",
-    "spellLists": [],
+    "spellLists": [
+      "Sorcerer (Optional)",
+      "Warlock (Optional)",
+      "Wizard (Optional)"
+    ],
     "sourceBooks": [
       "Tasha's Cauldron of Everything"
     ],

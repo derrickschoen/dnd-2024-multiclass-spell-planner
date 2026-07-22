@@ -15,9 +15,7 @@
     "attackModes": [],
     "saveAbilities": [],
     "effectReliabilityCategory": "fixed_effect",
-    "spellLists": [
-      "None"
-    ],
+    "spellLists": [],
     "sourceBooks": [
       "Guildmaster's Guide to Ravnica"
     ],

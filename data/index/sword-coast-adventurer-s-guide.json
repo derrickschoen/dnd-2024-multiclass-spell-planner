@@ -16,7 +16,10 @@
     "saveAbilities": [],
     "effectReliabilityCategory": "modifier_scaled",
     "spellLists": [
-      "Artificer"
+      "Artificer",
+      "Sorcerer (Optional)",
+      "Warlock (Optional)",
+      "Wizard (Optional)"
     ],
     "sourceBooks": [
       "Tasha's Cauldron of Everything",

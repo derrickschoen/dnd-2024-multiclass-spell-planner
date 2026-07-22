@@ -25,8 +25,7 @@ final class GrantRuleSlotGenerator
         $rules = [];
         foreach ($this->rulesForSource($source) as $ruleData) {
             $rule = GrantRule::fromArray($ruleData);
-            if ($rule->activeFromClassLevel !== null
-                && $this->classLevelForSource($source) < $rule->activeFromClassLevel) {
+            if (! $this->ruleIsActiveForSource($source, $rule)) {
                 continue;
             }
             $rules[] = $rule;
@@ -54,8 +53,7 @@ final class GrantRuleSlotGenerator
             foreach ($this->rulesForSource($source) as $ruleData) {
                 $rule = GrantRule::fromArray($ruleData);
                 $this->assertDistinctConfiguration($source, $rule);
-                if ($rule->activeFromClassLevel !== null
-                    && $this->classLevelForSource($source) < $rule->activeFromClassLevel) {
+                if (! $this->ruleIsActiveForSource($source, $rule)) {
                     continue;
                 }
                 if ($rule->kind === GrantRule::FIXED_SPELL) {
@@ -560,6 +558,22 @@ final class GrantRuleSlotGenerator
         }
 
         return (int) $level;
+    }
+
+    private function ruleIsActiveForSource(object $source, GrantRule $rule): bool
+    {
+        if ($rule->activeFromClassLevel !== null
+            && $this->classLevelForSource($source) < $rule->activeFromClassLevel) {
+            return false;
+        }
+        if ($rule->activeIfConfig === null) {
+            return true;
+        }
+
+        $config = $this->decodeJsonArray(data_get($source, 'config'));
+
+        return data_get($config, data_get($rule->activeIfConfig, 'key'))
+            === data_get($rule->activeIfConfig, 'equals');
     }
 
     private function assertDistinctConfiguration(object $source, GrantRule $rule): void

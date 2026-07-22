@@ -111,7 +111,11 @@ final class CharacterCommandPayloadValidator
             throw new InvalidArgumentException('Source config must be an object.');
         }
         if ($sourceType === 'class') {
-            $this->rejectUnknown($config, ['level', 'wizard_spellbook_acquisitions'], 'class source config');
+            $this->rejectUnknown(
+                $config,
+                ['level', 'wizard_spellbook_acquisitions', 'divine_order', 'primal_order'],
+                'class source config',
+            );
             $level = $this->requiredInteger($config, 'level');
             if ($level < 1 || $level > 20) {
                 throw new InvalidArgumentException('Class source level must be between 1 and 20.');

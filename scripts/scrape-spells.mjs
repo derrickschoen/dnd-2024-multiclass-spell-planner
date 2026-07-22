@@ -281,25 +281,86 @@ export function parseSpellPage(htmlText, indexRow) {
     };
 }
 
+const SPELL_LIST_NAMES = [
+    'Artificer', 'Barbarian', 'Bard', 'Blood Hunter', 'Cleric', 'Druid',
+    'Fighter', 'Monk', 'Paladin', 'Ranger', 'Rogue', 'Sorcerer', 'Warlock', 'Wizard',
+];
+const SPELL_LIST_NAME_PATTERN = SPELL_LIST_NAMES
+    .toSorted((left, right) => right.length - left.length)
+    .map((name) => name.replace(' ', '\\s+'))
+    .join('|');
+
 /**
- * The 2014 index has NO class-list column (verified in A2: 6 columns vs 2024's 7),
- * so every legacy spell arrived with an empty list and was therefore ineligible
- * for every slot. The detail pages DO carry it, as a trailing
- * "Spell Lists. Druid, Sorcerer, Wizard" line, so pass 2 can recover it from a
- * page it already fetches.
+ * Parse only an anchored comma-separated sequence of known class list names.
+ * Qualifiers remain part of the membership key: "Wizard (Dunamancy)" is a
+ * recorded source fact, but it does not silently become ordinary "Wizard"
+ * eligibility. `allowTrailing` supports pages whose flattened DOM appends a
+ * stat block immediately after the final membership.
+ */
+function parseSpellListSequence(raw, { allowTrailing = false } = {}) {
+    const input = raw.replace(/\u00a0/g, ' ').trimStart();
+    if (/^none\b/i.test(input)) return { lists: [], complete: true };
+
+    const lists = [];
+    let offset = 0;
+    while (offset < input.length) {
+        const remainder = input.slice(offset);
+        const classMatch = new RegExp(`^(${SPELL_LIST_NAME_PATTERN})\\b`, 'i').exec(remainder);
+        if (!classMatch) break;
+        const canonicalClass = SPELL_LIST_NAMES.find(
+            (name) => name.toLowerCase() === classMatch[1].replace(/\s+/g, ' ').toLowerCase()
+        );
+        offset += classMatch[0].length;
+
+        const afterClass = input.slice(offset);
+        const qualifierMatch = /^\s*\(([A-Za-z][A-Za-z :'-]*)\)/.exec(afterClass);
+        let qualifier = '';
+        if (qualifierMatch) {
+            qualifier = qualifierMatch[1].replace(/\s+/g, ' ').trim();
+            offset += qualifierMatch[0].length;
+        }
+        lists.push(qualifier ? `${canonicalClass} (${qualifier})` : canonicalClass);
+
+        const separator = /^\s*,\s*/.exec(input.slice(offset));
+        if (!separator) break;
+        offset += separator[0].length;
+    }
+
+    const trailing = input.slice(offset).trim();
+    return {
+        lists: [...new Set(lists)],
+        complete: lists.length > 0 && (trailing === '' || allowTrailing),
+    };
+}
+
+/**
+ * Extract exact spell-list memberships from either edition's flattened detail
+ * DOM. Legacy pages use "Spell Lists." or "Spell Lists:" at the end; modern
+ * pages place the lists in the spell header immediately before "Casting Time".
+ * Unknown text produces no memberships, and the `None` sentinel is rejected.
  *
- * @returns list of class names, or [] when the page does not state one.
+ * @returns exact membership keys, including `(Optional)` and subclass qualifiers.
  */
 export function parseSpellLists(pageText) {
-    const match = / Spell Lists\.\s*([A-Za-z,\s()]+?)(?:\s{2,}|window|$)/.exec(
-        ' ' + pageText.replace(/\s+/g, ' ')
-    );
-    if (!match) return [];
+    const normalized = String(pageText || '').replace(/\u00a0/g, ' ').replace(/\s+/g, ' ').trim();
+    const markers = [...normalized.matchAll(/\bspell\s+lists?\s*[.:]\s*/gi)];
+    if (markers.length) {
+        const marker = markers.at(-1);
+        return parseSpellListSequence(normalized.slice(marker.index + marker[0].length), {
+            allowTrailing: true,
+        }).lists;
+    }
 
-    return match[1]
-        .split(',')
-        .map((name) => name.trim())
-        .filter((name) => /^[A-Z][A-Za-z ]{2,}$/.test(name));
+    const castingTimeIndex = normalized.search(/\bcasting\s+time\s*:/i);
+    if (castingTimeIndex < 0) return [];
+    const header = normalized.slice(0, castingTimeIndex);
+    const groups = [...header.matchAll(/\(([^()]*)\)/g)];
+    for (const group of groups.toReversed()) {
+        const parsed = parseSpellListSequence(group[1]);
+        if (parsed.complete) return parsed.lists;
+    }
+
+    return [];
 }
 
 const toCsv = (rows) => {

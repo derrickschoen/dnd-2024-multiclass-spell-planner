@@ -1098,7 +1098,10 @@
     "attackModes": [],
     "saveAbilities": [],
     "effectReliabilityCategory": "fixed_effect",
-    "spellLists": [],
+    "spellLists": [
+      "Cleric",
+      "Wizard"
+    ],
     "sourceBooks": [
       "Xanathar's Guide to Everything"
     ],
@@ -1177,7 +1180,11 @@
       "constitution"
     ],
     "effectReliabilityCategory": "saving_throw",
-    "spellLists": [],
+    "spellLists": [
+      "Sorcerer",
+      "Warlock",
+      "Wizard"
+    ],
     "sourceBooks": [
       "Xanathar's Guide to Everything"
     ],
@@ -1229,7 +1236,10 @@
     "attackModes": [],
     "saveAbilities": [],
     "effectReliabilityCategory": "fixed_effect",
-    "spellLists": [],
+    "spellLists": [
+      "Wizard",
+      "Artificer"
+    ],
     "sourceBooks": [
       "Xanathar's Guide to Everything"
     ],
@@ -1503,6 +1513,7 @@
     ],
     "effectReliabilityCategory": "saving_throw",
     "spellLists": [
+      "Warlock (Optional)",
       "Wizard"
     ],
     "sourceBooks": [

@@ -90,12 +90,12 @@ it('seeds the requested six-class character and generates both Magic Initiates t
     $muttId = (int) data_get($mutt, 'id');
     expect(data_get($mutt, 'name'))->toBe('Mutt')
         ->and((bool) data_get($mutt, 'allow_legacy'))->toBeTrue()
-        ->and(data_get($mutt, 'revision'))->toBe(41)
+        ->and(data_get($mutt, 'revision'))->toBe(42)
         ->and(data_get($mutt, 'notes'))->toContain(
             'sheet:max_hp=43',
             'sheet:advancement=milestone',
             'INFERRED abilities (PDF has no scores)',
-            'INFERRED leveled-spell class attribution',
+            'AUTHORITATIVE spell attribution',
         );
 
     $muttClasses = DB::table('character_class_levels as level')
@@ -107,17 +107,17 @@ it('seeds the requested six-class character and generates both Magic Initiates t
     expect($muttClasses)->toBe([
         'Bard' => 1, 'Cleric' => 1, 'Druid' => 1, 'Paladin' => 1,
         'Sorcerer' => 1, 'Wizard' => 1,
-    ])->and(DB::table('character_operations')->where('character_id', $muttId)->count())->toBe(41)
+    ])->and(DB::table('character_operations')->where('character_id', $muttId)->count())->toBe(42)
         ->and(DB::table('change_log')->where('character_id', $muttId)
             ->where('action_type', 'add_source')->distinct()->count('operation_uuid'))->toBe(6)
         ->and(DB::table('change_log')->where('character_id', $muttId)
-            ->where('action_type', 'set_slot')->distinct()->count('operation_uuid'))->toBe(34)
+            ->where('action_type', 'set_slot')->distinct()->count('operation_uuid'))->toBe(35)
         ->and(DB::table('change_log')->where('character_id', $muttId)
             ->where('action_type', 'update_character_rules')->distinct()->count('operation_uuid'))->toBe(1);
 
     $muttSlots = DB::table('spell_selection_slots')->where('character_id', $muttId)->get();
-    expect($muttSlots)->toHaveCount(34)
-        ->and($muttSlots->whereNotNull('current_spell_version_id'))->toHaveCount(34)
+    expect($muttSlots)->toHaveCount(35)
+        ->and($muttSlots->whereNotNull('current_spell_version_id'))->toHaveCount(35)
         ->and($muttSlots->every(
             static fn (object $slot): bool => data_get($slot, 'selection_eligibility') === 'valid',
         ))->toBeTrue();
@@ -134,10 +134,65 @@ it('seeds the requested six-class character and generates both Magic Initiates t
         ->filter(static fn ($rows): bool => $rows->count() > 1)
         ->map(static fn ($rows): array => $rows->pluck('source_name')->all())
         ->all();
-    expect($duplicates)->toBe([
-        'Bane' => ['Bard 1', 'Cleric 1'],
-        'Healing Word' => ['Cleric 1', 'Druid 1'],
-        'Shield' => ['Sorcerer 1', 'Wizard 1'],
+    expect($duplicates)->toBe([]);
+
+    $selectionsByClass = DB::table('spell_selection_slots as slot')
+        ->join('character_source_instances as source', 'source.id', '=', 'slot.source_instance_id')
+        ->join('class_definitions as class', 'class.id', '=', 'source.source_definition_id')
+        ->join('spell_versions as version', 'version.id', '=', 'slot.current_spell_version_id')
+        ->where('slot.character_id', $muttId)
+        ->where('source.source_type', 'class')
+        ->orderBy('class.name')->orderBy('slot.rule_key')->orderBy('slot.ordinal')
+        ->get(['class.name as class_name', 'slot.rule_key', 'version.display_name as spell_name'])
+        ->groupBy('class_name')
+        ->map(static fn ($rows) => $rows->groupBy('rule_key')
+            ->map(static fn ($ruleRows): array => $ruleRows->pluck('spell_name')->all())
+            ->all())
+        ->all();
+    expect($selectionsByClass)->toBe([
+        'Bard' => [
+            'bard-cantrips' => ['Thunderclap', 'Vicious Mockery'],
+            'bard-prepared' => ['Bane', 'Dissonant Whispers', 'Sleep', 'Thunderwave'],
+        ],
+        'Cleric' => [
+            'cleric-cantrips' => ['Light', 'Spare the Dying', 'Thaumaturgy'],
+            'cleric-divine-order-cantrip' => ['Guidance'],
+            'cleric-prepared' => ['Create or Destroy Water', 'Cure Wounds', 'Healing Word', 'Sanctuary'],
+        ],
+        'Druid' => [
+            'druid-cantrips' => ['Shape Water', 'Shillelagh'],
+            'druid-prepared' => ['Absorb Elements', 'Goodberry', 'Jump', 'Speak with Animals'],
+        ],
+        'Paladin' => [
+            'paladin-prepared' => ['Thunderous Smite', 'Wrathful Smite'],
+        ],
+        'Sorcerer' => [
+            'sorcerer-cantrips' => ['Chill Touch', 'Ray of Frost', 'Shocking Grasp', 'True Strike'],
+            'sorcerer-prepared' => ['Chromatic Orb', 'Ray of Sickness'],
+        ],
+        'Wizard' => [
+            'wizard-cantrips' => ['Mage Hand', 'Minor Illusion', 'Mold Earth'],
+            'wizard-prepared' => ['Feather Fall', 'Find Familiar', 'Shield', 'Unseen Servant'],
+        ],
+    ]);
+
+    $orderConfigs = DB::table('character_source_instances as source')
+        ->join('class_definitions as class', 'class.id', '=', 'source.source_definition_id')
+        ->where('source.character_id', $muttId)
+        ->whereIn('class.name', ['Cleric', 'Druid'])
+        ->orderBy('class.name')
+        ->pluck('source.config', 'class.name')
+        ->map(static fn (string $config): array => json_decode($config, true, 512, JSON_THROW_ON_ERROR))
+        ->all();
+    expect($orderConfigs)->toBe([
+        'Cleric' => [
+            'spellcasting_ability' => 'wisdom',
+            'divine_order' => ['chosen_option' => 'Thaumaturge', 'chosen_list' => 'Cleric'],
+        ],
+        'Druid' => [
+            'spellcasting_ability' => 'wisdom',
+            'primal_order' => ['chosen_option' => 'Warden'],
+        ],
     ]);
 
     foreach (['2014:mold-earth' => 'Wizard', '2014:shape-water' => 'Druid'] as $versionKey => $list) {
@@ -155,15 +210,27 @@ it('seeds the requested six-class character and generates both Magic Initiates t
         ->join('spell_versions as version', 'version.id', '=', 'entry.spell_version_id')
         ->where('entry.character_id', $muttId)
         ->pluck('version.spell_identity_id');
-    expect($selectedIdentityIds->unique())->toHaveCount(31)
-        ->and($selectedIdentityIds->merge($spellbookIdentityIds)->unique())->toHaveCount(33)
+    expect($selectedIdentityIds->unique())->toHaveCount(35)
+        ->and($selectedIdentityIds->merge($spellbookIdentityIds)->unique())->toHaveCount(37)
         ->and(DB::table('wizard_spellbook_entries')->where('character_id', $muttId)->count())->toBe(6);
-    foreach (['2024:ray-of-sickness', '2024:sleep'] as $omittedVersionKey) {
-        $versionId = DB::table('spell_versions')->where('content_key', $omittedVersionKey)->value('id');
-        expect($muttSlots->contains('current_spell_version_id', $versionId))->toBeFalse()
-            ->and(DB::table('wizard_spellbook_entries')
-                ->where('character_id', $muttId)->where('spell_version_id', $versionId)->exists())->toBeFalse();
-    }
+    $wizardBook = DB::table('wizard_spellbook_entries as entry')
+        ->join('spell_versions as version', 'version.id', '=', 'entry.spell_version_id')
+        ->where('entry.character_id', $muttId)
+        ->orderBy('entry.id')
+        ->pluck('version.display_name')
+        ->all();
+    expect($wizardBook)->toBe([
+        'Comprehend Languages', 'Feather Fall', 'Find Familiar',
+        'Shield', "Tenser's Floating Disk", 'Unseen Servant',
+    ]);
+
+    $muttReport = app(BuildReportBuilder::class)->build($muttId);
+    expect(collect(data_get($muttReport, 'duplicate_assessments'))
+        ->reject(static fn (array $assessment): bool => data_get($assessment, 'category') === 'none')
+        ->values()->all())->toBe([])
+        ->and(collect(data_get($muttReport, 'wizard.prepared'))->pluck('spell_name')->all())->toBe([
+            'Feather Fall', 'Find Familiar', 'Shield', 'Unseen Servant',
+        ]);
 });
 
 it('builds the golden read-only report values and duplicate classifications', function () {

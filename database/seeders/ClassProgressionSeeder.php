@@ -179,6 +179,40 @@ final class ClassProgressionSeeder extends Seeder
                 $rules[array_key_last($rules)]['selection_collection'] = 'wizard_spellbook';
             }
         }
+        if ($name === 'Cleric') {
+            $rules[] = [
+                'kind' => 'choice_from_list',
+                'rule_key' => 'cleric-divine-order-cantrip',
+                'count' => 1,
+                'bucket' => 'cantrip_known',
+                'list' => '$config.divine_order.chosen_list',
+                'level_min' => 0,
+                'level_max' => 0,
+                'with_slots' => false,
+                'active_from_class_level' => 1,
+                'active_if_config' => [
+                    'key' => 'divine_order.chosen_option',
+                    'equals' => 'Thaumaturge',
+                ],
+            ];
+        }
+        if ($name === 'Druid') {
+            $rules[] = [
+                'kind' => 'choice_from_list',
+                'rule_key' => 'druid-primal-order-cantrip',
+                'count' => 1,
+                'bucket' => 'cantrip_known',
+                'list' => '$config.primal_order.chosen_list',
+                'level_min' => 0,
+                'level_max' => 0,
+                'with_slots' => false,
+                'active_from_class_level' => 1,
+                'active_if_config' => [
+                    'key' => 'primal_order.chosen_option',
+                    'equals' => 'Magician',
+                ],
+            ];
+        }
         foreach ($arcanumLevels as $spellLevel) {
             $rules[] = [
                 'kind' => 'choice_from_list',

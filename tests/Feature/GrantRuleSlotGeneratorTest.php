@@ -438,6 +438,56 @@ it('activates a rule below at and above its class-level unlock', function () {
     expect(DB::table('spell_selection_slots')->where('state', 'active')->count())->toBe(1);
 });
 
+it('activates and reconciles a rule only for its exact source-config option', function () {
+    $characterId = grantCharacter();
+    $classId = DB::table('class_definitions')->insertGetId([
+        'content_key' => '2024:class:cleric', 'name' => 'Cleric', 'rules_edition' => '2024',
+        'progression_type' => 'full', 'created_at' => now(), 'updated_at' => now(),
+    ]);
+    DB::table('class_progressions')->insert([
+        'class_definition_id' => $classId,
+        'class_level' => 1,
+        'grant_rules' => json_encode([[
+            'kind' => 'choice_from_list', 'rule_key' => 'divine-order-cantrip', 'count' => 1,
+            'bucket' => 'cantrip_known', 'list' => '$config.divine_order.chosen_list',
+            'level_min' => 0, 'level_max' => 0,
+            'active_if_config' => [
+                'key' => 'divine_order.chosen_option', 'equals' => 'Thaumaturge',
+            ],
+        ]], JSON_THROW_ON_ERROR),
+        'created_at' => now(), 'updated_at' => now(),
+    ]);
+    DB::table('character_class_levels')->insert([
+        'character_id' => $characterId, 'class_definition_id' => $classId, 'level' => 1,
+        'created_at' => now(), 'updated_at' => now(),
+    ]);
+    $sourceId = grantSource($characterId, 'class', $classId, [
+        'divine_order' => ['chosen_option' => 'Protector'],
+    ]);
+    $generator = app(GrantRuleSlotGenerator::class);
+
+    $generator->generateForSource($sourceId);
+    expect($generator->activeRulesForSource($sourceId))->toBe([])
+        ->and(DB::table('spell_selection_slots')->count())->toBe(0);
+
+    DB::table('character_source_instances')->where('id', $sourceId)->update([
+        'config' => json_encode([
+            'divine_order' => ['chosen_option' => 'Thaumaturge', 'chosen_list' => 'Cleric'],
+        ], JSON_THROW_ON_ERROR),
+    ]);
+    $generator->generateForSource($sourceId);
+    expect($generator->activeRulesForSource($sourceId))->toHaveCount(1)
+        ->and(DB::table('spell_selection_slots')->where('state', 'active')->count())->toBe(1)
+        ->and(DB::table('spell_selection_slots')->value('allowed_spell_lists'))->toBe('["Cleric"]');
+
+    DB::table('character_source_instances')->where('id', $sourceId)->update([
+        'config' => json_encode(['divine_order' => ['chosen_option' => 'Protector']], JSON_THROW_ON_ERROR),
+    ]);
+    $generator->generateForSource($sourceId);
+    expect(DB::table('spell_selection_slots')->where('state', 'active')->count())->toBe(0)
+        ->and(DB::table('spell_selection_slots')->where('state', 'orphaned')->count())->toBe(1);
+});
+
 it('combines static subclass grant rules with progression grant rules', function () {
     $characterId = grantCharacter();
     grantSpell('2024:static-subclass-spell', 'Static Subclass Spell', 1, ['Wizard']);

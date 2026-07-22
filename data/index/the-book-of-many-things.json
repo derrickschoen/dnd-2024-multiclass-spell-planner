@@ -75,7 +75,11 @@
     "attackModes": [],
     "saveAbilities": [],
     "effectReliabilityCategory": "fixed_effect",
-    "spellLists": [],
+    "spellLists": [
+      "Sorcerer",
+      "Warlock",
+      "Wizard"
+    ],
     "sourceBooks": [
       "The Book of Many Things"
     ],

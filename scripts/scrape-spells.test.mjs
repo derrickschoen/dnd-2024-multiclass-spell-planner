@@ -1,5 +1,7 @@
 import { test, describe } from 'node:test';
 import assert from 'node:assert/strict';
+import { readFile, readdir } from 'node:fs/promises';
+import { parse as parseHtml } from 'node-html-parser';
 import { parseIndex, classify, canonicalSourceBook, parseSpellLevel, parseSpellPage, parseSpellLists } from './scrape-spells.mjs';
 
 /**
@@ -200,22 +202,120 @@ describe('parseSpellPage extracts only a real level header from run-on content',
     });
 });
 
-describe('parseSpellLists recovers 2014 class lists from detail pages', () => {
-    test('extracts a multi-class list', () => {
-        // The 2014 index has no class column, so this is the ONLY source for
-        // legacy spells. Mold Earth is on three lists; a hand-patch that guessed
-        // "Wizard" alone was wrong.
-        assert.deepEqual(
-            parseSpellLists('...dismiss such an effect as an action. Spell Lists. Druid , Sorcerer , Wizard  '),
-            ['Druid', 'Sorcerer', 'Wizard']
+describe('parseSpellLists audits every cached detail page', () => {
+    const oldParseSpellLists = (pageText) => {
+        const match = / Spell Lists\.\s*([A-Za-z,\s()]+?)(?:\s{2,}|window|$)/.exec(
+            ' ' + pageText.replace(/\s+/g, ' ')
         );
-    });
+        if (!match) return [];
+        return match[1]
+            .split(',')
+            .map((name) => name.trim())
+            .filter((name) => /^[A-Z][A-Za-z ]{2,}$/.test(name));
+    };
 
-    test('extracts a single-class list', () => {
-        assert.deepEqual(parseSpellLists('text here. Spell Lists. Druid  '), ['Druid']);
-    });
+    test('recovers every stated membership conservatively across all 993 pages', async () => {
+        const pages = [];
+        for (const edition of ['2014', '2024']) {
+            const cacheDirectory = new URL(`./.cache/${edition}/`, import.meta.url);
+            const indexHtml = await readFile(new URL('__index__.html', cacheDirectory), 'utf8');
+            const indexBySlug = new Map(parseIndex(indexHtml, edition).map((row) => [row.slug, row]));
+            const files = (await readdir(cacheDirectory))
+                .filter((file) => file.endsWith('.html') && file !== '__index__.html')
+                .toSorted();
+            for (const file of files) {
+                const slug = file.replace(/\.html$/, '');
+                const content = parseHtml(await readFile(new URL(file, cacheDirectory), 'utf8'))
+                    .querySelector('#page-content');
+                assert.ok(content, `missing #page-content for ${edition}/${slug}`);
+                const paragraphs = content.querySelectorAll('p')
+                    .map((node) => node.text.replace(/\s+/g, ' ').trim());
+                const source = paragraphs.find((paragraph) => /^Source:/i.test(paragraph)) || '';
+                const after = parseSpellLists(content.text);
+                const before = edition === '2024'
+                    ? indexBySlug.get(slug)?.spellLists || []
+                    : oldParseSpellLists(content.text);
+                const effectiveAfter = edition === '2024'
+                    ? indexBySlug.get(slug)?.spellLists || []
+                    : after;
+                pages.push({ edition, slug, source, text: content.text, before, after, effectiveAfter });
+            }
+        }
 
-    test('returns empty when the page states no list', () => {
-        assert.deepEqual(parseSpellLists('You create a spectral hand.'), []);
+        assert.equal(pages.length, 993);
+        assert.equal(pages.filter((page) => page.edition === '2014').length, 574);
+        assert.equal(pages.filter((page) => page.edition === '2024').length, 419);
+
+        // Modern flattened headers and the index must independently agree. This
+        // makes the detail parser auditable without changing the index-first
+        // production precedence.
+        for (const page of pages.filter((candidate) => candidate.edition === '2024')) {
+            assert.deepEqual(page.after, page.effectiveAfter, `modern list mismatch for ${page.slug}`);
+        }
+        assert.equal(pages.filter((page) => page.after.length === 0).length, 1);
+        assert.equal(pages.find((page) => page.after.length === 0)?.slug, 'encode-thoughts');
+
+        const publishedLegacy = pages.filter((page) =>
+            page.edition === '2014' && !/unearthed arcana/i.test(page.source)
+        );
+        const previouslyEmpty = publishedLegacy.filter((page) => page.before.length === 0);
+        assert.equal(publishedLegacy.length, 524);
+        assert.equal(previouslyEmpty.length, 28);
+        assert.equal(previouslyEmpty.filter((page) => page.after.length > 0).length, 28);
+
+        const beforeMemberships = publishedLegacy.flatMap((page) => page.before);
+        const afterMemberships = publishedLegacy.flatMap((page) => page.after);
+        const recoveredMemberships = publishedLegacy.flatMap((page) =>
+            page.after.filter((membership) => !page.before.includes(membership))
+        );
+        assert.equal(beforeMemberships.length, 1257); // includes the bogus `None`
+        assert.equal(afterMemberships.length, 1401);
+        assert.equal(recoveredMemberships.length, 145);
+        assert.equal(beforeMemberships.filter((membership) => membership === 'None').length, 1);
+        assert.equal(afterMemberships.filter((membership) => membership === 'None').length, 0);
+
+        const boundaryPages = publishedLegacy.filter((page) =>
+            page.after.some((membership) =>
+                !membership.includes('(') && !page.before.includes(membership)
+            )
+        );
+        const optionalPages = publishedLegacy.filter((page) =>
+            page.after.some((membership) => membership.endsWith(' (Optional)'))
+        );
+        const qualifiedPages = publishedLegacy.filter((page) =>
+            page.after.some((membership) => / \((Dunamancy|Graviturgy)\)$/.test(membership))
+        );
+        assert.equal(boundaryPages.length, 8);
+        assert.equal(boundaryPages.flatMap((page) =>
+            page.after.filter((membership) =>
+                !membership.includes('(') && !page.before.includes(membership)
+            )
+        ).length, 17);
+        assert.equal(optionalPages.length, 75);
+        assert.equal(optionalPages.flatMap((page) =>
+            page.after.filter((membership) => membership.endsWith(' (Optional)'))
+        ).length, 122);
+        assert.equal(qualifiedPages.length, 6);
+
+        const bySlug = new Map(pages
+            .filter((page) => page.edition === '2014')
+            .map((page) => [page.slug, page.after]));
+        assert.deepEqual(bySlug.get('fast-friends'), ['Bard', 'Cleric', 'Wizard']);
+        assert.deepEqual(bySlug.get('encode-thoughts'), []);
+        assert.deepEqual(bySlug.get('green-flame-blade'), [
+            'Artificer', 'Sorcerer (Optional)', 'Warlock (Optional)', 'Wizard (Optional)',
+        ]);
+        assert.deepEqual(bySlug.get('spirit-of-death'), ['Sorcerer', 'Warlock', 'Wizard']);
+        assert.deepEqual(Object.fromEntries([
+            'fortunes-favor', 'gift-of-alacrity', 'magnify-gravity',
+            'sapping-sting', 'wristpocket', 'immovable-object',
+        ].map((slug) => [slug, bySlug.get(slug)])), {
+            'fortunes-favor': ['Wizard (Dunamancy)'],
+            'gift-of-alacrity': ['Wizard (Dunamancy)'],
+            'magnify-gravity': ['Wizard (Dunamancy)'],
+            'sapping-sting': ['Wizard (Dunamancy)'],
+            wristpocket: ['Wizard (Dunamancy)'],
+            'immovable-object': ['Wizard (Graviturgy)'],
+        });
     });
 });

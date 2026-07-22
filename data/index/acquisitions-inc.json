@@ -125,7 +125,11 @@
       "wisdom"
     ],
     "effectReliabilityCategory": "saving_throw",
-    "spellLists": [],
+    "spellLists": [
+      "Bard",
+      "Cleric",
+      "Wizard"
+    ],
     "sourceBooks": [
       "Acquisitions Inc."
     ],
@@ -180,7 +184,10 @@
       "wisdom"
     ],
     "effectReliabilityCategory": "saving_throw",
-    "spellLists": [],
+    "spellLists": [
+      "Bard",
+      "Cleric"
+    ],
     "sourceBooks": [
       "Acquisitions Inc."
     ],

@@ -1554,3 +1554,174 @@ documentation findings were rejected with local execution evidence. On
 resubmission, the reviewer verified the nested/outer transaction rollback and
 reported no remaining medium/high defect. Targeted Pint, all changed PHP syntax
 checks, JSON parsing, and `git diff --check` passed. No commit or push was made.
+
+### Iteration 16 — UNIT E2E-16 authoritative Mutt attribution and corpus parser complete
+
+Mutt now follows the confirmed sheet attribution exactly; eligibility is not
+used to invent provenance. The 35 selected slots contain 35 distinct spell
+identities, and the duplicate assessment list is empty:
+
+- Sorcerer cantrips: Chill Touch, Ray of Frost, Shocking Grasp, True Strike.
+  Level 1: Chromatic Orb, Ray of Sickness.
+- Bard cantrips: Thunderclap, Vicious Mockery. Level 1: Bane, Dissonant
+  Whispers, Sleep, Thunderwave.
+- Cleric cantrips: Light, Spare the Dying, Thaumaturgy, Guidance. Guidance is
+  the separate Divine Order slot. Level 1: Create or Destroy Water, Cure
+  Wounds, Healing Word, Sanctuary.
+- Druid cantrips: Shape Water, Shillelagh. Level 1: Absorb Elements, Goodberry,
+  Jump, Speak with Animals.
+- Paladin level 1: Thunderous Smite, Wrathful Smite.
+- Wizard cantrips: Mage Hand, Minor Illusion, Mold Earth. Spellbook:
+  Comprehend Languages, Feather Fall, Find Familiar, Shield, Tenser's Floating
+  Disk, Unseen Servant. The prepared four are Feather Fall, Find Familiar,
+  Shield, and Unseen Servant; Comprehend Languages and Tenser's Floating Disk
+  are unprepared book entries.
+- Duplicate list: `[]`. Bane is Bard-only, Healing Word is Cleric-only, and
+  Shield is Wizard-only.
+
+The Mutt operation ledger is now exactly 42 commands: one character-rules
+update, six class-source additions, and 35 slot selections. The Wizard book has
+six entries and four preparations. Including the two unprepared book-only
+identities, Mutt has 37 distinct selected-or-book spell identities.
+
+Divine Order and Primal Order are now independent level-1 class-progression
+`choice_from_list` grant rules. Their choices are validated and persisted in
+class source config. `Thaumaturge` activates one Cleric cantrip selected from the
+configured Cleric list; `Magician` does the corresponding thing for Druid.
+`Protector` and `Warden` activate no bonus cantrip. Mutt records Divine Order:
+Thaumaturge with Cleric as the chosen list, and Primal Order: Warden. The base
+level-1 Cleric progression remains 3 cantrips and 4 prepared spells before the
+Order bonus; the bonus makes Mutt's Cleric total four cantrips. The base Druid
+progression remains 2 cantrips and 4 prepared spells.
+
+`parseSpellLists()` now accepts colon and period labels without depending on
+capitalisation, recognizes flattened legacy and modern DOM boundaries, and
+uses an explicit class-name grammar. Qualifiers are preserved as exact catalog
+keys such as `Sorcerer (Optional)`, `Wizard (Dunamancy)`, and `Wizard
+(Graviturgy)`. They are deliberately not promoted to the unqualified base-class
+key, so retaining source data cannot make an optional or subclass-qualified
+spell selectable by the ordinary class rule. `None` is rejected as a sentinel.
+
+The corpus test loads all 993 cached detail pages (574 legacy and 419 modern),
+not fixtures. For the 524 published non-UA legacy pages, the old parser emitted
+1,257 memberships, including the bogus `None`; the new parser emits 1,401 valid
+memberships. That is 145 recovered stated memberships and one removed sentinel,
+a net increase of 144. All 28 published pages that were previously empty now
+resolve; the only raw parser result empty across the entire cache is Encode
+Thoughts, whose page says `None`. The audited defect groups are 17 ordinary
+memberships recovered across 8 boundary/punctuation/capitalisation pages, 122
+preserved Optional memberships across 75 pages, and 6 preserved Wizard
+subclass-qualified memberships. Fast Friends resolves to Bard, Cleric, Wizard;
+Green-Flame Blade preserves Artificer plus the three Optional labels; and the
+five Dunamancy spells plus Immovable Object's Graviturgy label are exact.
+
+The false-positive guard has three layers: every emitted base name is from the
+explicit class allowlist; qualifiers remain non-base keys; and every one of the
+419 modern detail-page parses independently equals its cached index membership
+list. Catalog import pins 122 Optional and 6 qualified memberships, rejects
+`None`, and proves Green-Flame Blade does not acquire ordinary Sorcerer
+eligibility.
+
+Sensitivity checks were run with production changes restored afterward:
+
+- Replacing the parser body with `return []` made the corpus audit fail first on
+  modern Acid Splash, expected Artificer/Sorcerer/Wizard but received an empty
+  list.
+- Reassigning Shield to Sorcerer in place of Ray of Sickness made the Mutt
+  report test fail because the raw attribution contained Sorcerer + Wizard
+  Shield routes. No duplicate suppression was introduced.
+- Changing the Divine Order activation predicate from Thaumaturge to Protector
+  made fresh seeding fail with `Unable to seed Guidance into
+  cleric-divine-order-cantrip:1.`
+
+All mutations were reverted before the clean verification. A6's seven golden
+contracts remain unchanged: caster level 6; slots 4/3/3; proficiency +3; every
+class maximum preparable level 1; Mage Hand wasteful; Entangle none; and Detect
+Magic capability `ritual_only`, not a selection, and not counting against a
+limit.
+
+Final verification output observed (terminal colour/control codes removed;
+text otherwise verbatim):
+
+```text
+Dropping all tables ............................................ 4.07ms DONE
+
+INFO  Preparing database.
+
+Creating migration table ....................................... 3.06ms DONE
+
+INFO  Running migrations.
+
+0001_01_01_000000_create_users_table ........................... 0.91ms DONE
+0001_01_01_000001_create_cache_table ........................... 0.35ms DONE
+0001_01_01_000002_create_jobs_table ............................ 0.71ms DONE
+2026_07_21_000100_create_catalog_tables ........................ 6.81ms DONE
+2026_07_21_000200_create_character_tables ...................... 3.35ms DONE
+2026_07_21_000300_add_spell_selection_eligibility .............. 1.94ms DONE
+2026_07_21_000400_create_subclass_progressions ................. 0.29ms DONE
+2026_07_21_000500_create_character_operations .................. 0.29ms DONE
+
+INFO  Seeding database.
+
+Database\Seeders\ClassProgressionSeeder ......................... 37 ms DONE
+Database\Seeders\ContentDefinitionSeeder ........................ 1 ms DONE
+Database\Seeders\SeedCharacterSeeder ........................... 336 ms DONE
+
+Tests:    452 passed (12986 assertions)
+Duration: 82.53s
+
+> test:scripts
+> node --test 'scripts/*.test.mjs'
+
+▶ parseSpellLists audits every cached detail page
+  ✔ recovers every stated membership conservatively across all 993 pages (719.352551ms)
+✔ parseSpellLists audits every cached detail page (719.47635ms)
+ℹ tests 24
+ℹ suites 8
+ℹ pass 24
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 778.959805
+
+> typecheck
+> vue-tsc --noEmit
+
+> build
+> vite build
+
+vite v8.1.5 building client environment for production...
+[plugin laravel:fonts] Optimized font fallbacks require the optional "fontaine" package. Install it, or set "optimizedFallbacks: false" on your fonts to disable the feature.
+✓ 567 modules transformed.
+public/build/manifest.json                                       1.53 kB │ gzip:  0.34 kB
+public/build/fonts-manifest.json                                 5.74 kB │ gzip:  0.71 kB
+public/build/assets/instrument-sans-400-normal-DRC__1Mx.woff2   16.86 kB
+public/build/assets/instrument-sans-500-normal-Dk9ku72i.woff2   17.23 kB
+public/build/assets/instrument-sans-600-normal-B7fBEWYG.woff2   17.40 kB
+public/build/assets/instrument-sans-400-normal-D1W7dsQl.woff    21.24 kB
+public/build/assets/instrument-sans-500-normal-Z6ESRlEs.woff    21.65 kB
+public/build/assets/instrument-sans-600-normal-B9e8oLYv.woff    21.67 kB
+public/build/assets/fonts-C9MNnjVw.css                           2.35 kB │ gzip:  0.38 kB
+public/build/assets/app-jSxdPPVW.css                            75.44 kB │ gzip: 14.22 kB
+public/build/assets/app-BoawcbZI.js                            225.32 kB │ gzip: 75.10 kB
+✓ built in 354ms
+
+> test:e2e
+> playwright test
+
+Running 18 tests using 1 worker
+  ✓ T10: Mutt matches the authoritative sheet attribution with zero duplicates (3.4s)
+
+18 passed (1.0m)
+```
+
+Targeted Pint passed on both changed files it identified. The repository-wide
+Pint check still reports four pre-existing style findings in untouched files:
+`CasterContribution.php`, `SchemaConstraintsTest.php`, `tests/Pest.php`, and
+`MulticlassSlotsTest.php`. `git diff --check` passed. The required Claude plan
+and implementation reviews were attempted with bounded waits; they returned no
+review content and were recorded as a tooling deviation, not approval. The
+implementation was instead subjected to the explicit self-review, corpus
+oracle, three sensitivity mutations, and complete verification above. No commit
+or push was made.

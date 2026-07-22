@@ -81,7 +81,12 @@ it('accepts each command enum branch', function (array $payload): void {
     ]],
     'class source' => [[
         'type' => 'add_source', 'source_type' => 'class', 'source_definition_id' => 1,
-        'config' => ['level' => 1, 'wizard_spellbook_acquisitions' => []],
+        'config' => [
+            'level' => 1,
+            'wizard_spellbook_acquisitions' => [],
+            'divine_order' => ['chosen_option' => 'Thaumaturge', 'chosen_list' => 'Cleric'],
+            'primal_order' => ['chosen_option' => 'Magician', 'chosen_list' => 'Druid'],
+        ],
     ]],
     'warning delete' => [[
         'type' => 'acknowledge_warning', 'mode' => 'delete', 'warning_fingerprint' => 'fingerprint',
