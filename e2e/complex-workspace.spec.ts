@@ -1,7 +1,9 @@
 import { expect, test, type Locator, type Page, type Response } from '@playwright/test';
 import {
+    addMagicInitiateSource,
     auditLog,
     character,
+    characterOperations,
     classLevel,
     mutationFootprint,
     persistedCharacterState,
@@ -13,6 +15,7 @@ import {
     slots,
     source,
     spellVersionId,
+    warningAcknowledgements,
     type SlotFixture,
 } from './support/database';
 
@@ -44,8 +47,18 @@ interface MutationBody {
                 category: string;
                 explanation: string;
                 selection_count: number;
+                versions: Array<{
+                    spell_version_id: number;
+                    content_key: string;
+                    edition: string;
+                    label: string;
+                }>;
+                warning_fingerprint: string | null;
+                acknowledgement: { id: number; note: string; created_at: string } | null;
             }>;
             access_routes: Array<{
+                slot_id: number | null;
+                spell_version_id: number;
                 spell_name: string;
                 source_name: string;
                 origin: string;
@@ -53,6 +66,7 @@ interface MutationBody {
                 is_selection: boolean;
                 counts_against_limit: boolean;
             }>;
+            invalid_selections: Array<{ id: number; spell_name: string; eligibility: string }>;
         };
     };
 }
@@ -563,6 +577,202 @@ test('S11: the slot grid is keyboard reachable, visibly focused, labelled, and w
     expect(await warningsWithoutTextCue(page)).toEqual([]);
 });
 
+test('S12: selecting 2014 and 2024 Chill Touch warns prominently and keeps its acknowledgement after reload', async ({ page }) => {
+    const targets = slotFixtures().filter((slot) => slot.rule_key === 'wizard-cantrips'
+        && [2, 3].includes(slot.ordinal));
+    expect(targets).toHaveLength(2);
+    expect(targets.map((slot) => slot.current_spell_version_id)).toEqual([null, null]);
+    const legacyToggle = page.getByRole('checkbox', { name: /Allow legacy 2014 spell versions/ });
+    await expect(legacyToggle).not.toBeChecked();
+
+    const legacyResponse = page.waitForResponse(isMutationResponse);
+    await legacyToggle.check();
+    expect((await legacyResponse).status()).toBe(200);
+    await expect(legacyToggle).toBeChecked();
+    expect(character().allow_legacy).toBe(1);
+
+    await selectSpellVersion(page, targets[0]!.id, 'Chill Touch', '2014');
+    const conflictResponse = await selectSpellVersion(page, targets[1]!.id, 'Chill Touch', '2024');
+    const assessment = conflictResponse.workspace.report.duplicate_assessments
+        .find((item) => item.spell_name === 'Chill Touch');
+    expect(assessment).toEqual(expect.objectContaining({
+        category: 'conflicting_version',
+        versions: [
+            expect.objectContaining({ content_key: '2014:chill-touch', edition: '2014', label: 'Chill Touch (2014)' }),
+            expect.objectContaining({ content_key: '2024:chill-touch', edition: '2024', label: 'Chill Touch (2024)' }),
+        ],
+        acknowledgement: null,
+    }));
+    expect(targets.map((target) => requireSlot(
+        slots().find((slot) => slot.id === target.id),
+        `Chill Touch slot ${target.id}`,
+    ).current_spell_version_id)).toEqual([
+        spellVersionId('2014:chill-touch'),
+        spellVersionId('2024:chill-touch'),
+    ]);
+
+    const warningSection = duplicateWarningsSection(page);
+    await expect(warningSection.getByRole('heading', { name: 'CONFLICTING VERSIONS', exact: true })).toBeVisible();
+    const warning = warningSection.getByRole('alert').filter({ hasText: 'Chill Touch' });
+    await expect(warning).toHaveCount(1);
+    await expect(warning).toContainText('Chill Touch (2014)');
+    await expect(warning).toContainText('Chill Touch (2024)');
+    const note = 'Intentional comparison of ranged 2014 and touch-range 2024 rules.';
+    await warning.getByLabel('Acknowledgement note').fill(note);
+    const acknowledgementResponse = page.waitForResponse(isMutationResponse);
+    await warning.getByRole('button', { name: 'Acknowledge warning' }).click();
+    expect((await acknowledgementResponse).status()).toBe(200);
+    await expect(warning).toContainText(`Acknowledged: ${note}`);
+
+    const acknowledgements = warningAcknowledgements();
+    expect(acknowledgements).toHaveLength(1);
+    expect(acknowledgements[0]).toEqual(expect.objectContaining({
+        character_id: 1,
+        note,
+        invalidated_at: null,
+    }));
+    expect(String(acknowledgements[0]!.warning_fingerprint)).toMatch(/^conflicting_versions:[a-f0-9]{64}$/);
+
+    await page.reload({ waitUntil: 'networkidle' });
+    await expect(page.getByRole('heading', { name: 'A6 Sixfold Spellcaster', level: 1 })).toBeVisible();
+    const reloadedWarning = duplicateWarningsSection(page).getByRole('alert').filter({ hasText: 'Chill Touch' });
+    await expect(reloadedWarning).toHaveCount(1);
+    await expect(reloadedWarning).toContainText(`Acknowledged: ${note}`);
+    expect(warningAcknowledgements()).toEqual(acknowledgements);
+});
+
+test('S13: changing Magic Initiate from Wizard to Cleric preserves slot identity and excludes invalid selections', async ({ page }) => {
+    const wizardSource = source('Magic Initiate: Wizard');
+    const sourceId = Number(wizardSource.id);
+    const before = slots().filter((slot) => slot.source_instance_id === sourceId);
+    expect(before).toHaveLength(3);
+    expect(before.every((slot) => slot.current_spell_version_id !== null)).toBe(true);
+    const identities = before.map((slot) => ({ id: slot.id, slot_key: slot.slot_key }));
+    const selections = before.map((slot) => slot.current_spell_version_id);
+
+    const listSelect = page.getByLabel(`Chosen spell list for source ${sourceId}`);
+    await expect(listSelect).toHaveValue('Wizard');
+    const mutationResponse = page.waitForResponse(isMutationResponse);
+    await listSelect.selectOption('Cleric');
+    const response = await mutationResponse;
+    expect(response.status()).toBe(200);
+    const body = await response.json() as MutationBody;
+    await expect(listSelect).toHaveValue('Cleric');
+
+    const after = slots().filter((slot) => slot.source_instance_id === sourceId);
+    expect(after).toHaveLength(3);
+    expect(after.map((slot) => ({ id: slot.id, slot_key: slot.slot_key }))).toEqual(identities);
+    expect(after.map((slot) => slot.current_spell_version_id)).toEqual(selections);
+    expect(after.map((slot) => slot.selection_eligibility)).toEqual(['invalid', 'invalid', 'invalid']);
+    expect(after.map((slot) => slot.allowed_spell_lists)).toEqual(['["Cleric"]', '["Cleric"]', '["Cleric"]']);
+    expect(JSON.parse(String(source('Magic Initiate: Cleric').config))).toEqual({
+        chosen_list: 'Cleric',
+        spellcasting_ability: 'wisdom',
+    });
+    expect(JSON.parse(String(source('Human').config))).toEqual({
+        origin_feat_key: '2024:feat:magic-initiate',
+        origin_feat_config: {
+            chosen_list: 'Cleric',
+            spellcasting_ability: 'wisdom',
+        },
+    });
+
+    const routeSlotIds = body.workspace.report.access_routes.map((route) => route.slot_id);
+    for (const slot of after) {
+        expect(routeSlotIds).not.toContain(slot.id);
+        expect(body.workspace.report.invalid_selections.map((invalid) => invalid.id)).toContain(slot.id);
+        await expect(slotRow(page, slot.id).locator('td').nth(10)).toContainText('Invalid');
+        await expect(slotRow(page, slot.id).locator('xpath=following-sibling::tr[1]')).toContainText(
+            'Selected spell is not on an allowed spell list.',
+        );
+    }
+});
+
+test('S14: concurrent edits to different slots both persist with distinct operation UUIDs', async ({ page, browser }) => {
+    const targets = slotFixtures().filter((slot) => slot.rule_key === 'wizard-cantrips'
+        && [2, 3].includes(slot.ordinal));
+    expect(targets).toHaveLength(2);
+    const secondContext = await browser.newContext({
+        baseURL: 'https://dnd-spell-planner.ddev.site',
+        ignoreHTTPSErrors: true,
+    });
+    const secondPage = await secondContext.newPage();
+    try {
+        await secondPage.goto('/characters/1');
+        await expect(page.getByText(/revision 0$/)).toBeVisible();
+        await expect(secondPage.getByText(/revision 0$/)).toBeVisible();
+
+        const first = await selectSpell(page, targets[0]!.id, 'Fire Bolt');
+        const second = await selectSpell(secondPage, targets[1]!.id, 'Minor Illusion');
+        expect(first.revision).toBe(1);
+        expect(second.revision).toBe(2);
+        expect(targets.map((target) => requireSlot(
+            slots().find((slot) => slot.id === target.id),
+            `concurrently edited slot ${target.id}`,
+        ).current_spell_version_id)).toEqual([
+            spellVersionId('2024:fire-bolt'),
+            spellVersionId('2024:minor-illusion'),
+        ]);
+
+        const operations = characterOperations();
+        expect(operations).toHaveLength(2);
+        expect(operations.map((operation) => operation.expected_revision)).toEqual([0, 0]);
+        expect(operations.map((operation) => operation.resulting_revision)).toEqual([1, 2]);
+        const operationUuids = operations.map((operation) => String(operation.operation_uuid));
+        expect(new Set(operationUuids).size).toBe(2);
+        const audit = auditLog();
+        expect(audit).toHaveLength(2);
+        expect(audit.map((entry) => entry.entity_type)).toEqual([
+            'spell_selection_slots',
+            'spell_selection_slots',
+        ]);
+        expect(audit.map((entry) => entry.entity_id).sort()).toEqual(targets.map((target) => target.id).sort());
+        expect(new Set(audit.map((entry) => String(entry.operation_uuid)))).toEqual(new Set(operationUuids));
+    } finally {
+        await secondContext.close();
+    }
+});
+
+test('S15: repeated Magic Initiate refuses the same list and accepts a different list', async ({ page }) => {
+    const sourceConfiguration = reportSection(page, 'Source configuration');
+    await expect(sourceConfiguration).toBeVisible();
+    expect(await sourceConfiguration.getByRole('button', { name: /add.*magic initiate/i }).count()).toBe(0);
+    const beforeSlots = slots();
+    const beforeSources = slotFixtures().filter((slot) => slot.source_name === 'Magic Initiate: Wizard');
+    expect(beforeSources).toHaveLength(3);
+
+    const refused = addMagicInitiateSource('Wizard');
+    expect(refused).toEqual({
+        accepted: false,
+        error: "Magic Initiate already uses chosen_list 'Wizard' for this character.",
+        source: null,
+        slots: [],
+    });
+    expect(slots()).toEqual(beforeSlots);
+    expect(slotFixtures().filter((slot) => slot.source_name === 'Magic Initiate: Wizard')).toHaveLength(3);
+
+    const accepted = addMagicInitiateSource('Cleric');
+    expect(accepted.accepted).toBe(true);
+    expect(accepted.error).toBeNull();
+    expect(accepted.source).toEqual(expect.objectContaining({
+        character_id: 1,
+        source_type: 'feat',
+        display_name: 'Magic Initiate: Cleric',
+        state: 'active',
+    }));
+    expect(accepted.slots).toHaveLength(3);
+    expect(accepted.slots.map((slot) => slot.allowed_spell_lists)).toEqual([
+        '["Cleric"]', '["Cleric"]', '["Cleric"]',
+    ]);
+
+    await page.reload({ waitUntil: 'networkidle' });
+    await expect(page.getByRole('heading', { name: 'A6 Sixfold Spellcaster', level: 1 })).toBeVisible();
+    await expect(reportSection(page, 'Source configuration').getByText('Magic Initiate: Cleric', { exact: true })).toBeVisible();
+    for (const slot of accepted.slots) {
+        await expect(page.getByRole('combobox', { name: `Spell selection for slot ${slot.id}` })).toBeVisible();
+    }
+});
+
 function requireSlot<T extends SlotFixture | ReturnType<typeof slots>[number]>(
     slot: T | undefined,
     description: string,
@@ -602,6 +812,51 @@ async function selectSpell(page: Page, slotId: number, spellName: string): Promi
     await expect(page.getByText(new RegExp(`revision ${body.revision}$`))).toBeVisible();
     await expect(combobox).toHaveValue(spellName);
     await expect(page.getByText('Autosaved', { exact: true })).toBeVisible();
+
+    return body;
+}
+
+async function selectSpellVersion(
+    page: Page,
+    slotId: number,
+    spellName: string,
+    edition: '2014' | '2024',
+): Promise<MutationBody> {
+    const combobox = page.getByRole('combobox', { name: `Spell selection for slot ${slotId}` });
+    let eligible: Response | undefined;
+    await expect(combobox).toBeEnabled();
+    await expect(async () => {
+        await combobox.fill(spellName);
+        eligible = await page.waitForResponse((response) => {
+            const url = new URL(response.url());
+
+            return response.request().method() === 'GET'
+                && url.pathname.endsWith(`/characters/1/slots/${slotId}/eligible-spells`)
+                && url.searchParams.get('q') === spellName;
+        }, { timeout: 1_000 });
+    }).toPass({ timeout: 10_000, intervals: [0, 200, 500] });
+    if (!eligible) throw new Error(`No eligible-spell response was received for ${spellName} (${edition}).`);
+    expect(eligible.status()).toBe(200);
+    const searchBody = await eligible.json() as {
+        spells: Array<{ id: number; name: string; edition: string }>;
+    };
+    const matching = searchBody.spells.filter((spell) => spell.name === spellName && spell.edition === edition);
+    expect(matching).toHaveLength(1);
+    const option = page.locator(`[id="spell-options-${slotId}"]`).getByRole('option')
+        .filter({ hasText: spellName })
+        .filter({ hasText: edition });
+    await expect(option).toHaveCount(1);
+    await expect(option).toBeVisible();
+
+    const mutationResponse = page.waitForResponse(isMutationResponse);
+    await option.click();
+    const response = await mutationResponse;
+    expect(response.status()).toBe(200);
+    const body = await response.json() as MutationBody;
+    await expect(page.getByText(new RegExp(`revision ${body.revision}$`))).toBeVisible();
+    await expect(combobox).toHaveValue(spellName);
+    expect(requireSlot(slots().find((slot) => slot.id === slotId), `${spellName} ${edition} slot`)
+        .current_spell_version_id).toBe(matching[0]!.id);
 
     return body;
 }

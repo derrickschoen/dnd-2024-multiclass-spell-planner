@@ -23,6 +23,11 @@ final class SpellSelectionEligibility
         if ($version === null || ! (bool) data_get($version, 'is_active', true)) {
             return $this->invalid('Selected spell version is not active in the catalog.');
         }
+        $character = DB::table('characters')->find(data_get($slot, 'character_id'));
+        $legacyAllowed = (bool) data_get($character, 'allow_legacy');
+        if (data_get($version, 'rules_edition') === '2014' && ! $legacyAllowed) {
+            return $this->invalid('Enable legacy rules before selecting a 2014 spell version.');
+        }
 
         $level = (int) data_get($version, 'level');
         if ($level < (int) data_get($slot, 'spell_level_min', 0)
@@ -31,11 +36,20 @@ final class SpellSelectionEligibility
         }
 
         $lists = $this->jsonList(data_get($slot, 'allowed_spell_lists'));
-        if ($lists !== [] && ! DB::table('spell_list_memberships')
-            ->where('spell_version_id', $spellVersionId)
-            ->whereIn('spell_list_key', $lists)
-            ->exists()) {
-            return $this->invalid('Selected spell is not on an allowed spell list.');
+        if ($lists !== []) {
+            $directMembership = DB::table('spell_list_memberships')
+                ->where('spell_version_id', $spellVersionId)
+                ->whereIn('spell_list_key', $lists)
+                ->exists();
+            $identityMembership = data_get($version, 'rules_edition') === '2014' && $legacyAllowed
+                && DB::table('spell_list_memberships as membership')
+                    ->join('spell_versions as listed', 'listed.id', '=', 'membership.spell_version_id')
+                    ->where('listed.spell_identity_id', data_get($version, 'spell_identity_id'))
+                    ->whereIn('membership.spell_list_key', $lists)
+                    ->exists();
+            if (! $directMembership && ! $identityMembership) {
+                return $this->invalid('Selected spell is not on an allowed spell list.');
+            }
         }
 
         $schools = $this->jsonList(data_get($slot, 'allowed_schools'));

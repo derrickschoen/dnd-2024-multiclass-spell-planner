@@ -1,8 +1,12 @@
 <script setup lang="ts">
 import { computed } from 'vue';
+import { ref } from 'vue';
+import { useCharacterStore } from '@/stores/character';
 import type { BuildReport, DuplicateAssessment } from '@/types';
 
 const props = defineProps<{ report: BuildReport }>();
+const store = useCharacterStore();
+const acknowledgementNotes = ref<Record<string, string>>({});
 
 const warningsByCategory = computed(() => {
     const groups: Record<string, DuplicateAssessment[]> = {};
@@ -13,7 +17,19 @@ const warningsByCategory = computed(() => {
 });
 
 function title(value: string): string {
+    if (value === 'conflicting_version') return 'CONFLICTING VERSIONS';
     return value.replaceAll('_', ' ').replace(/\b\w/g, (letter) => letter.toUpperCase());
+}
+
+function acknowledge(item: DuplicateAssessment): void {
+    if (!item.warning_fingerprint) return;
+    const note = acknowledgementNotes.value[item.warning_fingerprint]?.trim();
+    if (!note) return;
+    void store.execute({
+        type: 'acknowledge_warning',
+        warning_fingerprint: item.warning_fingerprint,
+        note,
+    });
 }
 </script>
 
@@ -62,10 +78,16 @@ function title(value: string): string {
             <p v-if="!Object.keys(warningsByCategory).length" class="mt-3 text-sm text-stone-500">No duplicate spell warnings.</p>
             <div v-for="(items, category) in warningsByCategory" :key="category" class="mt-4">
                 <h3 class="text-xs font-semibold uppercase tracking-wide text-stone-500">{{ title(category) }}</h3>
-                <article v-for="item in items" :key="item.spell_identity_id" class="mt-2 rounded-md border border-amber-300 bg-amber-50 p-3 text-sm dark:border-amber-900 dark:bg-amber-950">
+                <article v-for="item in items" :key="item.spell_identity_id" :role="category === 'conflicting_version' ? 'alert' : undefined" class="mt-2 rounded-md border border-amber-300 bg-amber-50 p-3 text-sm dark:border-amber-900 dark:bg-amber-950">
                     <p class="font-medium"><span aria-hidden="true">⚠</span> {{ item.spell_name }}</p>
                     <p class="mt-1 text-xs leading-5">{{ item.explanation }}</p>
+                    <ul v-if="item.versions.length > 1" class="mt-2 list-disc pl-5 text-xs"><li v-for="version in item.versions" :key="version.spell_version_id">{{ version.label }}</li></ul>
                     <p class="mt-1 text-xs text-stone-600 dark:text-stone-400">Sources: {{ item.sources.join(', ') }}</p>
+                    <p v-if="item.acknowledgement" class="mt-2 rounded border border-amber-400 p-2 text-xs"><strong>Acknowledged:</strong> {{ item.acknowledgement.note }}</p>
+                    <div v-else-if="item.warning_fingerprint" class="mt-2 flex items-end gap-2">
+                        <label class="flex-1 text-xs">Acknowledgement note<input v-model="acknowledgementNotes[item.warning_fingerprint]" class="field mt-1 w-full" placeholder="Why both versions are intentional" /></label>
+                        <button type="button" class="button-secondary" :disabled="store.saving || !acknowledgementNotes[item.warning_fingerprint]?.trim()" @click="acknowledge(item)">Acknowledge warning</button>
+                    </div>
                 </article>
             </div>
         </section>

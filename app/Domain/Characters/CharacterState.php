@@ -21,6 +21,7 @@ final class CharacterState
         'character_source_instances',
         'spell_selection_slots',
         'wizard_spellbook_entries',
+        'warning_acknowledgements',
     ];
 
     /** @return array<string, mixed> */
@@ -63,6 +64,7 @@ final class CharacterState
             ['updated_at' => now()],
         ));
 
+        DB::table('warning_acknowledgements')->where('character_id', $characterId)->delete();
         DB::table('wizard_spellbook_entries')->where('character_id', $characterId)->delete();
         DB::table('spell_selection_slots')->where('character_id', $characterId)->delete();
         DB::table('character_source_instances')->where('character_id', $characterId)->delete();

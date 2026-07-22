@@ -106,6 +106,26 @@ final readonly class CharacterWorkspaceBuilder
             'warning_count' => count($warningAssessments) + count($invalid),
         ];
 
+        $configurableSources = DB::table('character_source_instances as source')
+            ->join('feat_definitions as feat', 'feat.id', '=', 'source.source_definition_id')
+            ->where('source.character_id', $characterId)
+            ->where('source.source_type', 'feat')
+            ->where('source.state', 'active')
+            ->where('feat.content_key', '2024:feat:magic-initiate')
+            ->orderBy('source.id')
+            ->get(['source.id', 'source.display_name', 'source.config'])
+            ->map(static function (object $source): array {
+                $config = json_decode((string) data_get($source, 'config'), true, 512, JSON_THROW_ON_ERROR);
+
+                return [
+                    'id' => (int) data_get($source, 'id'),
+                    'display_name' => (string) data_get($source, 'display_name'),
+                    'chosen_list' => (string) data_get($config, 'chosen_list'),
+                    'spellcasting_ability' => (string) data_get($config, 'spellcasting_ability'),
+                ];
+            })
+            ->all();
+
         return [
             'revision' => (int) DB::table('characters')->where('id', $characterId)->value('revision'),
             'report' => $report,
@@ -114,6 +134,10 @@ final readonly class CharacterWorkspaceBuilder
                 ->map(static fn (object $class): array => [
                     'id' => (int) data_get($class, 'id'), 'name' => (string) data_get($class, 'name'),
                 ])->all(),
+            'allow_legacy' => (bool) DB::table('characters')->where('id', $characterId)->value('allow_legacy'),
+            'configurable_sources' => $configurableSources,
+            'spell_lists' => DB::table('class_definitions')->whereIn('name', ['Cleric', 'Druid', 'Wizard'])
+                ->orderBy('name')->pluck('name')->all(),
             'slots' => $slots,
             'save_points' => DB::table('character_save_points')->where('character_id', $characterId)
                 ->orderByDesc('id')->get(['id', 'label', 'created_at'])

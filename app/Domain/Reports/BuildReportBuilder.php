@@ -47,6 +47,21 @@ final readonly class BuildReportBuilder
 
         $routes = $this->access->buildForCharacter($characterId);
         $assessments = $this->duplicates->classify($routes);
+        $acknowledgements = DB::table('warning_acknowledgements')
+            ->where('character_id', $characterId)
+            ->whereNull('invalidated_at')
+            ->get()
+            ->keyBy('warning_fingerprint');
+        $assessments = array_map(static function (array $assessment) use ($acknowledgements): array {
+            $acknowledgement = $acknowledgements->get(data_get($assessment, 'warning_fingerprint'));
+            $assessment['acknowledgement'] = $acknowledgement === null ? null : [
+                'id' => (int) data_get($acknowledgement, 'id'),
+                'note' => (string) data_get($acknowledgement, 'note'),
+                'created_at' => (string) data_get($acknowledgement, 'created_at'),
+            ];
+
+            return $assessment;
+        }, $assessments);
         $pactMagic = SpellSlots::pactMagic($contributions);
         $maxClassSpellLevel = $classes === [] ? 0 : max(array_map(
             static fn (array $class): int => (int) data_get($class, 'max_preparable_level'),

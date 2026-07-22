@@ -24,6 +24,13 @@ export interface SlotRow extends DatabaseRow {
     updated_at: string;
 }
 
+export interface MagicInitiateCreation {
+    accepted: boolean;
+    error: string | null;
+    source: DatabaseRow | null;
+    slots: SlotRow[];
+}
+
 export interface SlotFixture extends SlotRow {
     allowed_spell_lists: string | null;
     source_name: string;
@@ -65,6 +72,14 @@ export function auditLog(): DatabaseRow[] {
     return phpDatabase<DatabaseRow[]>('audit');
 }
 
+export function characterOperations(): DatabaseRow[] {
+    return phpDatabase<DatabaseRow[]>('operations');
+}
+
+export function warningAcknowledgements(): DatabaseRow[] {
+    return phpDatabase<DatabaseRow[]>('warning-acknowledgements');
+}
+
 export function persistedCharacterState(): PersistedCharacterState {
     return phpDatabase<PersistedCharacterState>('persisted-character-state');
 }
@@ -91,6 +106,10 @@ export function removeMagicInitiateWizardSource(): GrantRuleReconciliation {
 
 export function restoreMagicInitiateWizardSource(grantRules: string): GrantRuleReconciliation {
     return phpDatabase<GrantRuleReconciliation>('restore-magic-initiate-wizard-source', grantRules);
+}
+
+export function addMagicInitiateSource(chosenList: string): MagicInitiateCreation {
+    return phpDatabase<MagicInitiateCreation>('add-magic-initiate-source', chosenList);
 }
 
 export function spellVersionId(contentKey: string): number {

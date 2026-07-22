@@ -70,6 +70,31 @@ Ordered roughly by value. Mark done as they land.
 - [x] **S11 Accessibility** — keyboard-only traversal of the grid, visible focus,
       no colour-only warning signalling (every warning has text or an icon).
 
+
+## Backlog tier 2 — added after S1-S11 completed
+
+Flake check on the tier-1 suite: 3 consecutive full runs, 11/11 each, 35.3-35.5s.
+No intermittent failures.
+
+- [x] **S12 Cross-edition version conflict** — a headline spec feature with NO test
+      today. Enable `allow_legacy`, select both the 2014 and 2024 versions of one
+      spell identity (e.g. Chill Touch: 2014 ranged vs 2024 melee spell attack),
+      assert a prominent CONFLICTING VERSIONS warning naming both versions, then
+      acknowledge it with a note and assert the acknowledgement persists.
+- [x] **S13 Magic Initiate list change** — change a Magic Initiate instance from
+      Wizard to Cleric. Its chosen list is CONFIGURATION, not identity: slot ids
+      and slot_keys must be unchanged, while now-ineligible selections are flagged
+      invalid and excluded from access routes rather than deleted. This is an
+      explicit design guarantee that has never been exercised through the browser.
+- [x] **S14 Concurrent non-conflicting edits** — the complement to S10. Two browser
+      contexts edit DIFFERENT slots. Both must succeed, neither may clobber the
+      other, and the audit log must contain both operations with distinct
+      operation_uuids. S10 proves conflicts are rejected; nothing yet proves
+      legitimate concurrent work is allowed.
+- [x] **S15 Repeated Magic Initiate distinct-list rule** — a second Magic Initiate
+      on the SAME list must be refused; on a different list accepted. Enforced in
+      the browser, not just the domain layer.
+
 ## Iteration log
 
 ### Iteration 1 — E2E-1 batch 1 complete
@@ -296,3 +321,132 @@ Deviation: S4 still cannot trigger origin-feat removal through the browser, as
 recorded in Iteration 2. S8, S9, S10, and S11 are all triggered through browser
 contexts; none required a test-only HTTP route or direct database mutation.
 Per the UNIT instruction, this iteration remains uncommitted.
+
+### Iteration 4 — UNIT E2E-4 tier 2 S12, S13, S14, S15
+
+The brief adversarial pass over the four newest tier-1 tests found no significant
+issue. S8 pins exact report values and positive UI cardinality; S9 pins exact
+database rows and visible state text; S10 pins the rejected request, response, and
+full persisted footprint; S11 derives its grid count from the database and scans
+positive control/warning sets. None compares a value to itself, reads through the
+path it is intended to verify, or relies on a locator that may silently be empty.
+No tier-1 test was changed.
+
+Implemented scenarios and supporting production behavior:
+
+- S12 enables legacy rules through the browser, selects the exact 2014 and 2024
+  Chill Touch catalog versions in separate Wizard slots, and pins both database
+  version ids. The report renders a prominent `CONFLICTING VERSIONS` warning with
+  `Chill Touch (2014)` and `Chill Touch (2024)`. Its content-key-based fingerprint
+  and required-note acknowledgement are persisted in `warning_acknowledgements`,
+  included in snapshot/audit state, and verified unchanged after reload.
+- S13 changes the generated Magic Initiate: Wizard source to Cleric through the
+  browser. The command updates both child and parent `origin_feat_config`, then
+  regenerates from the parent. All three ids and slot keys stay exact, selections
+  remain stored, their allowed list changes to Cleric, all become invalid, and all
+  three slot ids disappear from access routes while appearing in invalid selections.
+- S14 admits a stale `set_slot` only when joined operation/audit history proves the
+  exact target slot was untouched since the submitted revision. Two browser
+  contexts save different slots at submitted revision 0, producing revisions 1
+  and 2, two exact persisted spell ids, two operations, two audit rows, and two
+  distinct operation UUIDs. A focused Pest regression also proves a stale write to
+  an already touched slot still receives 409.
+- S15 transactionally inserts a real Magic Initiate source fixture and invokes
+  `GrantRuleSlotGenerator`. Wizard is refused with no source/slot residue; Cleric
+  is accepted with three exact list-constrained slots and appears in the browser
+  after reload.
+
+Sensitivity checks (all temporary production changes were restored, and each
+scenario passed again after restoration):
+
+- S12 failed at the response assessment when conflicting-version classification
+  was suppressed: expected `category: "conflicting_version"`, received
+  `category: "wasteful"`; the received fingerprint was also `null`.
+- S13 failed at the database eligibility assertion when parent reconciliation was
+  disabled: expected `["invalid", "invalid", "invalid"]`, received
+  `["valid", "valid", "valid"]`.
+- S14 failed inside the second browser's real spell selection when the safe stale
+  slot merge was disabled: expected mutation status `200`, received `409`.
+- S15 failed at the direct production-path result when distinct configuration
+  enforcement was disabled: expected `accepted: false`, the exact duplicate-list
+  error, no source, and no slots; received `accepted: true`, `error: null`, a new
+  Wizard source, and three new slots.
+
+Final verification observed:
+
+```text
+Dropping all tables ............................................ 3.97ms DONE
+
+ INFO  Preparing database.
+
+Creating migration table ....................................... 3.10ms DONE
+
+ INFO  Running migrations.
+
+0001_01_01_000000_create_users_table ........................... 0.89ms DONE
+0001_01_01_000001_create_cache_table ........................... 0.32ms DONE
+0001_01_01_000002_create_jobs_table ............................ 0.64ms DONE
+2026_07_21_000100_create_catalog_tables ........................ 6.43ms DONE
+2026_07_21_000200_create_character_tables ...................... 3.53ms DONE
+2026_07_21_000300_add_spell_selection_eligibility .............. 1.84ms DONE
+2026_07_21_000400_create_subclass_progressions ................. 0.28ms DONE
+2026_07_21_000500_create_character_operations .................. 0.31ms DONE
+
+ INFO  Seeding database.
+
+Database\Seeders\ClassProgressionSeeder ............................ RUNNING
+Database\Seeders\ClassProgressionSeeder ......................... 37 ms DONE
+Database\Seeders\ContentDefinitionSeeder ........................... RUNNING
+Database\Seeders\ContentDefinitionSeeder ......................... 1 ms DONE
+Database\Seeders\SeedCharacterSeeder ............................... RUNNING
+Database\Seeders\SeedCharacterSeeder ............................ 29 ms DONE
+
+Tests:    160 passed (1364 assertions)
+Duration: 15.57s
+
+> typecheck
+> vue-tsc --noEmit
+
+> build
+> vite build
+vite v8.1.5 building client environment for production...
+[plugin laravel:fonts] Optimized font fallbacks require the optional "fontaine" package. Install it, or set "optimizedFallbacks: false" on your fonts to disable the feature.
+✓ 567 modules transformed.
+✓ built in 347ms
+
+> test:e2e
+> playwright test
+
+Running 15 tests using 1 worker
+  ✓ S1
+  ✓ S2
+  ✓ S3
+  ✓ S4
+  ✓ S5
+  ✓ S6
+  ✓ S7
+  ✓ S8
+  ✓ S9
+  ✓ S10
+  ✓ S11
+  ✓ S12
+  ✓ S13
+  ✓ S14
+  ✓ S15
+  15 passed (45.4s)
+```
+
+UI limitation: the browser can edit an existing Magic Initiate chosen list (S13),
+but it has no control for adding another feat/source instance. S15 therefore
+asserts that the visible Source configuration section has no add-Magic-Initiate
+control, drives the real transactional generator path directly as S4 does, then
+verifies the accepted source and slots in the browser. It does not fake a browser
+trigger or add a test-only HTTP route.
+
+Review deviation: the required independent Claude review was attempted three
+times (plan twice, implementation once). Each non-interactive CLI process produced
+no review output and ended in `Execution error`, including bounded 180-second and
+240-second attempts. Self-review found and fixed parent configuration persistence,
+live-warning fingerprint validation, and same-slot concurrency coverage. No
+independent findings were returned to accept or reject. Per the UNIT instruction,
+this iteration remains uncommitted.

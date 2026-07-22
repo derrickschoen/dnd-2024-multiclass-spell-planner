@@ -19,6 +19,7 @@ final readonly class EligibleSpellSearch
             ->where('id', $slotId)
             ->first();
         abort_if($slot === null, 404);
+        $allowLegacy = (bool) DB::table('characters')->where('id', $characterId)->value('allow_legacy');
 
         $lists = $this->jsonList(data_get($slot, 'allowed_spell_lists'));
         $schools = $this->jsonList(data_get($slot, 'allowed_schools'));
@@ -26,6 +27,7 @@ final readonly class EligibleSpellSearch
 
         $candidates = DB::table('spell_versions')
             ->where('is_active', true)
+            ->when(! $allowLegacy, fn ($builder) => $builder->where('rules_edition', '!=', '2014'))
             ->whereBetween('level', [
                 (int) data_get($slot, 'spell_level_min'),
                 (int) data_get($slot, 'spell_level_max'),
@@ -34,11 +36,22 @@ final readonly class EligibleSpellSearch
                 $builder->where('display_name', 'like', '%'.str_replace(['%', '_'], ['\\%', '\\_'], $query).'%');
             })
             ->when($lists !== [], function ($builder) use ($lists): void {
-                $builder->whereExists(function ($membership) use ($lists): void {
-                    $membership->selectRaw('1')
-                        ->from('spell_list_memberships')
-                        ->whereColumn('spell_list_memberships.spell_version_id', 'spell_versions.id')
-                        ->whereIn('spell_list_memberships.spell_list_key', $lists);
+                $builder->where(function ($eligibleList) use ($lists): void {
+                    $eligibleList->whereExists(function ($membership) use ($lists): void {
+                        $membership->selectRaw('1')
+                            ->from('spell_list_memberships')
+                            ->whereColumn('spell_list_memberships.spell_version_id', 'spell_versions.id')
+                            ->whereIn('spell_list_memberships.spell_list_key', $lists);
+                    })->orWhere(function ($legacy) use ($lists): void {
+                        $legacy->where('spell_versions.rules_edition', '2014')
+                            ->whereExists(function ($membership) use ($lists): void {
+                                $membership->selectRaw('1')
+                                    ->from('spell_list_memberships')
+                                    ->join('spell_versions as listed_version', 'listed_version.id', '=', 'spell_list_memberships.spell_version_id')
+                                    ->whereColumn('listed_version.spell_identity_id', 'spell_versions.spell_identity_id')
+                                    ->whereIn('spell_list_memberships.spell_list_key', $lists);
+                            });
+                    });
                 });
             })
             ->when($schools !== [], fn ($builder) => $builder->whereIn('school', $schools))

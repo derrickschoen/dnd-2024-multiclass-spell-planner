@@ -5,6 +5,7 @@ declare(strict_types=1);
 use App\Domain\Grants\GrantRuleSlotGenerator;
 use Illuminate\Contracts\Console\Kernel;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Str;
 
 require __DIR__.'/../../vendor/autoload.php';
 
@@ -47,6 +48,18 @@ $result = match ($action) {
         ->get()
         ->map(static fn (object $row): array => (array) $row)
         ->all(),
+    'operations' => DB::table('character_operations')
+        ->where('character_id', $characterId)
+        ->orderBy('resulting_revision')
+        ->get()
+        ->map(static fn (object $row): array => (array) $row)
+        ->all(),
+    'warning-acknowledgements' => DB::table('warning_acknowledgements')
+        ->where('character_id', $characterId)
+        ->orderBy('id')
+        ->get()
+        ->map(static fn (object $row): array => (array) $row)
+        ->all(),
     'persisted-character-state' => persistedCharacterState($characterId),
     'mutation-footprint' => mutationFootprint($characterId),
     'save-point-snapshot' => json_decode(
@@ -82,6 +95,7 @@ $result = match ($action) {
         $characterId,
         (string) $argument,
     ),
+    'add-magic-initiate-source' => addMagicInitiateSource($characterId, (string) $argument),
     default => throw new InvalidArgumentException("Unknown database action: {$action}"),
 };
 
@@ -103,6 +117,7 @@ function persistedCharacterState(int $characterId): array
         'character_source_instances',
         'spell_selection_slots',
         'wizard_spellbook_entries',
+        'warning_acknowledgements',
     ] as $table) {
         $state[$table] = DB::table($table)
             ->where('character_id', $characterId)
@@ -113,6 +128,49 @@ function persistedCharacterState(int $characterId): array
     }
 
     return $state;
+}
+
+/** @return array<string, mixed> */
+function addMagicInitiateSource(int $characterId, string $chosenList): array
+{
+    try {
+        return DB::transaction(function () use ($characterId, $chosenList): array {
+            $definition = DB::table('feat_definitions')
+                ->where('content_key', '2024:feat:magic-initiate')
+                ->sole();
+            $ability = DB::table('class_definitions')->where('name', $chosenList)->value('spellcasting_ability');
+            if (! is_string($ability) || $ability === '') {
+                throw new InvalidArgumentException("Unknown Magic Initiate list '{$chosenList}'.");
+            }
+            $sourceId = DB::table('character_source_instances')->insertGetId([
+                'character_id' => $characterId,
+                'instance_uuid' => Str::uuid()->toString(),
+                'source_type' => 'feat',
+                'source_definition_id' => data_get($definition, 'id'),
+                'display_name' => 'Magic Initiate: '.$chosenList,
+                'config' => json_encode([
+                    'chosen_list' => $chosenList,
+                    'spellcasting_ability' => strtolower($ability),
+                ], JSON_THROW_ON_ERROR),
+                'acquired_at_character_level' => 1,
+                'state' => 'active',
+                'notes' => 'e2e:direct-production-path',
+                'created_at' => now(),
+                'updated_at' => now(),
+            ]);
+            app(GrantRuleSlotGenerator::class)->generateForSource($sourceId);
+
+            return [
+                'accepted' => true,
+                'error' => null,
+                'source' => (array) DB::table('character_source_instances')->find($sourceId),
+                'slots' => DB::table('spell_selection_slots')->where('source_instance_id', $sourceId)
+                    ->orderBy('id')->get()->map(static fn (object $row): array => (array) $row)->all(),
+            ];
+        });
+    } catch (Throwable $exception) {
+        return ['accepted' => false, 'error' => $exception->getMessage(), 'source' => null, 'slots' => []];
+    }
 }
 
 /** @return array<string, mixed> */

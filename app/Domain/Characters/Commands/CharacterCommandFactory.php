@@ -6,6 +6,8 @@ namespace App\Domain\Characters\Commands;
 
 use App\Domain\Characters\CharacterState;
 use App\Domain\Grants\GrantRuleSlotGenerator;
+use App\Domain\Spells\DuplicateWarningDetector;
+use App\Domain\Spells\SpellAccessBuilder;
 use App\Domain\Spells\SpellSelectionEligibility;
 use InvalidArgumentException;
 
@@ -15,6 +17,8 @@ final readonly class CharacterCommandFactory
         private CharacterState $state,
         private GrantRuleSlotGenerator $generator,
         private SpellSelectionEligibility $eligibility,
+        private SpellAccessBuilder $access,
+        private DuplicateWarningDetector $duplicates,
     ) {}
 
     /** @param array<string, mixed> $payload */
@@ -26,6 +30,20 @@ final readonly class CharacterCommandFactory
                 (int) data_get($payload, 'score'),
             ),
             'set_slot' => new SetSlotCommand($payload, $this->eligibility),
+            'update_character_rules' => new UpdateCharacterRulesCommand(
+                (bool) data_get($payload, 'allow_legacy'),
+                $this->eligibility,
+            ),
+            'update_source_config' => new UpdateSourceConfigCommand(
+                $payload,
+                $this->state,
+                $this->generator,
+            ),
+            'acknowledge_warning' => new AcknowledgeWarningCommand(
+                $payload,
+                $this->access,
+                $this->duplicates,
+            ),
             'update_class' => new UpdateClassCommand($payload, $this->state, $this->generator),
             'restore_snapshot' => new RestoreSnapshotCommand(
                 is_array(data_get($payload, 'snapshot')) ? data_get($payload, 'snapshot') : [],

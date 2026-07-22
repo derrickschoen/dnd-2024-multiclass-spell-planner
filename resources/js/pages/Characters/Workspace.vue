@@ -108,6 +108,21 @@ function addClass(): void {
     newClassId.value = null;
 }
 
+function updateLegacy(event: Event): void {
+    void store.execute({
+        type: 'update_character_rules',
+        allow_legacy: (event.target as HTMLInputElement).checked,
+    });
+}
+
+function updateSourceList(sourceId: number, event: Event): void {
+    void store.execute({
+        type: 'update_source_config',
+        source_instance_id: sourceId,
+        chosen_list: (event.target as HTMLSelectElement).value,
+    });
+}
+
 function selectSpell(slot: WorkspaceSlot, spell: EligibleSpell): void {
     void store.execute({ type: 'set_slot', slot_id: slot.id, mode: 'select', spell_version_id: spell.id });
 }
@@ -189,6 +204,14 @@ onBeforeUnmount(() => window.removeEventListener('keydown', keyboardShortcuts));
         <main class="mx-auto grid max-w-[1800px] gap-5 px-4 py-5 sm:px-6 lg:grid-cols-[minmax(0,1fr)_23rem]">
             <div class="min-w-0 space-y-5">
                 <section class="panel">
+                    <h2 class="section-title">Rules editions</h2>
+                    <label class="mt-3 flex items-start gap-3 text-sm">
+                        <input type="checkbox" class="mt-1" :checked="current.allow_legacy" :disabled="store.saving" @change="updateLegacy" />
+                        <span><strong>Allow legacy 2014 spell versions</strong><span class="mt-1 block text-xs text-stone-500">Legacy versions remain distinct from their 2024 counterparts and conflicting selections are warned.</span></span>
+                    </label>
+                </section>
+
+                <section class="panel">
                     <h2 class="section-title">Ability scores</h2>
                     <div class="mt-3 grid grid-cols-2 gap-3 sm:grid-cols-3 xl:grid-cols-6">
                         <label v-for="ability in abilityNames" :key="ability" class="text-xs font-semibold uppercase tracking-wide text-stone-600 dark:text-stone-400">
@@ -204,6 +227,16 @@ onBeforeUnmount(() => window.removeEventListener('keydown', keyboardShortcuts));
                                 {{ source.source }} · {{ source.ability.slice(0, 3).toUpperCase() }} · attack {{ signed(source.attack) }} · DC {{ source.dc ?? '—' }}
                             </span>
                         </div>
+                    </div>
+                </section>
+
+                <section class="panel">
+                    <h2 class="section-title">Source configuration</h2>
+                    <div class="mt-3 space-y-2">
+                        <label v-for="source in current.configurable_sources" :key="source.id" class="grid items-center gap-2 rounded-md border border-stone-200 p-3 text-sm sm:grid-cols-[1fr_12rem] dark:border-stone-800">
+                            <span><strong>{{ source.display_name }}</strong><span class="mt-1 block text-xs text-stone-500">Chosen list is configuration; changing it preserves this source's slot identities.</span></span>
+                            <span class="text-xs">Chosen spell list<select class="field mt-1 w-full" :aria-label="`Chosen spell list for source ${source.id}`" :value="source.chosen_list" :disabled="store.saving" @change="updateSourceList(source.id, $event)"><option v-for="list in current.spell_lists" :key="list" :value="list">{{ list }}</option></select></span>
+                        </label>
                     </div>
                 </section>
 

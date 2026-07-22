@@ -41,7 +41,8 @@ final readonly class CharacterCommandExecutor
             $character = DB::table('characters')->where('id', $characterId)->lockForUpdate()->first();
             abort_if($character === null, 404);
             $currentRevision = (int) data_get($character, 'revision');
-            if ($currentRevision !== $expectedRevision) {
+            if ($currentRevision !== $expectedRevision
+                && ! $this->canMergeStaleSlotCommand($characterId, $payload, $expectedRevision, $currentRevision)) {
                 throw new RevisionConflict($currentRevision);
             }
 
@@ -90,5 +91,32 @@ final readonly class CharacterCommandExecutor
         $result['workspace'] = $this->workspace->build($characterId);
 
         return $result;
+    }
+
+    /** @param array<string, mixed> $payload */
+    private function canMergeStaleSlotCommand(
+        int $characterId,
+        array $payload,
+        int $expectedRevision,
+        int $currentRevision,
+    ): bool {
+        if ($expectedRevision >= $currentRevision || data_get($payload, 'type') !== 'set_slot') {
+            return false;
+        }
+        $slotId = (int) data_get($payload, 'slot_id');
+        if ($slotId < 1 || ! DB::table('spell_selection_slots')
+            ->where('character_id', $characterId)
+            ->where('id', $slotId)
+            ->exists()) {
+            return false;
+        }
+
+        return ! DB::table('change_log as change')
+            ->join('character_operations as operation', 'operation.operation_uuid', '=', 'change.operation_uuid')
+            ->where('operation.character_id', $characterId)
+            ->where('operation.resulting_revision', '>', $expectedRevision)
+            ->where('change.entity_type', 'spell_selection_slots')
+            ->where('change.entity_id', $slotId)
+            ->exists();
     }
 }

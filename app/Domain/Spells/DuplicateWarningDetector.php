@@ -31,6 +31,16 @@ final class DuplicateWarningDetector
                 static fn (array $route): int => (int) data_get($route, 'spell_version_id'),
                 $selections,
             )));
+            $versions = array_values(collect($selections)
+                ->unique('spell_version_id')
+                ->map(static fn (array $route): array => [
+                    'spell_version_id' => (int) data_get($route, 'spell_version_id'),
+                    'content_key' => (string) data_get($route, 'spell_content_key'),
+                    'edition' => (string) data_get($route, 'rules_edition'),
+                    'label' => (string) data_get($route, 'spell_name').' ('.data_get($route, 'rules_edition').')',
+                ])
+                ->sortBy('edition')
+                ->all());
 
             $category = match (true) {
                 count($selections) < 2 => 'none',
@@ -50,7 +60,10 @@ final class DuplicateWarningDetector
             $explanation = match ($category) {
                 'wasteful' => "{$name} consumes limits in more than one selection.",
                 'redundant_intentional' => "{$name} has overlapping access, but fewer than two routes consume limits.",
-                'conflicting_version' => "{$name} uses different rules versions across selections.",
+                'conflicting_version' => "{$name} has conflicting versions selected: ".implode(
+                    ' and ',
+                    array_map(static fn (array $version): string => (string) data_get($version, 'label'), $versions),
+                ).'.',
                 default => "{$name} has no duplicate selection.",
             };
 
@@ -61,6 +74,13 @@ final class DuplicateWarningDetector
                 'selection_count' => count($selections),
                 'sources' => $sourceNames,
                 'slots' => $selectionKeys,
+                'versions' => $versions,
+                'warning_fingerprint' => $category === 'conflicting_version'
+                    ? 'conflicting_versions:'.hash('sha256', $identityId.':'.implode(':', array_map(
+                        static fn (array $version): string => (string) data_get($version, 'content_key'),
+                        $versions,
+                    )))
+                    : null,
                 'explanation' => $explanation,
             ];
         }

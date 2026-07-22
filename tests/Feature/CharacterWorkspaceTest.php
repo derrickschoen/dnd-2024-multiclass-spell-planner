@@ -168,6 +168,37 @@ it('rejects stale revisions and replays an operation idempotently', function () 
     expect(DB::table('character_operations')->where('operation_uuid', $operation)->count())->toBe(1);
 });
 
+it('merges a stale slot edit only when intervening operations left that slot untouched', function () {
+    $characterId = workspaceCharacterId();
+    $slots = DB::table('spell_selection_slots')->where('character_id', $characterId)
+        ->where('rule_key', 'wizard-cantrips')->whereIn('ordinal', [2, 3])
+        ->orderBy('ordinal')->get();
+    $firstSlot = $slots->first();
+    $secondSlot = $slots->last();
+    $fireBolt = (int) DB::table('spell_versions')->where('content_key', '2024:fire-bolt')->value('id');
+    $minorIllusion = (int) DB::table('spell_versions')->where('content_key', '2024:minor-illusion')->value('id');
+    $mageHand = (int) DB::table('spell_versions')->where('content_key', '2024:mage-hand')->value('id');
+
+    mutateCharacter($this, $characterId, 0, [
+        'type' => 'set_slot', 'slot_id' => data_get($firstSlot, 'id'), 'mode' => 'select',
+        'spell_version_id' => $fireBolt,
+    ])->assertOk()->assertJsonPath('revision', 1);
+    mutateCharacter($this, $characterId, 0, [
+        'type' => 'set_slot', 'slot_id' => data_get($secondSlot, 'id'), 'mode' => 'select',
+        'spell_version_id' => $minorIllusion,
+    ])->assertOk()->assertJsonPath('revision', 2);
+    mutateCharacter($this, $characterId, 0, [
+        'type' => 'set_slot', 'slot_id' => data_get($firstSlot, 'id'), 'mode' => 'select',
+        'spell_version_id' => $mageHand,
+    ])->assertStatus(409)->assertJsonPath('current_revision', 2);
+
+    expect((int) DB::table('spell_selection_slots')->where('id', data_get($firstSlot, 'id'))
+        ->value('current_spell_version_id'))->toBe($fireBolt)
+        ->and((int) DB::table('spell_selection_slots')->where('id', data_get($secondSlot, 'id'))
+            ->value('current_spell_version_id'))->toBe($minorIllusion)
+        ->and(DB::table('character_operations')->where('character_id', $characterId)->count())->toBe(2);
+});
+
 it('lists only eligible spells for an inline slot search', function () {
     $characterId = workspaceCharacterId();
     $slotId = (int) DB::table('spell_selection_slots')->where('character_id', $characterId)

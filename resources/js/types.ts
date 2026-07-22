@@ -16,6 +16,14 @@ export interface DuplicateAssessment {
     sources: string[];
     slots: string[];
     explanation: string;
+    warning_fingerprint: string | null;
+    versions: Array<{
+        spell_version_id: number;
+        content_key: string;
+        edition: string;
+        label: string;
+    }>;
+    acknowledgement: { id: number; note: string; created_at: string } | null;
 }
 
 export interface WorkspaceSlot {
@@ -95,6 +103,14 @@ export interface Workspace {
     report: BuildReport;
     classes: CharacterClass[];
     available_classes: ClassOption[];
+    allow_legacy: boolean;
+    configurable_sources: Array<{
+        id: number;
+        display_name: string;
+        chosen_list: string;
+        spellcasting_ability: string;
+    }>;
+    spell_lists: string[];
     slots: WorkspaceSlot[];
     save_points: SavePoint[];
 }
