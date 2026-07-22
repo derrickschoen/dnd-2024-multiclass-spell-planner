@@ -1742,3 +1742,71 @@ were unchanged and Mutt retained zero duplicate warnings. Eleven temporary
 production mutations each caused its focused assertion to fail and were then
 restored. Full command output and sensitivity observations are recorded in
 `docs/E2E-17-PRINTABLE-SPELL-LISTS-REPORT.md`. No commit or push was made.
+
+---
+
+# State as of 2026-07-22 — public repo, PR workflow, four parallel branches
+
+Repository: https://github.com/derrickschoen/dnd-2024-multiclass-spell-planner
+
+## Suite
+
+| | |
+|---|---|
+| Pest | **469** passed |
+| Playwright | **23** scenarios |
+| Scraper tests | 30 |
+| Dice maths tests | 7 |
+| PHPStan | level 5 committed, 9 errors, unbaselined |
+
+The seven A6 golden values are re-verified against the live app after every
+production change and have never regressed: caster level 6, slots 4/3/3, PB +3,
+every class max preparable 1st, Mage Hand wasteful, Entangle none, Detect Magic
+origin=capability / ritual_only / not a selection / no limit consumed.
+
+## Redistribution
+
+Only the **CC-BY SRD 5.2.1 subset (339 records)** is committed, in `data/srd/`
+with the required attribution. The full scraped catalog (~943 records across ~20
+books, most not Creative Commons) is gitignored and built with `npm run scrape`.
+`CatalogSource` prefers the full catalog when present so a fresh clone still boots.
+
+The seeded character is named **"Mutt (SRD)"** because six of its spells are
+same-class, same-level SRD substitutes for non-SRD content. It is not a faithful
+copy of the user's sheet and the name says so.
+
+## Landed via PR
+
+- **#1 dice roller** — Sorcerous Burst bounded exploding dice, Chromatic Orb
+  bounces, advantage, Halfling Luck, Elemental Adept, Lucky, crits, AC input.
+  Legacy feats such as Elven Accuracy are offered but badged, mirroring legacy
+  spell handling.
+- **#2 corner-case characters** — Thirds Company, Iron Arcana, Pact Apex, Ceiling
+  Split. Each chosen so a plausible wrong implementation is VISIBLY different.
+  A Wizard 20 was deliberately NOT built: its own table equals multiclass caster
+  level 20, so that test could not fail.
+- **Divine/Primal Order UI** — closes one instance of the seeded-state
+  reachability gap: the suite could display these states but no user could create
+  them.
+
+## In flight
+
+`feat/domain-types` — backed enums for the 7 progression types, 5 buckets, 4
+duplicate categories, 6 rule kinds and the rest; value objects only where they
+earn it; a typed and validated Inertia boundary; PHPStan **level 8** (74 errors
+currently) with level-10 reduction as a secondary goal.
+
+The `data_get()` convention has been withdrawn by the user as inappropriate for a
+greenfield project, which is what makes the level-10 `mixed` errors addressable.
+
+## Blind spot still open
+
+**Seeded-state reachability.** Wizard spellbook acquisition still has no UI, so no
+user can build a Wizard spellbook from a blank character. Divine/Primal Order was
+the other half and is now closed.
+
+The proposed next instrument is **stateful command-sequence testing**: generate
+legal sequences of class/config/legacy/override/undo operations and check
+invariants after every step. One hand-authored messy character cannot explore
+order-dependent failures such as "subclass switch -> level down -> keep override
+-> undo -> catalog removal".
