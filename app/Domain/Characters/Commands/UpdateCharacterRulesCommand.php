@@ -12,12 +12,15 @@ final class UpdateCharacterRulesCommand implements CharacterCommand
     private bool $previousAllowLegacy;
 
     public function __construct(
-        private readonly bool $allowLegacy,
+        private readonly mixed $allowLegacy,
         private readonly SpellSelectionEligibility $eligibility,
     ) {}
 
     public function apply(int $characterId): void
     {
+        if (! is_bool($this->allowLegacy)) {
+            throw new \InvalidArgumentException('allow_legacy must be a boolean.');
+        }
         $this->previousAllowLegacy = (bool) DB::table('characters')
             ->where('id', $characterId)
             ->value('allow_legacy');

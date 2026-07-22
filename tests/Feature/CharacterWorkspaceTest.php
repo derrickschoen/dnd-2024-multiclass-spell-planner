@@ -2,6 +2,8 @@
 
 declare(strict_types=1);
 
+use App\Domain\Characters\CharacterState;
+use App\Domain\Reports\BuildReportBuilder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
@@ -166,6 +168,126 @@ it('rejects stale revisions and replays an operation idempotently', function () 
         'type' => 'update_ability', 'ability' => 'wisdom', 'score' => 18,
     ])->assertStatus(409)->assertJsonPath('current_revision', 1);
     expect(DB::table('character_operations')->where('operation_uuid', $operation)->count())->toBe(1);
+});
+
+it('round-trips character rules and rejects legacy selection while legacy rules are disabled', function () {
+    $characterId = workspaceCharacterId();
+    $operation = Str::uuid()->toString();
+    $changed = mutateCharacter($this, $characterId, 0, [
+        'type' => 'update_character_rules', 'allow_legacy' => true,
+    ], $operation)->assertOk()->assertJsonPath('revision', 1);
+
+    expect((bool) DB::table('characters')->where('id', $characterId)->value('allow_legacy'))->toBeTrue();
+    $audit = DB::table('change_log')->where('operation_uuid', $operation)->get();
+    expect($audit)->toHaveCount(1)
+        ->and($audit->pluck('group_id')->unique())->toHaveCount(1)
+        ->and($audit->pluck('action_type')->unique()->all())->toBe(['update_character_rules']);
+
+    mutateCharacter($this, $characterId, 0, [
+        'type' => 'update_character_rules', 'allow_legacy' => true,
+    ], $operation)->assertOk()->assertJsonPath('idempotent_replay', true)->assertJsonPath('revision', 1);
+    expect(DB::table('character_operations')->where('operation_uuid', $operation)->count())->toBe(1)
+        ->and(DB::table('change_log')->where('operation_uuid', $operation)->count())->toBe(1);
+
+    mutateCharacter($this, $characterId, 1, $changed->json('inverse'))
+        ->assertOk()->assertJsonPath('revision', 2);
+    expect((bool) DB::table('characters')->where('id', $characterId)->value('allow_legacy'))->toBeFalse();
+
+    $slotId = (int) DB::table('spell_selection_slots')->where('character_id', $characterId)
+        ->where('rule_key', 'wizard-cantrips')->where('ordinal', 2)->value('id');
+    $legacyChillTouch = (int) DB::table('spell_versions')->where('content_key', '2014:chill-touch')->value('id');
+    mutateCharacter($this, $characterId, 2, [
+        'type' => 'set_slot', 'slot_id' => $slotId, 'mode' => 'select',
+        'spell_version_id' => $legacyChillTouch,
+    ])->assertUnprocessable()->assertJsonPath('message', 'Enable legacy rules before selecting a 2014 spell version.');
+    mutateCharacter($this, $characterId, 2, [
+        'type' => 'update_character_rules', 'allow_legacy' => 'false',
+    ])->assertUnprocessable()->assertJsonPath('message', 'allow_legacy must be a boolean.');
+    expect((int) DB::table('characters')->where('id', $characterId)->value('revision'))->toBe(2);
+});
+
+it('round-trips source configuration with one audit group and rejects unsupported Magic Initiate lists', function () {
+    $characterId = workspaceCharacterId();
+    $sourceId = (int) DB::table('character_source_instances')
+        ->where('character_id', $characterId)->where('display_name', 'Magic Initiate: Wizard')->value('id');
+    $before = app(CharacterState::class)->capture($characterId);
+
+    mutateCharacter($this, $characterId, 0, [
+        'type' => 'update_source_config', 'source_instance_id' => $sourceId, 'chosen_list' => 'Bard',
+    ])->assertUnprocessable()
+        ->assertJsonPath('message', 'Magic Initiate must use the Cleric, Druid, or Wizard spell list.');
+    expect(app(CharacterState::class)->capture($characterId))->toBe($before)
+        ->and((int) DB::table('characters')->where('id', $characterId)->value('revision'))->toBe(0)
+        ->and(DB::table('character_operations')->where('character_id', $characterId)->count())->toBe(0);
+
+    $operation = Str::uuid()->toString();
+    $changed = mutateCharacter($this, $characterId, 0, [
+        'type' => 'update_source_config', 'source_instance_id' => $sourceId, 'chosen_list' => 'Cleric',
+    ], $operation)->assertOk()->assertJsonPath('revision', 1);
+    $after = app(CharacterState::class)->capture($characterId);
+    expect($after)->not->toBe($before);
+    $audit = DB::table('change_log')->where('operation_uuid', $operation)->get();
+    expect($audit->count())->toBeGreaterThan(1)
+        ->and($audit->pluck('group_id')->unique())->toHaveCount(1)
+        ->and($audit->pluck('action_type')->unique()->all())->toBe(['update_source_config']);
+
+    mutateCharacter($this, $characterId, 0, [
+        'type' => 'update_source_config', 'source_instance_id' => $sourceId, 'chosen_list' => 'Cleric',
+    ], $operation)->assertOk()->assertJsonPath('idempotent_replay', true)->assertJsonPath('revision', 1);
+    expect(app(CharacterState::class)->capture($characterId))->toBe($after)
+        ->and(DB::table('character_operations')->where('operation_uuid', $operation)->count())->toBe(1);
+
+    mutateCharacter($this, $characterId, 1, $changed->json('inverse'))
+        ->assertOk()->assertJsonPath('revision', 2);
+    expect(app(CharacterState::class)->capture($characterId))->toBe($before);
+});
+
+it('round-trips warning acknowledgement with idempotent replay and grouped audit rows', function () {
+    $characterId = workspaceCharacterId();
+    DB::table('characters')->where('id', $characterId)->update(['allow_legacy' => true]);
+    $slots = DB::table('spell_selection_slots')->where('character_id', $characterId)
+        ->where('rule_key', 'wizard-cantrips')->whereIn('ordinal', [2, 3])->orderBy('ordinal')->get();
+    $versions = [
+        (int) DB::table('spell_versions')->where('content_key', '2014:chill-touch')->value('id'),
+        (int) DB::table('spell_versions')->where('content_key', '2024:chill-touch')->value('id'),
+    ];
+    foreach ($slots->values() as $index => $slot) {
+        DB::table('spell_selection_slots')->where('id', data_get($slot, 'id'))->update([
+            'current_spell_version_id' => $versions[$index],
+            'selection_eligibility' => 'valid',
+            'selection_invalid_reason' => null,
+        ]);
+    }
+    $warning = collect(data_get(app(BuildReportBuilder::class)->build($characterId), 'duplicate_assessments'))
+        ->firstWhere('category', 'conflicting_version');
+    $fingerprint = (string) data_get($warning, 'warning_fingerprint');
+    expect($fingerprint)->toStartWith('conflicting_versions:');
+
+    $operation = Str::uuid()->toString();
+    $changed = mutateCharacter($this, $characterId, 0, [
+        'type' => 'acknowledge_warning', 'warning_fingerprint' => $fingerprint, 'note' => 'Intentional.',
+    ], $operation)->assertOk()->assertJsonPath('revision', 1);
+    expect(DB::table('warning_acknowledgements')->where('character_id', $characterId)->value('note'))
+        ->toBe('Intentional.');
+    $audit = DB::table('change_log')->where('operation_uuid', $operation)->get();
+    expect($audit)->toHaveCount(1)
+        ->and($audit->pluck('group_id')->unique())->toHaveCount(1)
+        ->and($audit->pluck('action_type')->unique()->all())->toBe(['acknowledge_warning']);
+
+    mutateCharacter($this, $characterId, 0, [
+        'type' => 'acknowledge_warning', 'warning_fingerprint' => $fingerprint, 'note' => 'Changed.',
+    ], $operation)->assertOk()->assertJsonPath('idempotent_replay', true)->assertJsonPath('revision', 1);
+    expect(DB::table('warning_acknowledgements')->where('character_id', $characterId)->value('note'))
+        ->toBe('Intentional.');
+
+    mutateCharacter($this, $characterId, 1, $changed->json('inverse'))
+        ->assertOk()->assertJsonPath('revision', 2);
+    expect(DB::table('warning_acknowledgements')->where('character_id', $characterId)->count())->toBe(0);
+    mutateCharacter($this, $characterId, 2, [
+        'type' => 'acknowledge_warning', 'mode' => 'invalid',
+        'warning_fingerprint' => $fingerprint, 'note' => 'No.',
+    ])->assertUnprocessable()->assertJsonPath('message', 'Unknown warning acknowledgement mode.');
+    expect((int) DB::table('characters')->where('id', $characterId)->value('revision'))->toBe(2);
 });
 
 it('merges a stale slot edit only when intervening operations left that slot untouched', function () {

@@ -584,6 +584,7 @@ test('S12: selecting 2014 and 2024 Chill Touch warns prominently and keeps its a
     expect(targets.map((slot) => slot.current_spell_version_id)).toEqual([null, null]);
     const legacyToggle = page.getByRole('checkbox', { name: /Allow legacy 2014 spell versions/ });
     await expect(legacyToggle).not.toBeChecked();
+    await expectKeyboardReachableWithVisibleFocus(page, legacyToggle);
 
     const legacyResponse = page.waitForResponse(isMutationResponse);
     await legacyToggle.check();
@@ -618,9 +619,13 @@ test('S12: selecting 2014 and 2024 Chill Touch warns prominently and keeps its a
     await expect(warning).toContainText('Chill Touch (2014)');
     await expect(warning).toContainText('Chill Touch (2024)');
     const note = 'Intentional comparison of ranged 2014 and touch-range 2024 rules.';
-    await warning.getByLabel('Acknowledgement note').fill(note);
+    const acknowledgementNote = warning.getByLabel('Acknowledgement note');
+    await expectKeyboardReachableWithVisibleFocus(page, acknowledgementNote);
+    await acknowledgementNote.fill(note);
+    const acknowledgeButton = warning.getByRole('button', { name: 'Acknowledge warning' });
+    await expectKeyboardReachableWithVisibleFocus(page, acknowledgeButton);
     const acknowledgementResponse = page.waitForResponse(isMutationResponse);
-    await warning.getByRole('button', { name: 'Acknowledge warning' }).click();
+    await acknowledgeButton.click();
     expect((await acknowledgementResponse).status()).toBe(200);
     await expect(warning).toContainText(`Acknowledged: ${note}`);
 
@@ -652,6 +657,7 @@ test('S13: changing Magic Initiate from Wizard to Cleric preserves slot identity
 
     const listSelect = page.getByLabel(`Chosen spell list for source ${sourceId}`);
     await expect(listSelect).toHaveValue('Wizard');
+    await expectKeyboardReachableWithVisibleFocus(page, listSelect);
     const mutationResponse = page.waitForResponse(isMutationResponse);
     await listSelect.selectOption('Cleric');
     const response = await mutationResponse;
@@ -1084,6 +1090,25 @@ async function keyboardAuditGrid(page: Page, grid: Locator, selector: string): P
         visited: [...visited].sort((left, right) => left - right),
         focusFailures,
     };
+}
+
+async function expectKeyboardReachableWithVisibleFocus(page: Page, control: Locator): Promise<void> {
+    await control.focus();
+    await page.keyboard.press('Shift+Tab');
+    await page.keyboard.press('Tab');
+    await expect(control).toBeFocused();
+    const focus = await control.evaluate((element) => {
+        const style = getComputedStyle(element);
+        const transparent = style.outlineColor === 'transparent'
+            || style.outlineColor === 'rgba(0, 0, 0, 0)';
+
+        return {
+            focusVisible: element.matches(':focus-visible'),
+            visibleOutline: style.outlineStyle !== 'none'
+                && Number.parseFloat(style.outlineWidth) > 0 && !transparent,
+        };
+    });
+    expect(focus).toEqual({ focusVisible: true, visibleOutline: true });
 }
 
 async function warningsWithoutTextCue(page: Page): Promise<string[]> {

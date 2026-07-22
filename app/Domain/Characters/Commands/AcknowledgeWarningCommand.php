@@ -28,6 +28,9 @@ final class AcknowledgeWarningCommand implements CharacterCommand
             throw new InvalidArgumentException('Unknown warning fingerprint.');
         }
         $mode = (string) data_get($this->payload, 'mode', 'acknowledge');
+        if (! in_array($mode, ['acknowledge', 'delete'], true)) {
+            throw new InvalidArgumentException('Unknown warning acknowledgement mode.');
+        }
         if ($mode === 'delete') {
             $existing = DB::table('warning_acknowledgements')
                 ->where('character_id', $characterId)

@@ -11,6 +11,9 @@ use InvalidArgumentException;
 
 final class UpdateSourceConfigCommand implements CharacterCommand
 {
+    /** @var list<string> */
+    private const ALLOWED_LISTS = ['Cleric', 'Druid', 'Wizard'];
+
     /** @var array<string, mixed> */
     private array $previousState = [];
 
@@ -40,6 +43,9 @@ final class UpdateSourceConfigCommand implements CharacterCommand
         }
 
         $chosenList = trim((string) data_get($this->payload, 'chosen_list'));
+        if (! in_array($chosenList, self::ALLOWED_LISTS, true)) {
+            throw new InvalidArgumentException('Magic Initiate must use the Cleric, Druid, or Wizard spell list.');
+        }
         $ability = DB::table('class_definitions')->where('name', $chosenList)->value('spellcasting_ability');
         if (! is_string($ability) || $ability === '') {
             throw new InvalidArgumentException('Choose a spell list with a defined spellcasting ability.');

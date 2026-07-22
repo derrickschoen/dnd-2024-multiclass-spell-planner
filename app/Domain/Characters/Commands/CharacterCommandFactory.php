@@ -31,7 +31,7 @@ final readonly class CharacterCommandFactory
             ),
             'set_slot' => new SetSlotCommand($payload, $this->eligibility),
             'update_character_rules' => new UpdateCharacterRulesCommand(
-                (bool) data_get($payload, 'allow_legacy'),
+                data_get($payload, 'allow_legacy'),
                 $this->eligibility,
             ),
             'update_source_config' => new UpdateSourceConfigCommand(

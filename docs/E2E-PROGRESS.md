@@ -32,7 +32,9 @@ confidence.
 - Mutation API: `POST /characters/{id}/mutations` with
   `{operation_uuid, expected_revision, command:{type, ...}}`
   Types: `set_slot`, `update_ability` (field is `score`, not `value`),
-  `update_class`, `restore_snapshot`. Returns `{inverse, revision, workspace}`.
+  `update_class`, `update_character_rules`, `update_source_config`,
+  `acknowledge_warning`, `restore_snapshot`. Returns
+  `{inverse, revision, workspace}`.
 - Needs `X-CSRF-TOKEN` from the `csrf-token` meta tag plus the session cookie.
 - Seeded character id 1, "A6 Sixfold Spellcaster": Sorcerer/Wizard/Bard/Paladin/
   Cleric/Druid all at 1, Human, Magic Initiate ×2. 40 slots, **11 filled**.
@@ -450,3 +452,76 @@ no review output and ended in `Execution error`, including bounded 180-second an
 live-warning fingerprint validation, and same-slot concurrency coverage. No
 independent findings were returned to accept or reject. Per the UNIT instruction,
 this iteration remains uncommitted.
+
+### Iteration 5 — UNIT E2E-5 independent review of c717ba4
+
+The independent review found one significant production issue: the source-config
+command accepted every class with a spellcasting ability even though 2024 Magic
+Initiate and the UI restrict the choice to Cleric, Druid, or Wizard. A direct API
+request could therefore configure Bard, Paladin, Ranger, Sorcerer, or Warlock.
+`UpdateSourceConfigCommand` now enforces the same three-list domain boundary.
+
+The review also hardened the other new command inputs: `allow_legacy` must be an
+actual JSON boolean, and warning acknowledgement mode must be `acknowledge` or
+`delete`. Three focused feature tests now drive each new command through the real
+executor and prove apply/inverse round trips, expected revisions, transaction
+rollback on invalid input, idempotent operation replay, and one shared audit group
+per operation. The source-config test compares the complete captured character
+state before apply and after undo. The legacy test also proves a 2014 version is
+rejected while `allow_legacy` is false.
+
+The load-bearing duplicate/access/eligibility paths were reviewed against their
+parents. Conflict classification was already ahead of wasteful classification;
+the commit did not reorder it. Added access-route fields do not change ritual-only
+capability routing, and invalid legacy or reconfigured selections remain excluded
+from access routes. The golden report and the existing ritual-only regression both
+pass unchanged.
+
+S12-S15 remain falsifiable: reverting legacy/conflict/acknowledgement behavior,
+source reconciliation, safe stale-slot merge, or distinct-list enforcement removes
+a required response, exact database value, or visible control asserted by its
+scenario. S11's `slotFixtures() + 7` constant remains valid because the new controls
+are outside the slot grid. S12 and S13 now additionally prove keyboard reachability
+and visible focus for the legacy checkbox, source-list select, acknowledgement
+input, and acknowledgement button; their labels and text warning cues were also
+reviewed.
+
+Final independent verification:
+
+```text
+Tests:    163 passed (1419 assertions)
+Duration: 17.33s
+
+> typecheck
+> vue-tsc --noEmit
+
+> build
+> vite build
+✓ 567 modules transformed.
+✓ built in 413ms
+
+> test:e2e
+> playwright test
+Running 15 tests using 1 worker
+  ✓ S1
+  ✓ S2
+  ✓ S3
+  ✓ S4
+  ✓ S5
+  ✓ S6
+  ✓ S7
+  ✓ S8
+  ✓ S9
+  ✓ S10
+  ✓ S11
+  ✓ S12
+  ✓ S13
+  ✓ S14
+  ✓ S15
+  15 passed (46.7s)
+```
+
+The seven direct golden values remain caster level 6, slots 4/3/3, proficiency
++3, every class maximum preparable level 1, Mage Hand `wasteful`, Entangle `none`,
+and Detect Magic `origin=capability`, `casting_mode=ritual_only`,
+`is_selection=false`, `counts_against_limit=false`. No commit or push was made.
