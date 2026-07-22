@@ -1,4 +1,4 @@
-import { expect, test, type Locator, type Page, type Response } from '@playwright/test';
+import { expect, test, type BrowserContext, type Locator, type Page, type Response } from '@playwright/test';
 import {
     auditLog,
     buildReport,
@@ -282,7 +282,7 @@ test('S5: INT changes propagate to every INT route in both directions without mo
 
 test('S6: Wizard spellbook shows prepared, ritual-only, and unprepared non-ritual states', async ({ page }) => {
     const wizardPanel = wizardSpellbookPanel(page);
-    const spellbook = wizardList(wizardPanel, 'Spellbook · 6');
+    const spellbook = wizardList(wizardPanel, 'In my book · 6');
     const prepared = wizardList(wizardPanel, 'Prepared · 4');
     const ritualOnly = wizardList(wizardPanel, 'Ritual-only · 1');
     const explanation = wizardPanel.locator('p').first();
@@ -301,12 +301,16 @@ test('S6: Wizard spellbook shows prepared, ritual-only, and unprepared non-ritua
     await expect(prepared.filter({ hasText: 'Detect Magic' })).toHaveCount(0);
     await expect(prepared.filter({ hasText: 'Feather Fall' })).toHaveCount(0);
     await expect(ritualOnly.filter({ hasText: 'Feather Fall' })).toHaveCount(0);
-    await expect(explanation).toContainText('Prepared spellbook spells can use spell slots.');
+    await expect(explanation).toContainText('does not constrain Wizard preparation');
+    await expect(explanation).toContainText(
+        'Prepared spells are limited choices drawn from the whole Wizard spell list and can use spell slots.',
+    );
+    await expect(explanation).toContainText('A spell can therefore appear both in the book and as prepared.');
     await expect(explanation).toContainText('ritual-only access');
     await expect(explanation).toContainText('that route is not a selection');
-    await expect(explanation).toContainText('does not consume preparation capacity');
+    await expect(explanation).toContainText('consumes no preparation capacity');
     await expect(explanation).toContainText('ignored by duplicate-waste checks');
-    await expect(explanation).toContainText('Unprepared non-ritual spells are not castable.');
+    await expect(explanation).toContainText('Unprepared non-ritual book spells are not castable.');
 
     const initiateSlot = requireSlot(
         slotFixtures().find((slot) => slot.source_name === 'Magic Initiate: Wizard'
@@ -905,6 +909,92 @@ test('S17: removing a feat in the browser orphans selections and undo restores i
     }
 });
 
+test('S18: Wizard preparation can select outside the spellbook and persists until cleared', async ({ page, context }) => {
+    const inBookNames = [
+        'Detect Magic',
+        'Feather Fall',
+        'Mage Armor',
+        'Magic Missile',
+        'Sleep',
+        'Thunderwave',
+    ];
+    const originalPreparedNames = ['Mage Armor', 'Magic Missile', 'Sleep', 'Thunderwave'];
+    const wizardPanel = wizardSpellbookPanel(page);
+
+    await expect(wizardList(wizardPanel, 'In my book · 6')).toHaveText(inBookNames);
+    await expect(wizardList(wizardPanel, 'Prepared · 4')).toHaveText(originalPreparedNames);
+
+    try {
+        await setClassLevel(page, 'Wizard', 3);
+        const wizardSourceId = source('Wizard 3').id;
+        const emptyPreparedSlots = slotFixtures().filter((slot) => slot.source_instance_id === wizardSourceId
+            && slot.rule_key === 'wizard-prepared'
+            && slot.current_spell_version_id === null);
+        expect(emptyPreparedSlots).toHaveLength(2);
+        const target = requireSlot(emptyPreparedSlots[0], 'an empty Wizard prepared slot');
+        const alreadySelectedNames = slotFixtures().flatMap((slot) => slot.spell_name ? [slot.spell_name] : []);
+        const selection = await selectFirstEligibleSpellOutside(
+            page,
+            target.id,
+            new Set([...inBookNames, ...alreadySelectedNames]),
+        );
+        const chosenName = selection.spell.name;
+        const expectedPreparedNames = [...originalPreparedNames, chosenName]
+            .sort((left, right) => left.localeCompare(right));
+        const chosenRoutes = selection.body.workspace.report.access_routes
+            .filter((route) => route.spell_name === chosenName);
+
+        expect(chosenRoutes).toEqual([
+            expect.objectContaining({
+                slot_id: target.id,
+                spell_version_id: selection.spell.id,
+                spell_name: chosenName,
+                source_name: 'Wizard 3',
+                origin: 'slot',
+                casting_mode: 'with_slots',
+                is_selection: true,
+                counts_against_limit: true,
+            }),
+        ]);
+        await expect(wizardList(wizardPanel, 'Prepared · 5')).toHaveText(expectedPreparedNames);
+        await expect(wizardList(wizardPanel, 'In my book · 6')).toHaveText(inBookNames);
+        expect(await wizardList(wizardPanel, 'In my book · 6').allTextContents()).not.toContain(chosenName);
+
+        await hardReloadIgnoringCache(page, context);
+
+        await expect(page.getByRole('heading', { name: 'A6 Sixfold Spellcaster', level: 1 })).toBeVisible();
+        await expect(page.getByRole('combobox', { name: `Spell selection for slot ${target.id}` }))
+            .toHaveValue(chosenName);
+        await expect(wizardList(wizardSpellbookPanel(page), 'Prepared · 5')).toHaveText(expectedPreparedNames);
+        await expect(wizardList(wizardSpellbookPanel(page), 'In my book · 6')).toHaveText(inBookNames);
+        expect(await wizardList(wizardSpellbookPanel(page), 'In my book · 6').allTextContents())
+            .not.toContain(chosenName);
+
+        const clearRevision = Number(character().revision);
+        const clearBody = await postCharacterCommand(page, {
+            type: 'set_slot',
+            slot_id: target.id,
+            mode: 'clear',
+        }, clearRevision);
+        expect(clearBody.revision).toBe(clearRevision + 1);
+
+        await hardReloadIgnoringCache(page, context);
+
+        await expect(page.getByRole('heading', { name: 'A6 Sixfold Spellcaster', level: 1 })).toBeVisible();
+        await expect(page.getByRole('combobox', { name: `Spell selection for slot ${target.id}` })).toHaveValue('');
+        expect(requireSlot(slots().find((slot) => slot.id === target.id), 'the cleared Wizard prepared slot')
+            .current_spell_version_id).toBeNull();
+        await expect(wizardList(wizardSpellbookPanel(page), 'Prepared · 4')).toHaveText(originalPreparedNames);
+        await expect(wizardList(wizardSpellbookPanel(page), 'In my book · 6')).toHaveText(inBookNames);
+
+        await setClassLevel(page, 'Wizard', 1);
+        expect(classLevel('Wizard')).toBe(1);
+        await expect(wizardList(wizardSpellbookPanel(page), 'Prepared · 4')).toHaveText(originalPreparedNames);
+    } finally {
+        resetDatabase();
+    }
+});
+
 test('T10: Mutt matches the authoritative sheet attribution with zero duplicates', async ({ page }) => {
     const muttId = 2;
     await page.goto(`/characters/${muttId}`);
@@ -1137,12 +1227,17 @@ test('E2E-17: Mutt prints reference and full variants with exact long-rest swap 
     await expect(viciousMockery).not.toContainText('Spell attack:');
 
     const wizardStates = printableSection(page, 'Wizard spellbook states');
-    await expect(wizardStates.getByRole('heading', { name: 'Spellbook · 6' })).toBeVisible();
+    await expect(wizardStates.getByRole('heading', { name: 'In my book · 6' })).toBeVisible();
     await expect(wizardStates.getByRole('heading', { name: 'Prepared · 4' })).toBeVisible();
     await expect(wizardStates.getByRole('heading', { name: 'Ritual-only · 2' })).toBeVisible();
+    await expect(wizardStates).toContainText('does not constrain Wizard preparation');
+    await expect(wizardStates).toContainText(
+        'Prepared spells are limited choices drawn from the whole Wizard spell list and can use spell slots.',
+    );
+    await expect(wizardStates).toContainText('A spell can therefore appear both in the book and as prepared.');
     await expect(wizardStates).toContainText('that route is not a selection');
-    await expect(wizardStates).toContainText('does not consume preparation capacity');
-    await expect(wizardStates).toContainText('Unprepared non-ritual spells are not castable.');
+    await expect(wizardStates).toContainText('consumes no preparation capacity');
+    await expect(wizardStates).toContainText('Unprepared non-ritual book spells are not castable.');
 
     await variant.selectOption('full');
     await page.getByRole('button', { name: 'Change variant' }).click();
@@ -1226,6 +1321,72 @@ async function selectSpell(page: Page, slotId: number, spellName: string): Promi
     await expect(page.getByText('Autosaved', { exact: true })).toBeVisible();
 
     return body;
+}
+
+async function hardReloadIgnoringCache(page: Page, context: BrowserContext): Promise<void> {
+    const devtools = await context.newCDPSession(page);
+    try {
+        await Promise.all([
+            page.waitForNavigation({ waitUntil: 'networkidle' }),
+            devtools.send('Page.reload', { ignoreCache: true }),
+        ]);
+    } finally {
+        await devtools.detach();
+    }
+}
+
+async function selectFirstEligibleSpellOutside(
+    page: Page,
+    slotId: number,
+    excludedNames: ReadonlySet<string>,
+): Promise<{
+    body: MutationBody;
+    spell: { id: number; name: string; level: number; school: string; edition: string };
+}> {
+    const combobox = page.getByRole('combobox', { name: `Spell selection for slot ${slotId}` });
+    const eligibleResponse = page.waitForResponse((response) => {
+        const url = new URL(response.url());
+
+        return response.request().method() === 'GET'
+            && url.pathname.endsWith(`/characters/1/slots/${slotId}/eligible-spells`)
+            && url.searchParams.get('q') === '';
+    });
+    await expect(combobox).toBeEnabled();
+    await combobox.focus();
+    const response = await eligibleResponse;
+    expect(response.status()).toBe(200);
+    const searchBody = await response.json() as {
+        spells: Array<{
+            id: number;
+            name: string;
+            level: number;
+            school: string;
+            ritual: boolean;
+            concentration: boolean;
+            edition: string;
+        }>;
+    };
+    const spell = searchBody.spells.find((candidate) => !excludedNames.has(candidate.name));
+    expect(spell, 'the Wizard prepared slot should offer a spell outside the spellbook').toBeDefined();
+    const optionName = `${spell!.name}L${spell!.level} · ${spell!.school} · ${spell!.edition}`
+        + (spell!.ritual ? 'Ritual' : '')
+        + (spell!.concentration ? 'Concentration' : '');
+    const option = page.locator(`#spell-options-${slotId}`).getByRole('option', {
+        name: optionName,
+        exact: true,
+    });
+    await expect(option).toBeVisible();
+
+    const mutationResponse = page.waitForResponse(isMutationResponse);
+    await option.click();
+    const mutation = await mutationResponse;
+    expect(mutation.status()).toBe(200);
+    const body = await mutation.json() as MutationBody;
+    await expect(page.getByText(new RegExp(`revision ${body.revision}$`))).toBeVisible();
+    await expect(combobox).toHaveValue(spell!.name);
+    await expect(page.getByText('Autosaved', { exact: true })).toBeVisible();
+
+    return { body, spell: spell! };
 }
 
 async function selectSpellVersion(

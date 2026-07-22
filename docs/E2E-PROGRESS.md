@@ -254,6 +254,8 @@ feature, repeatedly, for five iterations.
       list and ability, assert its three slots materialise via the DSL with
       correct per-slot casting modes (cantrips get no free cast; only the level-1
       spell does).
+- [x] **S18 Wizard prepares outside the book** — prepare a Wizard-list spell absent
+      from the spellbook, prove it is castable, persists, and clears durably.
 - [x] **S17 remove a feat through the browser** — retires the S4 fixture-trigger
       deviation. Assert orphaning and identical-row restoration through real UI.
 
@@ -1902,3 +1904,77 @@ run to falsify.
 
 `playwright.config.ts` reads `E2E_BASE_URL`, defaulting to the main site, so each
 worktree targets its own instance and browser suites run in parallel too.
+
+### Iteration 12 — S18, and two failures that were not what I recorded
+
+**S18 (new): Wizard preparation can select outside the spellbook and persists
+until cleared.** Raises Wizard to 3, prepares a Wizard-list spell chosen at
+runtime that is absent from the spellbook, asserts it joins Prepared while the
+book stays at exactly six without it, hard-reloads, clears the slot *while the
+slot is still live*, reloads again, and only then restores level 1 — inside a
+`try/finally` so a mid-test failure cannot leave the character at Wizard 3.
+
+This covered a real hole: in BOTH seeded characters every prepared spell also
+happens to be in the spellbook, so the rule that changed in cc32989 —
+preparation draws from the whole Wizard list, the book only gates rituals — had
+no browser coverage at all.
+
+**Sensitivity: proved twice, one revert per half.**
+
+| Half | Revert | Result |
+|---|---|---|
+| selection | re-impose the spellbook constraint in `EligibleSpellSearch` | S18 fails at "should offer a spell outside the spellbook" |
+| clear | `clearUpdates()` keeps `current_spell_version_id` instead of nulling it | S18 fails after the post-clear reload |
+
+The clear half is the interesting one. As first written, S18 dropped Wizard to
+level 1 *before* clearing. That deactivates the slot, so "Prepared · 4" renders
+whether or not the clear ever persisted — **the assertion could not fail.** A
+fresh codex reviewer caught it. That would have been the fourth such test in
+this repo. Clearing while the slot is live, then re-reading after a reload, is
+what makes it falsifiable.
+
+**Two recorded failure explanations that were both wrong.** S6 and E2E-17 had
+been left red with a note saying their assertions "encode Wizard semantics that
+legitimately changed."
+
+1. First actual run: Chromium was not installed at all (Playwright had been
+   updated without `npx playwright install`). The note had been written about a
+   failure whose output nobody had looked at.
+2. Real failure, once the browser existed: cc32989 renamed a heading
+   `Spellbook · N` → `In my book · N` in all three Vue components. Dumping
+   `BuildReportBuilder::build()` against the seeded DB showed character 1 at
+   6/4/1 and character 2 at 6/4/2 — **exactly** what both tests already
+   asserted. No assertion value was invalidated; two copy strings and one
+   locator had drifted.
+
+The repaired copy assertions now pin the sentences that carry the new rule
+("does not constrain Wizard preparation", "A spell can therefore appear both in
+the book and as prepared"), so they assert semantics rather than decoration.
+
+**Sensitivity checks can themselves be false.** Two earlier revert attempts both
+left S18 passing, which reads as "the test cannot fail":
+
+- editing `class_progressions.grant_rules` — never reaches slots, which are
+  materialised into `spell_selection_slots` at seed time
+- setting `spell_selection_slots.selection_collection` — not consulted by the
+  eligibility query either; `EligibleSpellSearch` has no spellbook reference at
+  all, because cc32989 removed the constraint from the code rather than making
+  it conditional
+
+Only querying the endpoint itself (34 spells → 6) distinguished "the test is
+insensitive" from "my revert did nothing." **Check the denominator before
+concluding a test cannot fail** — the negative control has to be shown to bite.
+
+**Deviation.** The clear is issued through the `set_slot` mutation rather than a
+button click: active valid slots expose no Clear button in the UI, only orphaned
+ones do. Browser-level clear coverage for a live slot therefore remains a gap.
+
+**Operational note.** `codex exec resume --last` is unsafe with concurrent
+sessions — it can attach to another project's conversation, and its output is
+invisible until exit, so it silently rewrote this spec underneath an edit in
+progress. Capture and pass the explicit session id. `resume` also rejects
+`--profile`, `--sandbox` and `-C`; use `-c sandbox_mode=...` and run from the
+target directory.
+
+Verified by rerunning, not by report: Pest 475 passed (13,278 assertions),
+Playwright 24 passed, `app/` byte-identical to HEAD after both reverts.
