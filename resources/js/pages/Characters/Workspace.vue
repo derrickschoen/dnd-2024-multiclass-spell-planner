@@ -231,6 +231,7 @@ onBeforeUnmount(() => window.removeEventListener('keydown', keyboardShortcuts));
     <AppShell :title="report.character.name" :subtitle="`Level ${report.character.character_level} · revision ${current.revision}`">
         <template #actions>
             <span class="hidden text-xs text-stone-500 md:inline" aria-live="polite">{{ store.saving ? 'Saving…' : 'Autosaved' }}</span>
+            <a :href="`/characters/${report.character.id}/print`" class="button-secondary">Print spells</a>
             <button type="button" class="button-secondary" :disabled="!store.canUndo" title="Ctrl+Z" @click="store.undo">↶ Undo</button>
             <button type="button" class="button-secondary" :disabled="!store.canRedo" title="Ctrl+Shift+Z" @click="store.redo">↷ Redo</button>
         </template>

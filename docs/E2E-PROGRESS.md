@@ -1725,3 +1725,20 @@ review content and were recorded as a tooling deviation, not approval. The
 implementation was instead subjected to the explicit self-review, corpus
 oracle, three sensitivity mutations, and complete verification above. No commit
 or push was made.
+
+## Iteration 17 — printable spell lists
+
+Added per-character reference and full-reference print variants, opt-in Tier 2
+description importing, exact source-specific spellcasting math, separate 2024
+Cleric/Druid long-rest swap sections, preserved Wizard print states, accessible
+controls, and print-specific layout rules. Mutt has 12 unprepared Cleric spells
+and 16 unprepared Druid spells; full mode reports unavailable descriptions
+cleanly when Tier 2 has not been imported.
+
+Final verification: fresh migration/seed passed; Pest reported 460 tests and
+13,112 assertions passing; typecheck and production build passed; Playwright
+reported 19/19 passing (the original 18 plus E2E-17); A6's seven golden values
+were unchanged and Mutt retained zero duplicate warnings. Eleven temporary
+production mutations each caused its focused assertion to fail and were then
+restored. Full command output and sensitivity observations are recorded in
+`docs/E2E-17-PRINTABLE-SPELL-LISTS-REPORT.md`. No commit or push was made.

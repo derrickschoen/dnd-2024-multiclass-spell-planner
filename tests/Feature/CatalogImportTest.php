@@ -208,6 +208,98 @@ it('rejects spell levels outside the zero through nine catalog boundary', functi
     expect(DB::table('spell_versions')->count())->toBe(0);
 })->with([-1, 10]);
 
+it('loads complete Tier 2 text only when opted in and preserves it across ordinary imports', function () {
+    $directory = writeCatalogFixture([catalogRecord(['castingTime' => '1 Bonus Action'])]);
+    $textDirectory = sys_get_temp_dir().'/catalog-text-'.Str::uuid();
+    mkdir($textDirectory, 0777, true);
+    file_put_contents($textDirectory.'/catalog.full.json', json_encode([
+        catalogRecord([
+            'castingTime' => '1 Bonus Action',
+            '_description' => 'A complete test-only spell description.',
+        ]),
+    ], JSON_THROW_ON_ERROR));
+    $importer = app(CatalogImporter::class);
+
+    $withoutText = $importer->importDirectory($directory, false, false, $textDirectory);
+    expect(data_get($withoutText, 'text_available'))->toBeFalse()
+        ->and(data_get($withoutText, 'descriptions_loaded'))->toBe(0)
+        ->and(DB::table('spell_versions')->value('short_summary'))->toBeNull()
+        ->and(DB::table('spell_versions')->value('action_type'))->toBe('Bonus Action');
+
+    $versionId = (int) DB::table('spell_versions')->value('id');
+    $characterId = DB::table('characters')->insertGetId([
+        'name' => 'Referenced Text', 'created_at' => now(), 'updated_at' => now(),
+    ]);
+    $sourceId = DB::table('character_source_instances')->insertGetId([
+        'character_id' => $characterId, 'instance_uuid' => Str::uuid()->toString(),
+        'source_type' => 'feat', 'display_name' => 'Reference', 'state' => 'active',
+        'created_at' => now(), 'updated_at' => now(),
+    ]);
+    DB::table('spell_selection_slots')->insert([
+        'character_id' => $characterId, 'source_instance_id' => $sourceId,
+        'slot_key' => 'text:reference:1', 'rule_key' => 'text-reference', 'ordinal' => 1,
+        'bucket' => 'automatic', 'eligibility_kind' => 'fixed_spell',
+        'fixed_spell_version_id' => $versionId,
+        'created_at' => now(), 'updated_at' => now(),
+    ]);
+
+    $withText = $importer->importDirectory($directory, false, true, $textDirectory);
+    expect(data_get($withText, 'text_available'))->toBeTrue()
+        ->and(data_get($withText, 'descriptions_loaded'))->toBe(1)
+        ->and(data_get($withText, 'updated'))->toBe(1)
+        ->and(DB::table('spell_versions')->where('id', $versionId)->value('short_summary'))
+        ->toBe('A complete test-only spell description.');
+
+    $ordinary = $importer->importDirectory($directory);
+    expect(data_get($ordinary, 'updated'))->toBe(0)
+        ->and(DB::table('spell_versions')->where('id', $versionId)->value('short_summary'))
+        ->toBe('A complete test-only spell description.');
+});
+
+it('treats wholly absent Tier 2 as optional but rejects partial conflicting or unmatched text', function () {
+    $directory = writeCatalogFixture([
+        catalogRecord(),
+        catalogRecord(['identityKey' => 'second', 'versionKey' => '2024:second', 'name' => 'Second Spell']),
+    ]);
+    $missingDirectory = sys_get_temp_dir().'/missing-catalog-text-'.Str::uuid();
+    $absent = app(CatalogImporter::class)->importDirectory($directory, false, true, $missingDirectory);
+    expect(data_get($absent, 'text_available'))->toBeFalse()
+        ->and(data_get($absent, 'descriptions_loaded'))->toBe(0)
+        ->and(DB::table('spell_versions')->whereNotNull('short_summary')->count())->toBe(0);
+
+    $textDirectory = sys_get_temp_dir().'/partial-catalog-text-'.Str::uuid();
+    mkdir($textDirectory, 0777, true);
+    file_put_contents($textDirectory.'/one.full.json', json_encode([
+        catalogRecord(['_description' => 'Only one description.']),
+    ], JSON_THROW_ON_ERROR));
+    expect(fn () => app(CatalogImporter::class)->importDirectory($directory, false, true, $textDirectory))
+        ->toThrow(InvalidArgumentException::class, 'Tier 2 catalog does not exactly match Tier 1 (1 missing, 0 unexpected).');
+
+    file_put_contents($textDirectory.'/two.full.json', json_encode([
+        catalogRecord(['_description' => 'A conflicting description.']),
+    ], JSON_THROW_ON_ERROR));
+    expect(fn () => app(CatalogImporter::class)->importDirectory($directory, false, true, $textDirectory))
+        ->toThrow(InvalidArgumentException::class, 'Tier 2 has conflicting descriptions for 2024:test-spell.');
+});
+
+it('normalizes only action bonus-action and reaction casting times into action types', function () {
+    $records = [
+        catalogRecord(['identityKey' => 'action', 'versionKey' => '2024:action', 'name' => 'Action', 'castingTime' => '1 Action R']),
+        catalogRecord(['identityKey' => 'bonus', 'versionKey' => '2024:bonus', 'name' => 'Bonus', 'castingTime' => 'Bonus Action(*)']),
+        catalogRecord(['identityKey' => 'reaction', 'versionKey' => '2024:reaction', 'name' => 'Reaction', 'castingTime' => '1 Reaction']),
+        catalogRecord(['identityKey' => 'minute', 'versionKey' => '2024:minute', 'name' => 'Minute', 'castingTime' => '1 minute or R']),
+    ];
+    app(CatalogImporter::class)->importDirectory(writeCatalogFixture($records));
+
+    expect(DB::table('spell_versions')->orderBy('display_name')->pluck('action_type', 'display_name')->all())
+        ->toBe([
+            'Action' => 'Action',
+            'Bonus' => 'Bonus Action',
+            'Minute' => null,
+            'Reaction' => 'Reaction',
+        ]);
+});
+
 it('rejects every malformed catalog container and required field shape', function (Closure $arrange, string $message) {
     $directory = writeCatalogFixture([catalogRecord()]);
     $arrange($directory);
@@ -319,12 +411,14 @@ it('imports and synchronizes the complete version and pivot contract', function 
         'tags_created' => 3,
         'attack_modes_created' => 2,
         'save_abilities_created' => 2,
+        'text_available' => false,
+        'descriptions_loaded' => 0,
     ]);
 
     $version = DB::table('spell_versions')->where('content_key', '2024:arcane-echo')->sole();
     expect(collect((array) $version)->only([
         'content_key', 'display_name', 'rules_edition', 'level', 'school', 'ritual', 'concentration',
-        'casting_time', 'range', 'duration', 'components', 'healing', 'effect_reliability_category',
+        'casting_time', 'action_type', 'range', 'duration', 'components', 'healing', 'effect_reliability_category',
         'provenance', 'is_active',
     ])->all())->toBe([
         'content_key' => '2024:arcane-echo',
@@ -335,6 +429,7 @@ it('imports and synchronizes the complete version and pivot contract', function 
         'ritual' => 0,
         'concentration' => 0,
         'casting_time' => 'Action or R',
+        'action_type' => 'Action',
         'range' => '60 feet',
         'duration' => 'C, up to 1 minute',
         'components' => 'V, S, M',

@@ -17,15 +17,30 @@ final class CatalogImporter
     public function __construct(private readonly SpellSelectionEligibility $eligibility) {}
 
     /**
-     * @return array{created: int, updated: int, tombstoned: int, identities_created: int, identities_updated: int, publications_created: int, memberships_created: int, tags_created: int, attack_modes_created: int, save_abilities_created: int}
+     * @return array{created: int, updated: int, tombstoned: int, identities_created: int, identities_updated: int, publications_created: int, memberships_created: int, tags_created: int, attack_modes_created: int, save_abilities_created: int, text_available: bool, descriptions_loaded: int}
      */
-    public function importDirectory(string $directory, bool $dryRun = false): array
-    {
+    public function importDirectory(
+        string $directory,
+        bool $dryRun = false,
+        bool $withText = false,
+        ?string $descriptionDirectory = null,
+    ): array {
         $records = $this->loadRecords($directory);
+        $descriptions = $withText
+            ? $this->loadDescriptions($descriptionDirectory ?? dirname(rtrim($directory, '/')).'/local', $records)
+            : null;
+        if ($descriptions !== null) {
+            foreach ($records as &$record) {
+                $record['_description'] = data_get($descriptions, (string) data_get($record, 'versionKey'));
+            }
+            unset($record);
+        }
         DB::beginTransaction();
 
         try {
             $summary = $this->importRecords($records);
+            $summary['text_available'] = $descriptions !== null;
+            $summary['descriptions_loaded'] = $descriptions === null ? 0 : count($descriptions);
             if ($dryRun) {
                 DB::rollBack();
             } else {
@@ -39,6 +54,67 @@ final class CatalogImporter
             }
             throw $exception;
         }
+    }
+
+    /**
+     * @param  list<array<string, mixed>>  $records
+     * @return array<string, string>|null
+     */
+    private function loadDescriptions(string $directory, array $records): ?array
+    {
+        $files = glob(rtrim($directory, '/').'/*.full.json');
+        if ($files === false || $files === []) {
+            return null;
+        }
+        sort($files);
+
+        $descriptions = [];
+        foreach ($files as $file) {
+            try {
+                $decoded = json_decode((string) file_get_contents($file), true, 512, JSON_THROW_ON_ERROR);
+            } catch (JsonException $exception) {
+                throw new InvalidArgumentException("Invalid Tier 2 catalog JSON in {$file}: {$exception->getMessage()}", 0, $exception);
+            }
+            if (! is_array($decoded) || ! array_is_list($decoded)) {
+                throw new InvalidArgumentException("Tier 2 catalog file {$file} must contain a JSON list.");
+            }
+            foreach ($decoded as $record) {
+                if (! is_array($record)) {
+                    throw new InvalidArgumentException("Tier 2 catalog file {$file} contains a non-object record.");
+                }
+                $versionKey = data_get($record, 'versionKey');
+                $description = data_get($record, '_description');
+                if (! is_string($versionKey) || trim($versionKey) === '') {
+                    throw new InvalidArgumentException("Tier 2 catalog file {$file} contains an invalid versionKey.");
+                }
+                if (! is_string($description) || trim($description) === '') {
+                    throw new InvalidArgumentException("Tier 2 description for {$versionKey} must be a non-empty string.");
+                }
+                if (isset($descriptions[$versionKey]) && $descriptions[$versionKey] !== $description) {
+                    throw new InvalidArgumentException("Tier 2 has conflicting descriptions for {$versionKey}.");
+                }
+                $descriptions[$versionKey] = $description;
+            }
+        }
+
+        $expectedKeys = array_map(
+            static fn (array $record): string => (string) data_get($record, 'versionKey'),
+            $records,
+        );
+        sort($expectedKeys);
+        $descriptionKeys = array_keys($descriptions);
+        sort($descriptionKeys);
+        if ($descriptionKeys !== $expectedKeys) {
+            $missing = array_values(array_diff($expectedKeys, $descriptionKeys));
+            $unexpected = array_values(array_diff($descriptionKeys, $expectedKeys));
+            throw new InvalidArgumentException(sprintf(
+                'Tier 2 catalog does not exactly match Tier 1 (%d missing, %d unexpected).',
+                count($missing),
+                count($unexpected),
+            ));
+        }
+
+        return $descriptions;
     }
 
     /** @return list<array<string, mixed>> */
@@ -188,11 +264,10 @@ final class CatalogImporter
                     $changes['is_active'] = true;
                     $activityChangedVersionIds[] = $versionId;
                 }
-                if (! $referenced) {
-                    foreach ($this->versionAttributes($record, $identityId) as $column => $value) {
-                        if (data_get($version, $column) != $value) {
-                            $changes[$column] = $value;
-                        }
+                foreach ($this->versionAttributes($record, $identityId) as $column => $value) {
+                    if (($column === 'short_summary' || ! $referenced)
+                        && data_get($version, $column) != $value) {
+                        $changes[$column] = $value;
                     }
                 }
                 if ($changes !== []) {
@@ -342,7 +417,7 @@ final class CatalogImporter
     /** @param array<string, mixed> $record @return array<string, mixed> */
     private function versionAttributes(array $record, int $identityId): array
     {
-        return [
+        $attributes = [
             'content_key' => (string) data_get($record, 'versionKey'),
             'spell_identity_id' => $identityId,
             'display_name' => (string) data_get($record, 'name'),
@@ -352,6 +427,7 @@ final class CatalogImporter
             'ritual' => (bool) data_get($record, 'ritual'),
             'concentration' => (bool) data_get($record, 'concentration'),
             'casting_time' => data_get($record, 'castingTime'),
+            'action_type' => $this->actionType(data_get($record, 'castingTime')),
             'range' => data_get($record, 'range'),
             'duration' => data_get($record, 'duration'),
             'components' => data_get($record, 'components'),
@@ -360,6 +436,29 @@ final class CatalogImporter
             'provenance' => 'import',
             'is_active' => true,
         ];
+        if (array_key_exists('_description', $record)) {
+            $attributes['short_summary'] = (string) data_get($record, '_description');
+        }
+
+        return $attributes;
+    }
+
+    private function actionType(mixed $castingTime): ?string
+    {
+        if (! is_string($castingTime)) {
+            return null;
+        }
+        if (preg_match('/\bbonus action\b/i', $castingTime) === 1) {
+            return 'Bonus Action';
+        }
+        if (preg_match('/\breaction\b/i', $castingTime) === 1) {
+            return 'Reaction';
+        }
+        if (preg_match('/\baction\b/i', $castingTime) === 1) {
+            return 'Action';
+        }
+
+        return null;
     }
 
     private function isReferenced(int $versionId): bool

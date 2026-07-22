@@ -1067,6 +1067,99 @@ test('T10: Mutt matches the authoritative sheet attribution with zero duplicates
     }));
 });
 
+test('E2E-17: Mutt prints reference and full variants with exact long-rest swap lists and relevant casting math', async ({ page }) => {
+    const muttId = 2;
+    await page.goto(`/characters/${muttId}/print`);
+    await expect(page.getByRole('heading', { name: 'Mutt', level: 1 })).toBeVisible();
+    await expect(page.getByText('Spell reference sheet', { exact: true })).toBeVisible();
+
+    const variant = page.getByLabel('Print variant');
+    await expect(variant).toHaveValue('reference');
+    await expectKeyboardReachableWithVisibleFocus(page, variant);
+    await expectKeyboardReachableWithVisibleFocus(page, page.getByRole('button', { name: 'Print', exact: true }));
+    await expect(page.locator('.spell-description')).toHaveCount(0);
+    await expect(page.getByTestId('text-unavailable')).toHaveCount(0);
+
+    const cleric = printableSection(page, 'Cleric — not prepared (available to swap in on a long rest)');
+    const druid = printableSection(page, 'Druid — not prepared (available to swap in on a long rest)');
+    await expect(cleric).toContainText('Unprepared cantrips are not listed because cantrips cannot be swapped on a long rest.');
+    await expect(druid).toContainText('Unprepared cantrips are not listed because cantrips cannot be swapped on a long rest.');
+    expect(await cleric.locator('.spell-card h3').allTextContents()).toEqual([
+        'Bane', 'Bless', 'Command', 'Detect Evil and Good', 'Detect Magic',
+        'Detect Poison and Disease', 'Guiding Bolt', 'Inflict Wounds',
+        'Protection from Evil and Good', 'Purify Food and Drink', 'Shield of Faith', 'Wardaway',
+    ]);
+    expect(await druid.locator('.spell-card h3').allTextContents()).toEqual([
+        'Animal Friendship', 'Buzzing Bee', 'Charm Person', 'Create or Destroy Water',
+        'Cure Wounds', 'Detect Magic', 'Detect Poison and Disease', 'Entangle',
+        'Faerie Fire', 'Fog Cloud', 'Healing Word', 'Ice Knife', 'Longstrider',
+        'Protection from Evil and Good', 'Purify Food and Drink', 'Thunderwave',
+    ]);
+    for (const prepared of ['Create or Destroy Water', 'Cure Wounds', 'Healing Word', 'Sanctuary']) {
+        await expect(cleric.locator('.spell-card h3', { hasText: prepared })).toHaveCount(0);
+    }
+    for (const prepared of ['Goodberry', 'Jump', 'Speak with Animals']) {
+        await expect(druid.locator('.spell-card h3', { hasText: prepared })).toHaveCount(0);
+    }
+
+    const sorcerer = printableSection(page, 'Sorcerer 1');
+    const chillTouch = printableSpell(sorcerer, 'Chill Touch');
+    await expect(chillTouch).toContainText('Spell attack: +6 to hit');
+    await expect(chillTouch).not.toContainText('Saving throw:');
+    const bard = printableSection(page, 'Bard 1');
+    const viciousMockery = printableSpell(bard, 'Vicious Mockery');
+    await expect(viciousMockery).toContainText('Saving throw: DC 14 · WIS');
+    await expect(viciousMockery).not.toContainText('Spell attack:');
+
+    const wizardStates = printableSection(page, 'Wizard spellbook states');
+    await expect(wizardStates.getByRole('heading', { name: 'Spellbook · 6' })).toBeVisible();
+    await expect(wizardStates.getByRole('heading', { name: 'Prepared · 4' })).toBeVisible();
+    await expect(wizardStates.getByRole('heading', { name: 'Ritual-only · 2' })).toBeVisible();
+    await expect(wizardStates).toContainText('that route is not a selection');
+    await expect(wizardStates).toContainText('does not consume preparation capacity');
+    await expect(wizardStates).toContainText('Unprepared non-ritual spells are not castable.');
+
+    await variant.selectOption('full');
+    await page.getByRole('button', { name: 'Change variant' }).click();
+    await expect(page).toHaveURL(`/characters/${muttId}/print?variant=full`);
+    await expect(page.getByText('Full spell reference', { exact: true })).toBeVisible();
+    await expect(page.getByTestId('text-unavailable')).toContainText('Spell descriptions are not installed.');
+    await expect(page.getByTestId('text-unavailable')).toContainText('catalog:import --with-text');
+    await expect(page.locator('.spell-description').first()).toContainText('Description unavailable.');
+
+    await page.emulateMedia({ media: 'print' });
+    await expect(page.locator('.print-controls')).toBeHidden();
+    const printStyle = await page.locator('.spell-card').first().evaluate((card) => {
+        const cardStyle = getComputedStyle(card);
+        const bodyStyle = getComputedStyle(document.body);
+        const gridStyle = getComputedStyle(card.parentElement as HTMLElement);
+        return {
+            breakInside: cardStyle.breakInside,
+            background: bodyStyle.backgroundColor,
+            color: bodyStyle.color,
+            fontSize: bodyStyle.fontSize,
+            gridColumns: gridStyle.gridTemplateColumns.trim().split(/\s+/).length,
+        };
+    });
+    expect(['avoid', 'avoid-page']).toContain(printStyle.breakInside);
+    expect(printStyle).toMatchObject({
+        background: 'rgb(255, 255, 255)',
+        color: 'rgb(0, 0, 0)',
+        fontSize: '14px',
+        gridColumns: 1,
+    });
+});
+
+function printableSection(page: Page, heading: string): Locator {
+    return page.locator('section').filter({
+        has: page.getByRole('heading', { name: heading, exact: true }),
+    });
+}
+
+function printableSpell(section: Locator, name: string): Locator {
+    return section.locator('.spell-card').filter({ hasText: name });
+}
+
 function requireSlot<T extends SlotFixture | ReturnType<typeof slots>[number]>(
     slot: T | undefined,
     description: string,
