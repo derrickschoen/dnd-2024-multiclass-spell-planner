@@ -1,4 +1,0 @@
-identityKey,versionKey,name,edition,level,school,castingTime,range,components,duration,concentration,ritual,attackModes,saveAbilities,effectReliabilityCategory,spellLists,sourceBooks,sourcePage,sourceSlug
-spray-of-cards,2014:spray-of-cards,Spray Of Cards,2014,2,Conjuration,1 Action,Self (15-foot cone),"V, S, M",Instantaneous,false,false,,dexterity,saving_throw,Bard;Sorcerer;Warlock;Wizard,The Book of Many Things,,spray-of-cards
-antagonize,2014:antagonize,Antagonize,2014,3,Enchantment,1 Action,30 feet,"V, S, M",Instantaneous,false,false,,wisdom,saving_throw,Bard;Sorcerer;Warlock;Wizard,The Book of Many Things,,antagonize
-spirit-of-death,2014:spirit-of-death,Spirit Of Death,2014,4,Necromancy,1 Action,60 feet,"V, S, M","Concentration, up to 1 hour",true,false,,,fixed_effect,Sorcerer;Warlock;Wizard,The Book of Many Things,,spirit-of-death

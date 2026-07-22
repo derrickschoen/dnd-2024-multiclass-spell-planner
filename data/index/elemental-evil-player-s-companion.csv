@@ -1,4 +1,0 @@
-identityKey,versionKey,name,edition,level,school,castingTime,range,components,duration,concentration,ritual,attackModes,saveAbilities,effectReliabilityCategory,spellLists,sourceBooks,sourcePage,sourceSlug
-magic-stone,2014:magic-stone,Magic Stone,2014,0,Transmutation,1 Bonus Action,Touch,"V, S",1 minute,false,false,ranged_spell,,attack_roll,Druid;Warlock;Artificer,Xanathar's Guide to Everything;Elemental Evil Player's Companion,,magic-stone
-earth-tremor,2014:earth-tremor,Earth Tremor,2014,1,Evocation,1 Action,Self (10-foot radius),"V, S",Instantaneous,false,false,,dexterity,saving_throw,Bard;Druid;Sorcerer;Wizard,Xanathar's Guide to Everything;Elemental Evil Player's Companion,,earth-tremor
-erupting-earth,2014:erupting-earth,Erupting Earth,2014,3,Transmutation,1 Action,120 feet,"V, S, M",Instantaneous,false,false,,dexterity,saving_throw,Druid;Sorcerer;Wizard,Xanathar's Guide to Everything;Elemental Evil Player's Companion,,erupting-earth

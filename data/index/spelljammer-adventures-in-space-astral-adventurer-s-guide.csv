@@ -1,3 +1,0 @@
-identityKey,versionKey,name,edition,level,school,castingTime,range,components,duration,concentration,ritual,attackModes,saveAbilities,effectReliabilityCategory,spellLists,sourceBooks,sourcePage,sourceSlug
-air-bubble,2014:air-bubble,Air Bubble,2014,2,Conjuration,1 Action,60 Feet,S,24 hours,false,false,,,fixed_effect,Artificer;Druid;Ranger;Sorcerer;Wizard,Spelljammer: Adventures in Space - Astral Adventurer's Guide,,air-bubble
-create-spelljamming-helm,2014:create-spelljamming-helm,Create Spelljamming Helm,2014,5,Transmutation,1 Action,Touch,"V,S,M",Instantaneous,false,false,,,fixed_effect,Artificer;Wizard,Spelljammer: Adventures in Space - Astral Adventurer's Guide,,create-spelljamming-helm

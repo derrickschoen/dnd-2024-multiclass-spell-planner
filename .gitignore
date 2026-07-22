@@ -40,3 +40,8 @@ Thumbs.db
 
 # Infection run artifacts
 /.artifacts/
+
+# Full scraped catalog: ~943 spells across ~20 books, most NOT Creative Commons.
+# Built locally with `npm run scrape`. Only the CC-BY SRD 5.2.1 subset in
+# data/srd/ is redistributed.
+/data/index/

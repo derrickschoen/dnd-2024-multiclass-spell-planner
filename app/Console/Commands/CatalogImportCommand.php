@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Console\Commands;
 
 use App\Domain\Catalog\CatalogImporter;
+use App\Domain\Catalog\CatalogSource;
 use Illuminate\Console\Command;
 
 final class CatalogImportCommand extends Command
@@ -20,7 +21,7 @@ final class CatalogImportCommand extends Command
         $dryRun = (bool) $this->option('dry-run');
         $withText = (bool) $this->option('with-text');
         $summary = $importer->importDirectory(
-            base_path('data/index'),
+            CatalogSource::directory(),
             $dryRun,
             $withText,
             base_path('data/local'),

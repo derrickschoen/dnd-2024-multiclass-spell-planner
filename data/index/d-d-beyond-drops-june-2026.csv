@@ -1,4 +1,0 @@
-identityKey,versionKey,name,edition,level,school,castingTime,range,components,duration,concentration,ritual,attackModes,saveAbilities,effectReliabilityCategory,spellLists,sourceBooks,sourcePage,sourceSlug
-searing-orb,2024:searing-orb,Searing Orb,2024,2,Evocation,Action,60 feet,"S, M",Instantaneous,false,false,ranged_spell,constitution,mixed,Cleric;Paladin,D&D Beyond Drops - June 2026,,searing-orb
-tortoise-shell,2024:tortoise-shell,Tortoise Shell,2024,2,Abjuration,Action,Touch,"V, S","C, up to 1 minute",true,false,,,fixed_effect,Artificer;Druid;Ranger,D&D Beyond Drops - June 2026,,tortoise-shell
-void-star,2024:void-star,Void Star,2024,7,Necromancy,Action,120 feet,"V, S, M",Instantaneous,false,false,ranged_spell,,attack_roll,Warlock;Wizard,D&D Beyond Drops - June 2026,,void-star

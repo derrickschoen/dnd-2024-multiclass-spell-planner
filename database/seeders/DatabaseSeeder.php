@@ -3,6 +3,7 @@
 namespace Database\Seeders;
 
 use App\Domain\Catalog\CatalogImporter;
+use App\Domain\Catalog\CatalogSource;
 use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
 
@@ -16,7 +17,7 @@ class DatabaseSeeder extends Seeder
     public function run(): void
     {
         // Catalog data has one ingress even during seeding.
-        app(CatalogImporter::class)->importDirectory(base_path('data/index'));
+        app(CatalogImporter::class)->importDirectory(CatalogSource::directory());
 
         $this->call([
             ClassProgressionSeeder::class,

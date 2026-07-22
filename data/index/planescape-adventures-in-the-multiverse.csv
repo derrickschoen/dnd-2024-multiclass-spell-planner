@@ -1,3 +1,0 @@
-identityKey,versionKey,name,edition,level,school,castingTime,range,components,duration,concentration,ritual,attackModes,saveAbilities,effectReliabilityCategory,spellLists,sourceBooks,sourcePage,sourceSlug
-warp-sense,2014:warp-sense,Warp Sense,2014,2,Divination,1 Action,Self,"V, S, M","Concentration, up to 1 minute",true,false,,,fixed_effect,Sorcerer;Warlock;Wizard,Planescape - Adventures in the Multiverse,,warp-sense
-gate-seal,2014:gate-seal,Gate Seal,2014,4,Abjuration,1 Minute,60 feet,"V, S, M",24 hours,false,false,,,fixed_effect,Sorcerer;Warlock;Wizard,Planescape - Adventures in the Multiverse,,gate-seal

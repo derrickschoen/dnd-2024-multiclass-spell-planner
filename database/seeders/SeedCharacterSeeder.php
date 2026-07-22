@@ -8,7 +8,9 @@ use App\Domain\Characters\CharacterCommandExecutor;
 use App\Domain\Grants\GrantRuleSlotGenerator;
 use App\Domain\Spells\SpellSelectionService;
 use Illuminate\Database\Seeder;
+use App\Domain\Catalog\CatalogSource;
 use Illuminate\Support\Facades\DB;
+use Throwable;
 use Illuminate\Support\Str;
 use RuntimeException;
 
@@ -20,7 +22,24 @@ final class SeedCharacterSeeder extends Seeder
             DB::transaction(fn () => $this->seedA6());
         }
         if (! DB::table('characters')->where('notes', 'like', "seed:mutt\n%")->exists()) {
-            $this->seedMutt();
+            // Mutt is built from a real character sheet that legitimately uses
+            // non-SRD content (Thunderclap, and Mold Earth from Xanathar's). A
+            // fresh clone ships only the CC-BY SRD 5.2.1 subset, so those spells
+            // are absent until `npm run scrape` has been run. Skipping with a
+            // clear message keeps `migrate:fresh --seed` working, which is the
+            // documented setup path; failing here would break it outright.
+            try {
+                $this->seedMutt();
+            } catch (Throwable $exception) {
+                if (! CatalogSource::isSrdOnly()) {
+                    throw $exception;
+                }
+                $this->command?->warn(
+                    'Skipped the "Mutt" sample character: it uses spells outside the '
+                    .'SRD 5.2.1 subset. Run `npm run scrape` to build the full catalog, '
+                    .'then re-run this seeder.'
+                );
+            }
         }
     }
 
