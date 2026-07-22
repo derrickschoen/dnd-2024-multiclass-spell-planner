@@ -1,3 +1,5 @@
+import { execFileSync } from 'node:child_process';
+import { fileURLToPath } from 'node:url';
 import { expect, test, type BrowserContext, type Locator, type Page, type Response } from '@playwright/test';
 import {
     auditLog,
@@ -16,6 +18,8 @@ import {
     warningAcknowledgements,
     type SlotFixture,
 } from './support/database';
+
+const sqliteDatabase = fileURLToPath(new URL('../database/database.sqlite', import.meta.url));
 
 interface CastingRow {
     slotId: number;
@@ -547,12 +551,29 @@ test('S11: the slot grid is keyboard reachable, visibly focused, labelled, and w
     // controls and then asserting the keyboard walk visits that same count is
     // self-referential: if comboboxes silently stopped rendering for some rows,
     // both numbers would shrink together and a loose `> 40` guard would still pass.
-    // One combobox per slot, plus the grid's own chrome (3 sort buttons, 4 filters).
+    // One combobox per unlocked slot, one Clear button per filled valid unlocked
+    // slot, plus the grid's own chrome (3 sort buttons, 4 filters).
     const GRID_CHROME_CONTROLS = 7;
-    const expectedGridControls = slotFixtures().length + GRID_CHROME_CONTROLS;
+    const fixtureSlots = slotFixtures();
+    const expectedComboboxes = fixtureSlots.filter((slot) => Number(slot.is_locked) === 0).length;
+    const expectedClearControls = fixtureSlots.filter((slot) => Number(slot.is_locked) === 0
+        && slot.state === 'active'
+        && slot.selection_eligibility !== 'invalid'
+        && Boolean(slot.spell_name)).length;
+    const expectedGridControls = expectedComboboxes + expectedClearControls + GRID_CHROME_CONTROLS;
     const renderedGridControls = await grid.locator(gridControlSelector).count();
     const labelled = await labelledFormControls(page);
 
+    // Pin the combobox and Clear counts SEPARATELY, not just their sum. The aggregate
+    // alone can be preserved by two offsetting defects — one combobox silently stops
+    // rendering while one extra Clear button appears — so a per-category check is what
+    // actually catches a dropped combobox regardless of what else moves.
+    // Scope to the slot combobox's accessible-name pattern: a bare getByRole('combobox')
+    // would also match the grid's filter <select>s (implicit role combobox) and overcount.
+    expect(await grid.getByRole('combobox', { name: /^Spell selection for slot / }).count())
+        .toBe(expectedComboboxes);
+    expect(await grid.getByRole('button', { name: /^Clear selection for slot / }).count())
+        .toBe(expectedClearControls);
     expect(renderedGridControls).toBe(expectedGridControls);
     // labelledFormControls is page-wide (ability inputs, class controls, undo and
     // save-point buttons all sit outside the grid), so it is a superset of the grid.
@@ -995,6 +1016,181 @@ test('S18: Wizard preparation can select outside the spellbook and persists unti
     }
 });
 
+test('S19: a valid Wizard preparation clears durably and undo restores the same valid slot', async ({ page, context }) => {
+    const originalPreparedNames = ['Mage Armor', 'Magic Missile', 'Sleep', 'Thunderwave'];
+    const preparedAfterClear = ['Magic Missile', 'Sleep', 'Thunderwave'];
+    const initialSlots = slotFixtures();
+    const target = requireSlot(
+        initialSlots.find((slot) => slot.rule_key === 'wizard-prepared' && slot.ordinal === 1),
+        'the first filled Wizard prepared slot',
+    );
+    const empty = requireSlot(
+        initialSlots.find((slot) => slot.rule_key === 'wizard-cantrips' && slot.ordinal === 2),
+        'an empty Wizard slot',
+    );
+    const fixed = requireSlot(
+        initialSlots.find((slot) => slot.rule_key === 'sorcerer-cantrips' && slot.ordinal === 1),
+        'a slot to expose as a fixed grant',
+    );
+    const originalSpellVersionId = target.current_spell_version_id;
+    const fixedSpellVersionId = spellVersionId('2024:fire-bolt');
+
+    expect(target).toEqual(expect.objectContaining({
+        spell_name: 'Mage Armor',
+        state: 'active',
+        selection_eligibility: 'valid',
+        is_locked: 0,
+    }));
+    expect(originalSpellVersionId).not.toBeNull();
+    expect(empty.current_spell_version_id).toBeNull();
+    expect(fixed.current_spell_version_id).toBeNull();
+
+    try {
+        exposeSlotAsFixedGrant(fixed.id, fixedSpellVersionId);
+        await page.reload();
+        await expect(page.getByRole('heading', { name: 'A6 Sixfold Spellcaster', level: 1 })).toBeVisible();
+
+        const fixedFixture = requireSlot(
+            slotFixtures().find((slot) => slot.id === fixed.id),
+            'the fixed Sorcerer slot',
+        );
+        expect(fixedFixture).toEqual(expect.objectContaining({
+            fixed_spell_version_id: fixedSpellVersionId,
+            current_spell_version_id: null,
+            is_locked: 1,
+            spell_name: 'Fire Bolt',
+        }));
+        const fixedRow = page.locator('table.slot-table tbody tr')
+            .filter({ has: page.getByText('Sorcerer 1', { exact: true }) })
+            .filter({ has: page.getByText('Cantrip Known 1', { exact: true }) });
+        await expect(fixedRow.locator('td').nth(4)).toHaveText('Fire Bolt');
+
+        const emptyClear = page.getByRole('button', {
+            name: `Clear selection for slot ${empty.id}`,
+            exact: true,
+        });
+        const fixedClear = page.getByRole('button', {
+            name: `Clear selection for slot ${fixed.id}`,
+            exact: true,
+        });
+        const targetClear = page.getByRole('button', {
+            name: `Clear selection for slot ${target.id}`,
+            exact: true,
+        });
+        await expect(emptyClear).toHaveCount(0);
+        await expect(fixedClear).toHaveCount(0);
+        await expect(targetClear).toHaveText('Clear');
+        await expect(targetClear).toBeVisible();
+        await expect(targetClear).toBeEnabled();
+        await expect(wizardList(wizardSpellbookPanel(page), 'Prepared · 4')).toHaveText(originalPreparedNames);
+
+        const revisionBeforeClear = Number(character().revision);
+        let clearDialogMessage = '';
+        page.once('dialog', async (dialog) => {
+            clearDialogMessage = dialog.message();
+            await dialog.accept();
+        });
+        const clearResponsePromise = page.waitForResponse(isMutationResponse);
+        await targetClear.click();
+        const clearResponse = await clearResponsePromise;
+        expect(clearResponse.status()).toBe(200);
+        expect(clearResponse.request().postDataJSON()).toEqual(expect.objectContaining({
+            expected_revision: revisionBeforeClear,
+            command: { type: 'set_slot', slot_id: target.id, mode: 'clear' },
+        }));
+        const clearBody = await clearResponse.json() as CommandMutationBody;
+        expect(clearBody.revision).toBe(revisionBeforeClear + 1);
+        expect(clearDialogMessage).toBe('Clear Mage Armor from Prepared 1?');
+        await expect(page.getByText(new RegExp(`revision ${clearBody.revision}$`))).toBeVisible();
+        await expect(page.getByRole('combobox', { name: `Spell selection for slot ${target.id}` }))
+            .toHaveValue('');
+        await expect(targetClear).toHaveCount(0);
+        expect(requireSlot(slots().find((slot) => slot.id === target.id), 'the cleared Wizard slot')
+            .current_spell_version_id).toBeNull();
+        expect(character().revision).toBe(clearBody.revision);
+        await expect(wizardList(wizardSpellbookPanel(page), 'Prepared · 3')).toHaveText(preparedAfterClear);
+
+        const freshPage = await context.newPage();
+        try {
+            await freshPage.goto('/characters/1');
+            await expect(freshPage.getByRole('heading', {
+                name: 'A6 Sixfold Spellcaster',
+                level: 1,
+            })).toBeVisible();
+            await hardReloadIgnoringCache(freshPage, context);
+            await expect(freshPage.getByRole('heading', {
+                name: 'A6 Sixfold Spellcaster',
+                level: 1,
+            })).toBeVisible();
+            await expect(freshPage.getByRole('combobox', {
+                name: `Spell selection for slot ${target.id}`,
+            })).toHaveValue('');
+            await expect(freshPage.getByRole('button', {
+                name: `Clear selection for slot ${target.id}`,
+                exact: true,
+            })).toHaveCount(0);
+            expect(requireSlot(slots().find((slot) => slot.id === target.id), 'the freshly read cleared slot')
+                .current_spell_version_id).toBeNull();
+            await expect(wizardList(wizardSpellbookPanel(freshPage), 'Prepared · 3'))
+                .toHaveText(preparedAfterClear);
+        } finally {
+            await freshPage.close();
+        }
+
+        const undoResponsePromise = page.waitForResponse(isMutationResponse);
+        const undo = page.getByRole('button', { name: /Undo/ });
+        await expect(undo).toBeEnabled();
+        await undo.click();
+        const undoResponse = await undoResponsePromise;
+        expect(undoResponse.status()).toBe(200);
+        const undoBody = await undoResponse.json() as CommandMutationBody;
+        expect(undoBody.revision).toBe(clearBody.revision + 1);
+        await expect(page.getByText(new RegExp(`revision ${undoBody.revision}$`))).toBeVisible();
+
+        const matchingSlots = slots().filter((slot) => slot.id === target.id);
+        expect(matchingSlots).toHaveLength(1);
+        const restored = requireSlot(matchingSlots[0], 'the restored Wizard slot');
+        expect(restored).toEqual(expect.objectContaining({
+            id: target.id,
+            current_spell_version_id: originalSpellVersionId,
+            state: 'active',
+            selection_eligibility: 'valid',
+            selection_invalid_reason: null,
+            orphan_reason_code: null,
+            orphaned_by_change_group_id: null,
+            orphaned_at: null,
+        }));
+        expect(undoBody.workspace.report.access_routes.filter((route) => route.slot_id === target.id)).toEqual([
+            expect.objectContaining({
+                slot_id: target.id,
+                spell_version_id: originalSpellVersionId,
+                spell_name: 'Mage Armor',
+                source_name: 'Wizard 1',
+                origin: 'slot',
+                is_selection: true,
+                counts_against_limit: true,
+            }),
+        ]);
+        expect(undoBody.workspace.report.invalid_selections.filter((slot) => slot.id === target.id)).toEqual([]);
+        expect(undoBody.workspace.report.duplicate_assessments
+            .find((assessment) => assessment.spell_name === 'Mage Armor')).toEqual(expect.objectContaining({
+            category: 'none',
+            selection_count: 1,
+        }));
+        await expect(page.getByRole('combobox', { name: `Spell selection for slot ${target.id}` }))
+            .toHaveValue('Mage Armor');
+        await expect(page.getByRole('button', {
+            name: `Clear selection for slot ${target.id}`,
+            exact: true,
+        })).toHaveText('Clear');
+        await expect(duplicateCell(page, target.id)).toHaveText('— None');
+        await expect(slotRow(page, target.id).locator('td').nth(10)).toHaveText('✓ Valid');
+        await expect(wizardList(wizardSpellbookPanel(page), 'Prepared · 4')).toHaveText(originalPreparedNames);
+    } finally {
+        resetDatabase();
+    }
+});
+
 test('T10: Mutt matches the authoritative sheet attribution with zero duplicates', async ({ page }) => {
     const muttId = 2;
     await page.goto(`/characters/${muttId}`);
@@ -1287,6 +1483,21 @@ function requireSlot<T extends SlotFixture | ReturnType<typeof slots>[number]>(
     if (!slot) throw new Error(`Seed data did not contain ${description}.`);
 
     return slot;
+}
+
+function exposeSlotAsFixedGrant(slotId: number, spellId: number): void {
+    expect(Number.isInteger(slotId) && slotId > 0).toBe(true);
+    expect(Number.isInteger(spellId) && spellId > 0).toBe(true);
+    const changedRows = execFileSync('sqlite3', [
+        sqliteDatabase,
+        `UPDATE spell_selection_slots
+         SET eligibility_kind = 'fixed_spell', fixed_spell_version_id = ${spellId}, is_locked = 1,
+             selection_eligibility = 'valid', selection_invalid_reason = NULL
+         WHERE id = ${slotId} AND character_id = 1 AND current_spell_version_id IS NULL;
+         SELECT changes();`,
+    ], { encoding: 'utf8' }).trim();
+
+    expect(changedRows).toBe('1');
 }
 
 async function selectSpell(page: Page, slotId: number, spellName: string): Promise<MutationBody> {

@@ -374,7 +374,13 @@ onBeforeUnmount(() => window.removeEventListener('keydown', keyboardShortcuts));
                                 <template v-for="slot in filteredSlots" :key="slot.id">
                                     <tr :class="slot.eligibility === 'invalid' || slot.state !== 'active' ? 'bg-amber-50 dark:bg-amber-950/40' : ''">
                                         <td class="font-medium">{{ slot.source }}</td><td>{{ slot.label }}</td><td>{{ title(slot.bucket) }}</td><td>L{{ slot.level_min }}–{{ slot.level_max }}</td>
-                                        <td><span v-if="slot.locked" class="font-medium">{{ slot.spell_name }}</span><SpellCombobox v-else :ref="(element) => setCombobox(slot.id, element)" :character-id="report.character.id" :slot-id="slot.id" :model-value="slot.spell_name" :invalid="slot.eligibility === 'invalid' || slot.state !== 'active'" :disabled="store.saving" @select="selectSpell(slot, $event)" /></td>
+                                        <td>
+                                            <span v-if="slot.locked" class="font-medium">{{ slot.spell_name }}</span>
+                                            <div v-else class="flex items-center gap-2">
+                                                <SpellCombobox :ref="(element) => setCombobox(slot.id, element)" :character-id="report.character.id" :slot-id="slot.id" :model-value="slot.spell_name" :invalid="slot.eligibility === 'invalid' || slot.state !== 'active'" :disabled="store.saving" @select="selectSpell(slot, $event)" />
+                                                <button v-if="slot.state === 'active' && slot.eligibility !== 'invalid' && slot.spell_name" type="button" class="button-danger shrink-0" :aria-label="`Clear selection for slot ${slot.id}`" :disabled="store.saving" @click="clearSlot(slot)">Clear</button>
+                                            </div>
+                                        </td>
                                         <td>{{ slot.ability ? slot.ability.slice(0, 3).toUpperCase() : '—' }}</td><td>{{ castingMath(slot) }}</td>
                                         <td>{{ slot.concentration ? '◆ Yes' : '— No' }}</td><td>{{ slot.ritual ? '◇ Yes' : '— No' }}</td>
                                         <td><span v-if="slot.duplicate_status !== 'none'" class="status-badge status-warning">⚠ {{ title(slot.duplicate_status) }}</span><span v-else>— None</span></td>

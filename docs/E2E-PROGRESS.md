@@ -255,6 +255,8 @@ feature, repeatedly, for five iterations.
       correct per-slot casting modes (cantrips get no free cast; only the level-1
       spell does).
 - [x] **S18 Wizard prepares outside the book** — prepare a Wizard-list spell absent
+- [x] **S19 Clear a valid selection** — adds the missing browser affordance to
+      un-prepare a spell; clears durably and undo restores the identical slot.
       from the spellbook, prove it is castable, persists, and clears durably.
 - [x] **S17 remove a feat through the browser** — retires the S4 fixture-trigger
       deviation. Assert orphaning and identical-row restoration through real UI.
@@ -1978,3 +1980,67 @@ target directory.
 
 Verified by rerunning, not by report: Pest 475 passed (13,278 assertions),
 Playwright 24 passed, `app/` byte-identical to HEAD after both reverts.
+
+### Iteration 13 — S19, and a production defect: you could not un-prepare a spell
+
+Investigating last iteration's logged gap ("browser clear coverage for a live
+slot") turned up a real **production defect**, not a test gap: there was no way
+to clear a VALID selection in the browser at all. The only Clear button lived in
+the attention row, gated `v-if="slot.eligibility === 'invalid' || slot.state !==
+'active'"`, so it existed only for invalid/orphaned slots. `SpellCombobox` only
+ever emits `select` with a spell and resets its query on blur, so emptying the
+input cleared nothing. A player who prepared the wrong spell could swap it but
+never un-prepare it — the only route to an empty slot was dropping a class level
+until the slot orphaned. The backend `set_slot`/`mode:clear` had worked the
+whole time (S18 proved it); only the affordance was missing.
+
+**Production change:** a per-slot Clear button in the Current-selection cell,
+`aria-label="Clear selection for slot ${id}"`, rendered only for unlocked,
+active, valid, filled slots, reusing the existing `clearSlot()` handler.
+
+**S19 (new):** asserts the control is ABSENT for empty and locked/fixed slots
+and PRESENT for a filled valid one; clears through the real button + confirm
+dialog; asserts the exact `set_slot`/clear payload and the revision bump; opens
+a FRESH page and hard-reloads to prove durability; then undoes and asserts the
+SAME slot id regains the SAME spell version with no duplicate or orphan status;
+Wizard prepared count tracked 4 → 3 → 4; all inside try/finally.
+
+**Sensitivity, both proven by me:**
+
+| Change | Revert | Result |
+|---|---|---|
+| S19 | remove the valid-slot Clear button | fails at `targetClear.toHaveText('Clear')`, slot 10 |
+| S11 (strengthened) | drop a slot's combobox (render as text) | fails at the new per-category combobox count (40 → 34) |
+
+**S11 was strengthened, not just adjusted.** The new button changes S11's
+control count, so its hardcoded expectation had to change — exactly the "edit the
+test to stay green" pattern to distrust. The fresh reviewer noted the aggregate
+count alone could be preserved by two offsetting defects (a dropped combobox
+plus an extra Clear). So I added SEPARATE per-category assertions pinning the
+combobox count and the Clear count, closing that hole.
+
+**Two of my own steps were initially wrong, both caught by verifying rather than
+assuming:**
+
+1. First S11 strengthening used `grid.getByRole('combobox')`, which also matches
+   the four filter `<select>`s (implicit role combobox) — overcounted by exactly
+   4. Scoped it to the `Spell selection for slot` name pattern.
+2. First S11 sensitivity simulation keyed on `slot.rule_key`/`slot.ordinal`,
+   which do NOT exist on the frontend `WorkspaceSlot` type — so the v-if was
+   always false and nothing was dropped. S11 "passed", which would have been
+   recorded as insensitivity. Re-running with `slot.label` (a real field) made
+   it actually drop comboboxes and fail. The denominator again: a passing
+   sensitivity check means nothing until you prove the revert changed something.
+
+**Reviewer finding I verified rather than trusted:** whether `resetDatabase()`
+restores the fabricated fixed grant (S19 uses a direct sqlite UPDATE to expose a
+locked slot). It runs `migrate:fresh --seed` — a full rebuild — so no fabricated
+column can survive, and S19's finally calls it. No leak.
+
+**Deviation:** S19 fabricates the locked-slot case via direct sqlite UPDATE
+(`exposeSlotAsFixedGrant`) because no seeded character-1 slot is both fixed and
+in a state that would otherwise exercise the "no Clear button on locked slots"
+gate. Scoped to one row, character 1, empty selection; reset in finally.
+
+Verified by rerunning, not by report: Playwright 25 passed, Pest 475 passed
+(13,278 assertions), only the spec and Workspace.vue modified.
