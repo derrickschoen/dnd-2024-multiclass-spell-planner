@@ -191,6 +191,40 @@ a precise, reproducible statement that some behaviour is unprotected.
 Deliverable is the escaped-mutant list with a verdict per mutant, plus the tests
 that kill the real ones.
 
+
+## Backlog tier 6 — finish the mutation sweep, then a new instrument
+
+The tier 5 sweep ran M1 = Rules and M2 = Spells + Grants. Infection is configured
+for all of `app/Domain`, but three directories were never actually mutated:
+
+    app/Domain/Characters/   652 lines   <- the commands where 3 HIGH bugs lived
+    app/Domain/Catalog/      478 lines   <- the importer
+    app/Domain/Reports/      315 lines   <- what the golden values derive from
+
+That is 1,445 unmutated lines, and it includes the code with the worst track
+record in this repo. Tier 5's headline finding was that the tests I trusted most
+had 41% of their mutants escape; there is no reason to assume these are better.
+
+- [x] **M4 Mutation-test `app/Domain/Characters/`** — commands, executor, state,
+      workspace builder, payload validator, integrity. Highest priority: three
+      HIGH severity bugs have already been found here by other means.
+- [x] **M5 Mutation-test `app/Domain/Catalog/`** — the importer, including
+      identity/alias resolution and tombstoning.
+- [x] **M6 Mutation-test `app/Domain/Reports/`** — the golden values come from here.
+
+Then a genuinely new instrument, because every technique so far has eventually
+gone quiet and a different one found what it structurally could not:
+
+- [x] **P1 Property-based invariants for the rules engine.** Generate random legal
+      multiclass builds and assert invariants that must hold for ALL of them, not
+      just enumerated vectors:
+      caster level is monotonic in each class level; the Warlock pact pool is never
+      summed into the shared table; max preparable level never exceeds the highest
+      possessed slot level for a single-class build; proficiency bonus depends only
+      on total character level; adding a non-caster class never changes slots.
+      Example-based tests check the points you thought of. Properties check the
+      space between them.
+
 ## Iteration log
 
 ### Iteration 1 — E2E-1 batch 1 complete
@@ -1089,3 +1123,76 @@ syntax checks, targeted Pint, and `git diff --check` passed. Repository-wide Pin
 still reports four pre-existing style findings, including the longstanding
 file-level docblock placement in `MulticlassSlotsTest`; no formatting-only churn
 was introduced. No commit or push was made.
+
+### Iteration 12 — UNIT E2E-11 mutation sweep (M4–M6) and properties (P1) complete
+
+Mutation results, using accepted runs with zero skipped, timed-out, errored, or
+uncovered mutants:
+
+```text
+M4 Characters before: 786/786 killed, MSI 100%
+M4 Characters after:  786/786 killed, MSI 100%
+
+M5 Catalog before: 265/265 killed, MSI 100%
+M5 Catalog after:  265/265 killed, MSI 100%
+
+M6 Reports before: 144/144 killed, MSI 100%
+M6 Reports after:  144/144 killed, MSI 100%
+```
+
+All three escaped-mutant ledgers are empty: there were no real gaps to kill and
+no equivalent mutants to justify. Characters completed as one whole-directory
+run. Catalog's broad run skipped 224/265 and was discarded; the accepted
+`CatalogImporter.php` plus `CatalogImportTest.php` focus generated the same 265
+mutants and killed all of them. Reports' broad run skipped 131/144 and was
+discarded. Its accepted five-test-file split produced a 144-mutant union by
+mutator plus exact diff, matching the broad denominator, and every union member
+was killed. Full scope, discarded-run evidence, and ledgers are in
+`docs/E2E-11-MUTATION-PROPERTY-REPORT.md`.
+
+Added `RulesPropertyTest`: six deterministic Mt19937 properties, 1,000 generated
+legal base-class builds each, seeds 929298–929303, 9,795 assertions. Every
+property was sensitivity-checked by temporarily breaking its behavior; all six
+failed with the seed, iteration, and generated build printed, then passed after
+the production files were restored.
+
+One property **did fail during development**: seed 929302 iteration 27 generated
+a level-19 Rogue labeled `third_down`. It revealed that `SpellSlots::slots()` is
+the shared multiclass table and is not a single-class subclass-slot oracle: it
+ends at 3rd level while third-caster preparation reaches 4th. Shipped report
+behavior is correct because Eldritch Knight and Arcane Trickster are explicit
+subclass state backed by their own `subclass_progressions`; existing feature
+vectors confirm both level-19 subclasses possess a 4th-level slot. The generator
+now models the requested twelve base-class mix without inventing subclass state.
+This finding and the original failure JSON are preserved in the report.
+
+Clean verification observed:
+
+```text
+Tests:    274 passed (12061 assertions)
+Duration: 23.65s
+
+> typecheck
+> vue-tsc --noEmit
+
+> build
+> vite build
+✓ 567 modules transformed.
+✓ built in 362ms
+
+> test:e2e
+> playwright test
+Running 15 tests using 1 worker
+15 passed (48.3s)
+```
+
+The final fresh-seed golden extraction remained caster level 6, slots 4/3/3,
+proficiency +3, every class maximum 1, Mage Hand wasteful, Entangle none, and
+Detect Magic capability/ritual-only/non-selection/non-counting. Verbatim
+verification and JSON output are in the E2E-11 report.
+
+Review deviation: the required Claude plan and implementation critiques were
+both attempted with bounded waits. Each produced no content and ended with
+`Execution error`; silence was not treated as approval. Local legality,
+non-vacuity, stable-union completeness, restoration, formatting, and six
+sensitivity checks passed. No commit or push was made.
