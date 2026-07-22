@@ -10,6 +10,11 @@ if (! is_dir($projectRoot.'/tests')) {
         $projectRoot = dirname($vendorDirectory);
     }
 }
+if (! chdir($projectRoot)) {
+    fwrite(STDERR, "Unable to run Pest from project root {$projectRoot}.\n");
+
+    exit(1);
+}
 $versionRequested = in_array('--version', $argv, true);
 $runner = $versionRequested
     ? $projectRoot.'/vendor/bin/phpunit'
@@ -17,7 +22,21 @@ $runner = $versionRequested
 $command = escapeshellarg(PHP_BINARY).' '.escapeshellarg($runner);
 $junitPath = null;
 $arguments = array_slice($argv, 1);
+foreach ($arguments as $index => $argument) {
+    if (is_file($argument) || ! preg_match('#/tests/(.+)$#', $argument, $matches)) {
+        continue;
+    }
+
+    $projectTestPath = $projectRoot.'/tests/'.$matches[1];
+    if (is_file($projectTestPath)) {
+        $arguments[$index] = $projectTestPath;
+    }
+}
 for ($index = 0; $index < count($arguments) - 1; $index++) {
+    if ($arguments[$index] === '--configuration') {
+        relocateTestSuitePaths($arguments[$index + 1], $projectRoot);
+    }
+
     if ($arguments[$index] === '--filter') {
         $arguments[$index + 1] = pestFilterForInfection($arguments[$index + 1]);
     }
@@ -65,12 +84,42 @@ function pestFilterForInfection(string $filter): string
 
     $descriptions = array_map(static function (string $method): string {
         $stablePrefix = explode('__', $method, 2)[0];
+        $words = array_values(array_filter(explode('_', $stablePrefix)));
 
-        return str_replace('_', ' ', $stablePrefix);
+        return implode('[^A-Za-z0-9]+', array_map(
+            static fn (string $word): string => preg_quote($word, '/'),
+            $words,
+        ));
     }, $methods);
 
-    return '/'.implode('|', array_map(
-        static fn (string $description): string => preg_quote($description, '/'),
-        $descriptions,
-    )).'/';
+    return '/'.implode('|', $descriptions).'/';
+}
+
+function relocateTestSuitePaths(string $configurationPath, string $projectRoot): void
+{
+    if (! is_file($configurationPath)) {
+        return;
+    }
+
+    $document = new DOMDocument;
+    $document->load($configurationPath);
+    $xpath = new DOMXPath($document);
+    $changed = false;
+
+    foreach ($xpath->query('//testsuites//file | //testsuites//directory') ?: [] as $node) {
+        $relativePath = trim($node->textContent);
+        if ($relativePath === '' || str_starts_with($relativePath, '/')) {
+            continue;
+        }
+
+        $projectPath = $projectRoot.'/'.$relativePath;
+        if (file_exists($projectPath)) {
+            $node->textContent = $projectPath;
+            $changed = true;
+        }
+    }
+
+    if ($changed) {
+        $document->save($configurationPath);
+    }
 }

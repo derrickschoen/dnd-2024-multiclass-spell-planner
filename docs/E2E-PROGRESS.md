@@ -257,6 +257,72 @@ feature, repeatedly, for five iterations.
 - [x] **S17 remove a feat through the browser** — retires the S4 fixture-trigger
       deviation. Assert orphaning and identical-row restoration through real UI.
 
+
+## Backlog tier 8 — re-measure what tier 6 got wrong
+
+Tier 6 reported Characters, Catalog and Reports at 100% MSI. That measurement was
+invalid: the Infection launcher resolved the wrong project under Infection's
+temporary directory and translated its Pest filters into descriptions matching no
+tests, so it scored a run that executed almost nothing. The launcher is now fixed.
+
+The one honest post-fix data point: `CharacterWorkspaceBuilder` alone produced 144
+mutants and killed 38 -- about 26%, not 100%.
+
+So roughly 1,445 lines are unmeasured, and the single measured sample suggests
+substantial real gaps. Tier 5 showed what that looks like when measured properly:
+145 real gaps in code that looked well tested.
+
+A corrected broad run skipped 626 of 914 mutants and was rightly discarded rather
+than reported. Tier 5 hit the same problem and solved it by splitting M2 per
+class. Do that again.
+
+- [x] **R1 Re-measure `app/Domain/Characters/` per class**, not as a directory.
+      Report MSI per file with the escaped-mutant ledger. Zero skips, or say
+      exactly which mutants were skipped and why.
+- [x] **R2 Re-measure `app/Domain/Catalog/` and `app/Domain/Reports/`** the same way.
+- [x] **R3 Kill the real gaps; justify the equivalents individually.**
+
+The bar from tier 5 applies: do not weaken or delete an existing test to raise a
+score, and do not add assertions that restate the implementation. A skipped mutant
+is not a killed mutant, and an unmeasured file is not a covered file.
+
+
+## Backlog tier 9 — load "Mutt" from the user's real character sheet
+
+The user supplied `mutt-6.pdf`, a partial D&D Beyond export. Extracted:
+
+- **Sorcerer 1 / Bard 1 / Cleric 1 / Druid 1 / Paladin 1 / Wizard 1**, level 6,
+  max HP 43. Confirmed independently by hit dice `2d6 + 3d8 + 1d10`.
+- **33 catalog-matched spells.** Cantrips attributable by class:
+  Sorcerer: Chill Touch, Ray of Frost, Shocking Grasp, True Strike.
+  Bard: Thunderclap, Vicious Mockery. Cleric: Light, Spare the Dying,
+  Thaumaturgy. Druid: Shape Water, Shillelagh. Wizard: Mage Hand, Minor Illusion,
+  Mold Earth.
+  Leveled: Bane, Chromatic Orb, Comprehend Languages, Create or Destroy Water,
+  Cure Wounds, Dissonant Whispers, Feather Fall, Find Familiar, Goodberry,
+  Healing Word, Jump, Ray of Sickness, Sanctuary, Shield, Sleep, Speak with
+  Animals, Tenser's Floating Disk, Thunderous Smite, Thunderwave, Unseen Servant,
+  Wrathful Smite.
+
+Two facts to carry, both honest limitations rather than guesses to bury:
+
+1. **The PDF contains no ability scores** — it is the Class tab only. They were
+   INFERRED from to-hit values: `+6` implies PB 3 + mod 3 (CHA 17); `+4` implies
+   mod +1 (a 13). Consistent with the spec's CHA 17 / INT 13 / WIS 13, but
+   inferred. Mark them as such in the seeder so nobody later treats them as read.
+2. **`Mold Earth` exists in our catalog only as 2014**, not 2024. Either the sheet
+   uses legacy content or the scraper missed it on the 2024 site. CHECK THE 2024
+   SITE FIRST -- if it is there, that is a scraper gap and the fix belongs in the
+   scraper, not in an `allow_legacy` workaround.
+
+- [ ] **T9 Seed "Mutt" as a second character** through the REAL `add_source` and
+      `set_slot` commands, not direct inserts, so the DSL generates slots and every
+      selection passes eligibility. This also gives a FULLY POPULATED demo: the
+      existing seed leaves 29 of 40 slots blank, which undersells duplicate
+      detection across five classes.
+- [ ] **T10 A browser scenario over Mutt** asserting real multi-source duplicates
+      and per-class max preparable level across all six classes.
+
 ## Iteration log
 
 ### Iteration 1 — E2E-1 batch 1 complete
@@ -1275,3 +1341,52 @@ the old whole-directory claim. A broad run skipped 626/914 and was discarded, so
 no false whole-directory after score is reported. Full outputs, sensitivity
 failures, and deviations are in `docs/E2E-12-ADD-REMOVE-SOURCE-REPORT.md`. No
 commit or push was made.
+
+### Iteration 14 — UNIT E2E-13 corrected per-file mutation remeasurement complete
+
+Remeasured all 21 PHP files in Reports, Catalog, and Characters independently
+through the corrected Pest launcher. Every accepted run had zero skipped,
+uncovered, timed-out, errored, ignored, or syntax-error mutants; the
+`CharacterCommand` interface is explicitly recorded as a valid zero-mutant file.
+No file is unmeasured.
+
+The corrected baseline was 838/1,323 killed (63.34%) with 485 escapes. The final
+result is 1,133/1,357 killed (83.49%), with 261 baseline real gaps killed and 224
+surviving equivalents justified individually by stable ID. The higher final
+denominator is from newly reached executable lines, not from treating unmeasured
+mutants as killed. Per-file scores and skip counts are authoritative and are
+recorded in `docs/E2E-13-MUTATION-REMEASUREMENT.md`; the complete 485-row verdict
+ledger is `docs/E2E-13-ESCAPED-MUTANT-LEDGER.md`.
+
+New behavioral tests pin complete report/workspace/list contracts, import
+validation and synchronization, alias and edition resolution, capped eligibility
+prefilters, snapshot replacement, command integrity, slot timestamps/orphan
+explanations, and repeated class/subclass/source transitions. No existing test
+was weakened or removed.
+
+Clean verification observed:
+
+```text
+Tests:    434 passed (12822 assertions)
+Duration: 48.64s
+
+> typecheck
+> vue-tsc --noEmit
+
+> build
+> vite build
+✓ 567 modules transformed.
+✓ built in 852ms
+
+> test:e2e
+> playwright test
+Running 17 tests using 1 worker
+17 passed (56.9s)
+```
+
+The fresh-seed seven golden values remain caster level 6, slots 4/3/3,
+proficiency +3, every class maximum 1, Mage Hand wasteful, Entangle none, and
+Detect Magic capability/ritual-only/non-selection/non-counting. Both required
+Claude reviews were attempted with bounded waits; each returned no content and
+ended in `Execution error`, which was recorded as a deviation rather than
+approval. No commit or push was made.

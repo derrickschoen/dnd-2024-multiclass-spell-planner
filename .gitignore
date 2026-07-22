@@ -37,3 +37,6 @@ Thumbs.db
 /test-results/
 /playwright-report/
 /blob-report/
+
+# Infection run artifacts
+/.artifacts/

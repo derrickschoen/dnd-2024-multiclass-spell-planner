@@ -2,7 +2,11 @@
 
 declare(strict_types=1);
 
+use App\Domain\Characters\CharacterListBuilder;
 use App\Domain\Characters\CharacterState;
+use App\Domain\Characters\CharacterWorkspaceBuilder;
+use App\Domain\Characters\Commands\CharacterCommandIntegrity;
+use App\Domain\Characters\EligibleSpellSearch;
 use App\Domain\Reports\BuildReportBuilder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\DB;
@@ -48,6 +52,452 @@ it('serves the seeded character list and editable workspace', function () {
     );
 });
 
+it('builds the complete character list card contract in deterministic order', function () {
+    $characterId = workspaceCharacterId();
+
+    expect(app(CharacterListBuilder::class)->build())->toBe([[
+        'id' => $characterId,
+        'name' => 'A6 Sixfold Spellcaster',
+        'level' => 6,
+        'classes' => ['Bard 1', 'Cleric 1', 'Druid 1', 'Paladin 1', 'Sorcerer 1', 'Wizard 1'],
+        'warning_count' => 1,
+    ]]);
+});
+
+it('builds the complete workspace editing contract for the seeded character', function () {
+    $characterId = workspaceCharacterId();
+    $workspace = app(CharacterWorkspaceBuilder::class)->build($characterId);
+
+    expect(array_keys($workspace))->toBe([
+        'revision', 'report', 'classes', 'available_classes', 'allow_legacy',
+        'configurable_sources', 'source_catalog', 'removable_sources', 'spell_lists',
+        'slots', 'save_points',
+    ])->and(data_get($workspace, 'revision'))->toBe(0)
+        ->and(data_get($workspace, 'allow_legacy'))->toBeFalse()
+        ->and(data_get($workspace, 'spell_lists'))->toBe(['Cleric', 'Druid', 'Wizard'])
+        ->and(data_get($workspace, 'save_points'))->toBe([])
+        ->and(data_get($workspace, 'report.summary'))->toBe([
+            'unique_spells' => 11, 'access_routes' => 12, 'warning_count' => 1,
+        ]);
+
+    $classes = collect(data_get($workspace, 'classes'));
+    expect($classes->pluck('name')->all())->toBe(['Bard', 'Cleric', 'Druid', 'Paladin', 'Sorcerer', 'Wizard'])
+        ->and($classes->pluck('id')->all())->toBe(
+            DB::table('character_class_levels as level')
+                ->join('class_definitions as class', 'class.id', '=', 'level.class_definition_id')
+                ->where('level.character_id', $characterId)->orderBy('class.name')->pluck('level.id')->all(),
+        )
+        ->and($classes->map(static fn (array $class): array => array_keys($class))->unique()->values()->all())->toBe([[
+            'id', 'class_definition_id', 'subclass_definition_id', 'level', 'name', 'subclass_name', 'subclasses',
+        ]])
+        ->and($classes->every(static fn (array $class): bool => data_get($class, 'level') === 1
+            && data_get($class, 'subclass_definition_id') === null
+            && data_get($class, 'subclass_name') === null
+            && data_get($class, 'subclasses') === []))->toBeTrue();
+
+    expect(collect(data_get($workspace, 'available_classes'))->pluck('name')->all())->toBe([
+        'Barbarian', 'Bard', 'Cleric', 'Druid', 'Fighter', 'Monk',
+        'Paladin', 'Ranger', 'Rogue', 'Sorcerer', 'Warlock', 'Wizard',
+    ])->and(collect(data_get($workspace, 'available_classes'))->every(
+        static fn (array $class): bool => array_keys($class) === ['id', 'name'] && is_int(data_get($class, 'id')),
+    ))->toBeTrue();
+    expect(collect(data_get($workspace, 'available_classes'))->pluck('id')->every(
+        static fn (mixed $id): bool => is_int($id) && $id > 0,
+    ))->toBeTrue();
+
+    $configurable = collect(data_get($workspace, 'configurable_sources'))->map(
+        static fn (array $source): array => collect($source)->except('id')->all(),
+    )->all();
+    expect($configurable)->toBe([
+        ['display_name' => 'Magic Initiate: Wizard', 'chosen_list' => 'Wizard', 'spellcasting_ability' => 'intelligence'],
+        ['display_name' => 'Magic Initiate: Druid', 'chosen_list' => 'Druid', 'spellcasting_ability' => 'wisdom'],
+    ])->and(collect(data_get($workspace, 'source_catalog'))->map(
+        static fn (array $definitions): array => collect($definitions)->map(
+            static fn (array $definition): array => collect($definition)->except('id')->all(),
+        )->all(),
+    )->all())->toBe([
+        'feat' => [[
+            'content_key' => '2024:feat:magic-initiate', 'name' => 'Magic Initiate',
+            'repeatable' => true, 'configuration_kind' => 'magic_initiate',
+        ]],
+        'species' => [[
+            'content_key' => '2024:species:human', 'name' => 'Human',
+            'repeatable' => false, 'configuration_kind' => 'origin_feat_magic_initiate',
+        ]],
+        'background' => [[
+            'content_key' => '2024:background:custom', 'name' => 'Custom Background',
+            'repeatable' => false, 'configuration_kind' => 'origin_feat_magic_initiate',
+        ]],
+    ]);
+    expect(collect(data_get($workspace, 'configurable_sources'))->pluck('id')->every(
+        static fn (mixed $id): bool => is_int($id) && $id > 0,
+    ))->toBeTrue();
+
+    $removable = collect(data_get($workspace, 'removable_sources'))->map(
+        static fn (array $source): array => [
+            'source_type' => data_get($source, 'source_type'),
+            'display_name' => data_get($source, 'display_name'),
+            'is_child' => data_get($source, 'parent_source_instance_id') !== null,
+            'keys' => array_keys($source),
+        ],
+    )->all();
+    expect($removable)->toBe([
+        ['source_type' => 'background', 'display_name' => 'Custom Background', 'is_child' => false, 'keys' => ['id', 'parent_source_instance_id', 'source_type', 'source_definition_id', 'display_name']],
+        ['source_type' => 'feat', 'display_name' => 'Magic Initiate: Druid', 'is_child' => true, 'keys' => ['id', 'parent_source_instance_id', 'source_type', 'source_definition_id', 'display_name']],
+        ['source_type' => 'feat', 'display_name' => 'Magic Initiate: Wizard', 'is_child' => true, 'keys' => ['id', 'parent_source_instance_id', 'source_type', 'source_definition_id', 'display_name']],
+        ['source_type' => 'species', 'display_name' => 'Human', 'is_child' => false, 'keys' => ['id', 'parent_source_instance_id', 'source_type', 'source_definition_id', 'display_name']],
+    ])->and(collect(data_get($workspace, 'removable_sources'))->pluck('id')->every(
+        static fn (mixed $id): bool => is_int($id) && $id > 0,
+    ))->toBeTrue();
+
+    $slots = collect(data_get($workspace, 'slots'));
+    expect($slots)->toHaveCount(40)
+        ->and($slots->map(static fn (array $slot): array => array_keys($slot))->unique()->values()->all())->toBe([[
+            'id', 'slot_key', 'source', 'source_type', 'label', 'bucket', 'level_min', 'level_max',
+            'spell_id', 'spell_name', 'spell_level', 'ability', 'attack_bonus', 'save_dc', 'ritual',
+            'concentration', 'duplicate_status', 'state', 'eligibility', 'invalid_reason', 'orphan_reason',
+            'override_note', 'locked',
+        ]]);
+    $bardCantrip = $slots->first(
+        static fn (array $slot): bool => data_get($slot, 'source') === 'Bard 1'
+            && data_get($slot, 'label') === 'Cantrip Known 1',
+    );
+    expect(collect($bardCantrip)->except(['id', 'slot_key'])->all())->toBe([
+        'source' => 'Bard 1', 'source_type' => 'class', 'label' => 'Cantrip Known 1',
+        'bucket' => 'cantrip_known', 'level_min' => 0, 'level_max' => 0,
+        'spell_id' => null, 'spell_name' => null, 'spell_level' => null,
+        'ability' => 'charisma', 'attack_bonus' => 6, 'save_dc' => 14,
+        'ritual' => false, 'concentration' => false, 'duplicate_status' => 'none',
+        'state' => 'active', 'eligibility' => 'unselected', 'invalid_reason' => null,
+        'orphan_reason' => null, 'override_note' => null, 'locked' => false,
+    ]);
+});
+
+it('counts invalid and override selections in both workspace and list warnings', function () {
+    $characterId = workspaceCharacterId();
+    $slotId = (int) DB::table('spell_selection_slots')->where('character_id', $characterId)
+        ->where('rule_key', 'wizard-cantrips')->where('ordinal', 1)->value('id');
+    DB::table('spell_selection_slots')->where('id', $slotId)->update([
+        'state' => 'kept_override',
+        'selection_eligibility' => 'invalid',
+        'selection_invalid_reason' => 'Deliberate test override.',
+        'override_note' => 'Accepted for this build.',
+    ]);
+
+    $workspace = app(CharacterWorkspaceBuilder::class)->build($characterId);
+    expect(data_get($workspace, 'report.invalid_selections'))->toHaveCount(1)
+        ->and(data_get($workspace, 'report.invalid_selections.0.id'))->toBe($slotId)
+        ->and(data_get($workspace, 'report.summary'))->toBe([
+            'unique_spells' => 11, 'access_routes' => 12, 'warning_count' => 2,
+        ])->and(data_get(app(CharacterListBuilder::class)->build(), '0.warning_count'))->toBe(2);
+});
+
+it('returns exact save-point and subclass option identities', function () {
+    $characterId = workspaceCharacterId();
+    $wizardId = (int) DB::table('class_definitions')->where('name', 'Wizard')->value('id');
+    $subclassId = (int) DB::table('subclass_definitions')->insertGetId([
+        'content_key' => 'test:wizard:mutation-school',
+        'class_definition_id' => $wizardId,
+        'name' => 'Mutation School',
+        'rules_edition' => '2024',
+        'created_at' => now(),
+        'updated_at' => now(),
+    ]);
+    $createdAt = '2026-07-22 12:34:56';
+    $pointId = (int) DB::table('character_save_points')->insertGetId([
+        'character_id' => $characterId,
+        'label' => 'Mutation checkpoint',
+        'snapshot' => '{}',
+        'schema_version' => 'a7-v1',
+        'created_at' => $createdAt,
+        'updated_at' => $createdAt,
+    ]);
+
+    $workspace = app(CharacterWorkspaceBuilder::class)->build($characterId);
+    $wizard = collect(data_get($workspace, 'classes'))->firstWhere('name', 'Wizard');
+    expect(data_get($wizard, 'subclasses'))->toBe([[
+        'id' => $subclassId, 'name' => 'Mutation School',
+    ]])->and(data_get($workspace, 'save_points'))->toBe([[
+        'id' => $pointId, 'label' => 'Mutation checkpoint', 'created_at' => $createdAt,
+    ]]);
+});
+
+it('returns an exact eligible-spell DTO and treats wildcard characters literally', function () {
+    $characterId = workspaceCharacterId();
+    $slotId = (int) DB::table('spell_selection_slots')->where('character_id', $characterId)
+        ->where('rule_key', 'wizard-cantrips')->where('ordinal', 1)->value('id');
+    $mageHandId = (int) DB::table('spell_versions')->where('content_key', '2024:mage-hand')->value('id');
+    $search = app(EligibleSpellSearch::class);
+
+    expect($search->search($characterId, $slotId, 'Mage'))->toBe([[
+        'id' => $mageHandId,
+        'name' => 'Mage Hand',
+        'level' => 0,
+        'school' => 'Conjuration',
+        'ritual' => false,
+        'concentration' => false,
+        'edition' => '2024',
+    ]])->and($search->search($characterId, $slotId, 'Hand'))->toBe([[
+        'id' => $mageHandId,
+        'name' => 'Mage Hand',
+        'level' => 0,
+        'school' => 'Conjuration',
+        'ritual' => false,
+        'concentration' => false,
+        'edition' => '2024',
+    ]])->and($search->search($characterId, $slotId, '%'))->toBe([])
+        ->and($search->search($characterId, $slotId, '_'))->toBe([]);
+});
+
+it('applies the legacy edition switch to eligible spell search', function () {
+    $characterId = workspaceCharacterId();
+    $slotId = (int) DB::table('spell_selection_slots')->where('character_id', $characterId)
+        ->where('rule_key', 'wizard-cantrips')->where('ordinal', 1)->value('id');
+    $search = app(EligibleSpellSearch::class);
+
+    expect(collect($search->search($characterId, $slotId, 'Chill Touch'))->pluck('edition')->all())
+        ->toBe(['2024']);
+    DB::table('characters')->where('id', $characterId)->update(['allow_legacy' => true]);
+    expect(collect($search->search($characterId, $slotId, 'Chill Touch'))->pluck('edition')->all())
+        ->toBe(['2014', '2024']);
+});
+
+it('returns exactly the first fifty eligible search results in stable order', function () {
+    $characterId = workspaceCharacterId();
+    $slotId = (int) DB::table('spell_selection_slots')->where('character_id', $characterId)
+        ->where('rule_key', 'wizard-cantrips')->where('ordinal', 1)->value('id');
+    for ($index = 0; $index < 51; $index++) {
+        $name = sprintf('Cap Probe %02d', $index);
+        $identityId = (int) DB::table('spell_identities')->insertGetId([
+            'content_key' => "cap-probe-{$index}",
+            'canonical_name' => $name,
+            'normalized_name' => strtolower($name),
+            'created_at' => now(),
+            'updated_at' => now(),
+        ]);
+        $versionId = (int) DB::table('spell_versions')->insertGetId([
+            'content_key' => "2024:cap-probe-{$index}",
+            'spell_identity_id' => $identityId,
+            'display_name' => $name,
+            'rules_edition' => '2024',
+            'level' => 0,
+            'school' => 'Evocation',
+            'is_active' => true,
+            'created_at' => now(),
+            'updated_at' => now(),
+        ]);
+        DB::table('spell_list_memberships')->insert([
+            'spell_version_id' => $versionId,
+            'spell_list_key' => 'Wizard',
+            'created_at' => now(),
+            'updated_at' => now(),
+        ]);
+    }
+
+    $results = app(EligibleSpellSearch::class)->search($characterId, $slotId, 'Cap Probe');
+    expect($results)->toHaveCount(50)
+        ->and(collect($results)->pluck('name')->all())->toBe(array_map(
+            static fn (int $index): string => sprintf('Cap Probe %02d', $index),
+            range(0, 49),
+        ));
+});
+
+it('applies list eligibility before the fifty-result search cap', function () {
+    $characterId = workspaceCharacterId();
+    $slotId = (int) DB::table('spell_selection_slots')->where('character_id', $characterId)
+        ->where('rule_key', 'wizard-cantrips')->where('ordinal', 1)->value('id');
+
+    for ($index = 0; $index < 50; $index++) {
+        $name = sprintf('Crowding Cantrip %02d', $index);
+        $identityId = (int) DB::table('spell_identities')->insertGetId([
+            'content_key' => "crowding-cantrip-{$index}", 'canonical_name' => $name,
+            'normalized_name' => strtolower($name), 'created_at' => now(), 'updated_at' => now(),
+        ]);
+        DB::table('spell_versions')->insert([
+            'content_key' => "2024:crowding-cantrip-{$index}", 'spell_identity_id' => $identityId,
+            'display_name' => $name, 'rules_edition' => '2024', 'level' => 0,
+            'school' => 'Evocation', 'is_active' => true, 'created_at' => now(), 'updated_at' => now(),
+        ]);
+    }
+    $eligibleIdentityId = (int) DB::table('spell_identities')->insertGetId([
+        'content_key' => 'crowding-cantrip-valid', 'canonical_name' => 'Crowding Cantrip Z Valid',
+        'normalized_name' => 'crowding cantrip z valid', 'created_at' => now(), 'updated_at' => now(),
+    ]);
+    $eligibleVersionId = (int) DB::table('spell_versions')->insertGetId([
+        'content_key' => '2024:crowding-cantrip-valid', 'spell_identity_id' => $eligibleIdentityId,
+        'display_name' => 'Crowding Cantrip Z Valid', 'rules_edition' => '2024', 'level' => 0,
+        'school' => 'Evocation', 'is_active' => true, 'created_at' => now(), 'updated_at' => now(),
+    ]);
+    DB::table('spell_list_memberships')->insert([
+        'spell_version_id' => $eligibleVersionId, 'spell_list_key' => 'Wizard',
+        'created_at' => now(), 'updated_at' => now(),
+    ]);
+
+    expect(app(EligibleSpellSearch::class)->search($characterId, $slotId, 'Crowding Cantrip'))->toBe([[
+        'id' => $eligibleVersionId, 'name' => 'Crowding Cantrip Z Valid', 'level' => 0,
+        'school' => 'Evocation', 'ritual' => false, 'concentration' => false, 'edition' => '2024',
+    ]]);
+
+    DB::table('spell_selection_slots')->where('id', $slotId)->update(['allowed_spell_lists' => null]);
+    expect(collect(app(EligibleSpellSearch::class)->search($characterId, $slotId, 'Crowding Cantrip'))
+        ->pluck('name')->first())->toBe('Crowding Cantrip 00');
+});
+
+it('captures every restorable character table and reports exact state differences', function () {
+    $characterId = workspaceCharacterId();
+    $state = app(CharacterState::class);
+    $captured = $state->capture($characterId);
+
+    expect(array_keys($captured))->toBe([
+        'schema_version', 'character', 'character_class_levels', 'character_source_instances',
+        'spell_selection_slots', 'wizard_spellbook_entries', 'warning_acknowledgements',
+    ])->and(data_get($captured, 'schema_version'))->toBe('a7-v1')
+        ->and(array_keys(data_get($captured, 'character')))->toBe([
+            'name', 'strength', 'dexterity', 'constitution', 'intelligence', 'wisdom', 'charisma',
+            'proficiency_bonus_override', 'rules_edition_preference', 'allow_legacy', 'notes',
+        ])->and(data_get($captured, 'character_class_levels'))->toHaveCount(6)
+        ->and(data_get($captured, 'character_source_instances'))->toHaveCount(10)
+        ->and(data_get($captured, 'spell_selection_slots'))->toHaveCount(40)
+        ->and(data_get($captured, 'wizard_spellbook_entries'))->toHaveCount(6)
+        ->and(data_get($captured, 'warning_acknowledgements'))->toBe([]);
+
+    $before = [
+        'character' => ['name' => 'Before'],
+        'character_class_levels' => [['id' => 2, 'level' => 1]],
+        'character_source_instances' => [['id' => 4, 'state' => 'active']],
+        'spell_selection_slots' => [],
+        'wizard_spellbook_entries' => [['id' => 8, 'spell_version_id' => 10]],
+        'warning_acknowledgements' => [],
+    ];
+    $after = [
+        'character' => ['name' => 'After'],
+        'character_class_levels' => [['id' => 2, 'level' => 2]],
+        'character_source_instances' => [],
+        'spell_selection_slots' => [['id' => 6, 'state' => 'active']],
+        'wizard_spellbook_entries' => [['id' => 8, 'spell_version_id' => 10]],
+        'warning_acknowledgements' => [],
+    ];
+    expect($state->diff($before, $after))->toBe([
+        ['entity_type' => 'character', 'entity_id' => null, 'previous_value' => ['name' => 'Before'], 'new_value' => ['name' => 'After']],
+        ['entity_type' => 'character_class_levels', 'entity_id' => 2, 'previous_value' => ['id' => 2, 'level' => 1], 'new_value' => ['id' => 2, 'level' => 2]],
+        ['entity_type' => 'character_source_instances', 'entity_id' => 4, 'previous_value' => ['id' => 4, 'state' => 'active'], 'new_value' => null],
+        ['entity_type' => 'spell_selection_slots', 'entity_id' => 6, 'previous_value' => null, 'new_value' => ['id' => 6, 'state' => 'active']],
+    ]);
+});
+
+it('rejects each malformed snapshot boundary before deleting live state', function (Closure $mutate, string $message) {
+    $characterId = workspaceCharacterId();
+    $state = app(CharacterState::class);
+    $snapshot = $state->capture($characterId);
+    $before = $snapshot;
+    $mutate($snapshot, $characterId);
+
+    expect(fn () => $state->restore($characterId, $snapshot))->toThrow(RuntimeException::class, $message)
+        ->and($state->capture($characterId))->toBe($before);
+})->with([
+    'schema version' => [
+        static function (array &$snapshot): void {
+            $snapshot['schema_version'] = 'old';
+        },
+        'Unsupported character snapshot schema.',
+    ],
+    'character object' => [
+        static function (array &$snapshot): void {
+            $snapshot['character'] = 'invalid';
+        },
+        'Character snapshot is missing character data.',
+    ],
+    'missing character field' => [
+        static function (array &$snapshot): void {
+            unset($snapshot['character']['notes']);
+        },
+        'Character snapshot is missing notes.',
+    ],
+    'table is not a list' => [
+        static function (array &$snapshot): void {
+            $snapshot['character_class_levels'] = ['bad' => []];
+        },
+        'Snapshot table character_class_levels must be a list.',
+    ],
+    'row is not an object' => [
+        static function (array &$snapshot): void {
+            $snapshot['character_source_instances'][0] = 'bad';
+        },
+        'Snapshot table character_source_instances contains an invalid row.',
+    ],
+    'missing row owner' => [
+        static function (array &$snapshot): void {
+            unset($snapshot['spell_selection_slots'][0]['character_id']);
+        },
+        'Snapshot table spell_selection_slots contains a row belonging to another character.',
+    ],
+    'wrong row owner type' => [
+        static function (array &$snapshot): void {
+            $snapshot['wizard_spellbook_entries'][0]['character_id'] = '1';
+        },
+        'Snapshot table wizard_spellbook_entries contains a row belonging to another character.',
+    ],
+    'wrong row owner' => [
+        static function (array &$snapshot, int $characterId): void {
+            $snapshot['character_class_levels'][0]['character_id'] = $characterId + 1;
+        },
+        'Snapshot table character_class_levels contains a row belonging to another character.',
+    ],
+    'zero selected spell' => [
+        static function (array &$snapshot): void {
+            $snapshot['spell_selection_slots'][0]['current_spell_version_id'] = 0;
+        },
+        'Snapshot table spell_selection_slots contains an invalid current_spell_version_id.',
+    ],
+    'string fixed spell' => [
+        static function (array &$snapshot): void {
+            $snapshot['spell_selection_slots'][0]['fixed_spell_version_id'] = '1';
+        },
+        'Snapshot table spell_selection_slots contains an invalid fixed_spell_version_id.',
+    ],
+    'zero spellbook spell' => [
+        static function (array &$snapshot): void {
+            $snapshot['wizard_spellbook_entries'][0]['spell_version_id'] = 0;
+        },
+        'Snapshot table wizard_spellbook_entries contains an invalid spell_version_id.',
+    ],
+]);
+
+it('restores active spell version id one at both slot and spellbook boundaries', function () {
+    $characterId = workspaceCharacterId();
+    expect((bool) DB::table('spell_versions')->where('id', 1)->value('is_active'))->toBeTrue();
+    $state = app(CharacterState::class);
+    $snapshot = $state->capture($characterId);
+    $slotIndex = collect(data_get($snapshot, 'spell_selection_slots'))->search(
+        static fn (array $slot): bool => data_get($slot, 'fixed_spell_version_id') === null,
+    );
+    expect($slotIndex)->not->toBeFalse();
+    $snapshot['spell_selection_slots'][$slotIndex]['current_spell_version_id'] = 1;
+    $snapshot['wizard_spellbook_entries'][0]['spell_version_id'] = 1;
+
+    $state->restore($characterId, $snapshot);
+
+    expect(data_get($state->capture($characterId), "spell_selection_slots.{$slotIndex}.current_spell_version_id"))->toBe(1)
+        ->and(data_get($state->capture($characterId), 'wizard_spellbook_entries.0.spell_version_id'))->toBe(1);
+});
+
+it('restores character metadata time and removes acknowledgements absent from the snapshot', function () {
+    $characterId = workspaceCharacterId();
+    $state = app(CharacterState::class);
+    $snapshot = $state->capture($characterId);
+    DB::table('characters')->where('id', $characterId)->update(['updated_at' => '2000-01-01 00:00:00']);
+    DB::table('warning_acknowledgements')->insert([
+        'character_id' => $characterId, 'warning_fingerprint' => 'stale-after-snapshot',
+        'note' => 'Must be removed', 'created_at' => now(), 'updated_at' => now(),
+    ]);
+
+    $state->restore($characterId, $snapshot);
+
+    expect((string) DB::table('characters')->where('id', $characterId)->value('updated_at'))
+        ->not->toBe('2000-01-01 00:00:00')
+        ->and(DB::table('warning_acknowledgements')->where('character_id', $characterId)->count())->toBe(0);
+});
+
 it('creates and opens an empty character without additional setup', function () {
     $response = $this->post('/characters', ['name' => 'Fresh Build'])->assertRedirect();
     $location = (string) $response->headers->get('Location');
@@ -90,11 +540,107 @@ it('undo restores the prior spell selection', function () {
         'spell_version_id' => $replacement,
     ])->assertOk();
 
-    mutateCharacter($this, $characterId, 1, $changed->json('inverse'))
+    $inverse = $changed->json('inverse');
+    expect(array_keys($inverse))->toBe(['type', 'slot_id', 'mode', 'state', 'integrity'])
+        ->and(collect($inverse)->except('integrity')->all())->toBe([
+            'type' => 'set_slot',
+            'slot_id' => (int) data_get($slot, 'id'),
+            'mode' => 'restore',
+            'state' => [
+                'current_spell_version_id' => $original,
+                'selection_eligibility' => data_get($slot, 'selection_eligibility'),
+                'selection_invalid_reason' => data_get($slot, 'selection_invalid_reason'),
+                'state' => data_get($slot, 'state'),
+                'override_note' => data_get($slot, 'override_note'),
+            ],
+        ]);
+    app(CharacterCommandIntegrity::class)->assertValid($characterId, $inverse);
+
+    mutateCharacter($this, $characterId, 1, $inverse)
         ->assertOk()->assertJsonPath('revision', 2);
 
     expect((int) DB::table('spell_selection_slots')->where('id', data_get($slot, 'id'))->value('current_spell_version_id'))
         ->toBe($original);
+});
+
+it('timestamps slot changes and preserves the rule-specific orphan explanation on restore', function () {
+    $characterId = workspaceCharacterId();
+    $slot = DB::table('spell_selection_slots')->where('character_id', $characterId)
+        ->where('rule_key', 'wizard-cantrips')->whereNotNull('current_spell_version_id')->first();
+    $slotId = (int) data_get($slot, 'id');
+    $spellVersionId = (int) data_get($slot, 'current_spell_version_id');
+    DB::table('spell_selection_slots')->where('id', $slotId)->update([
+        'state' => 'orphaned', 'selection_eligibility' => 'invalid',
+        'selection_invalid_reason' => null, 'orphan_reason_code' => 'rule_no_longer_active',
+        'updated_at' => '2000-01-01 00:00:00',
+    ]);
+    $command = app(CharacterCommandIntegrity::class)->attach($characterId, [
+        'type' => 'set_slot', 'slot_id' => $slotId, 'mode' => 'restore',
+        'state' => [
+            'current_spell_version_id' => $spellVersionId, 'selection_eligibility' => 'valid',
+            'selection_invalid_reason' => null, 'state' => 'active', 'override_note' => null,
+        ],
+    ]);
+
+    mutateCharacter($this, $characterId, 0, $command)->assertOk();
+
+    $restored = DB::table('spell_selection_slots')->where('id', $slotId)->sole();
+    expect(data_get($restored, 'state'))->toBe('orphaned')
+        ->and(data_get($restored, 'selection_invalid_reason'))
+        ->toBe('Selection preserved because its grant rule is no longer active.')
+        ->and((string) data_get($restored, 'updated_at'))->not->toBe('2000-01-01 00:00:00');
+});
+
+it('clears, overrides, and reselects a slot with exact persisted state', function () {
+    $characterId = workspaceCharacterId();
+    $slot = DB::table('spell_selection_slots')->where('character_id', $characterId)
+        ->where('rule_key', 'wizard-cantrips')->where('ordinal', 1)->sole();
+    $slotId = (int) data_get($slot, 'id');
+    $spellId = (int) data_get($slot, 'current_spell_version_id');
+
+    mutateCharacter($this, $characterId, 0, [
+        'type' => 'set_slot', 'slot_id' => $slotId, 'mode' => 'clear',
+    ])->assertOk();
+    $cleared = DB::table('spell_selection_slots')->where('id', $slotId)->sole();
+    expect(data_get($cleared, 'current_spell_version_id'))->toBeNull()
+        ->and(data_get($cleared, 'selection_eligibility'))->toBe('unselected')
+        ->and(data_get($cleared, 'selection_invalid_reason'))->toBeNull()
+        ->and(data_get($cleared, 'state'))->toBe('active')
+        ->and(data_get($cleared, 'override_note'))->toBeNull();
+
+    mutateCharacter($this, $characterId, 1, [
+        'type' => 'set_slot', 'slot_id' => $slotId, 'mode' => 'select',
+        'spell_version_id' => $spellId,
+    ])->assertOk();
+    mutateCharacter($this, $characterId, 2, [
+        'type' => 'set_slot', 'slot_id' => $slotId, 'mode' => 'keep_override',
+        'note' => '  Deliberate exception.  ',
+    ])->assertOk();
+    $overridden = DB::table('spell_selection_slots')->where('id', $slotId)->sole();
+    expect(data_get($overridden, 'state'))->toBe('kept_override')
+        ->and(data_get($overridden, 'override_note'))->toBe('Deliberate exception.');
+
+    mutateCharacter($this, $characterId, 3, [
+        'type' => 'set_slot', 'slot_id' => $slotId, 'mode' => 'select',
+        'spell_version_id' => $spellId,
+    ])->assertOk();
+    $reselected = DB::table('spell_selection_slots')->where('id', $slotId)->sole();
+    expect(data_get($reselected, 'state'))->toBe('active')
+        ->and(data_get($reselected, 'override_note'))->toBeNull();
+});
+
+it('rejects missing and locked slots with their public domain messages', function () {
+    $characterId = workspaceCharacterId();
+    $missingSlotId = (int) DB::table('spell_selection_slots')->max('id') + 1000;
+    mutateCharacter($this, $characterId, 0, [
+        'type' => 'set_slot', 'slot_id' => $missingSlotId, 'mode' => 'clear',
+    ])->assertUnprocessable()->assertJsonPath('message', 'Spell slot does not belong to this character.');
+
+    $slotId = (int) DB::table('spell_selection_slots')->where('character_id', $characterId)->value('id');
+    DB::table('spell_selection_slots')->where('id', $slotId)->update(['is_locked' => true]);
+    mutateCharacter($this, $characterId, 0, [
+        'type' => 'set_slot', 'slot_id' => $slotId, 'mode' => 'clear',
+    ])->assertUnprocessable()->assertJsonPath('message', 'This spell slot is locked.');
 });
 
 it('round-trips a named save point through the mutation path', function () {
@@ -126,6 +672,200 @@ it('changing an ability score recomputes the source save DC', function () {
         ->and(data_get($slot, 'attack_bonus'))->toBe(7);
 });
 
+it('returns the exact mutation envelope, inverse, operation, and reversible audit contract', function () {
+    $characterId = workspaceCharacterId();
+    $operation = Str::uuid()->toString();
+    $response = mutateCharacter($this, $characterId, 0, [
+        'type' => 'update_ability', 'ability' => 'wisdom', 'score' => 16,
+        'reason' => 'Mutation contract.',
+    ], $operation)->assertOk();
+
+    expect(array_keys($response->json()))->toBe(['inverse', 'revision', 'idempotent_replay', 'workspace'])
+        ->and($response->json('inverse'))->toBe([
+            'type' => 'update_ability', 'ability' => 'wisdom', 'score' => 13,
+        ])->and($response->json('revision'))->toBe(1)
+        ->and($response->json('idempotent_replay'))->toBeFalse();
+
+    $storedOperation = DB::table('character_operations')->where('operation_uuid', $operation)->sole();
+    expect((int) data_get($storedOperation, 'character_id'))->toBe($characterId)
+        ->and((int) data_get($storedOperation, 'expected_revision'))->toBe(0)
+        ->and((int) data_get($storedOperation, 'resulting_revision'))->toBe(1)
+        ->and(json_decode((string) data_get($storedOperation, 'inverse_command'), true, 512, JSON_THROW_ON_ERROR))
+        ->toBe($response->json('inverse'));
+
+    $audit = DB::table('change_log')->where('operation_uuid', $operation)->sole();
+    expect((int) data_get($audit, 'sequence'))->toBe(1)
+        ->and((bool) data_get($audit, 'reversible'))->toBeTrue()
+        ->and(data_get($audit, 'reason'))->toBe('Mutation contract.')
+        ->and(data_get($audit, 'action_type'))->toBe('update_ability');
+
+    $replay = mutateCharacter($this, $characterId, 0, [
+        'type' => 'update_ability', 'ability' => 'charisma', 'score' => 30,
+    ], $operation)->assertOk();
+    expect($replay->json('inverse'))->toBe($response->json('inverse'))
+        ->and($replay->json('revision'))->toBe(1)
+        ->and($replay->json('idempotent_replay'))->toBeTrue();
+});
+
+it('enforces ability names and both inclusive score boundaries', function (): void {
+    $characterId = workspaceCharacterId();
+
+    foreach ([1, 30] as $index => $score) {
+        mutateCharacter($this, $characterId, $index, [
+            'type' => 'update_ability', 'ability' => 'strength', 'score' => $score,
+        ])->assertOk()->assertJsonPath('inverse', [
+            'type' => 'update_ability', 'ability' => 'strength', 'score' => $index === 0 ? 10 : 1,
+        ]);
+    }
+    foreach ([0, 31] as $score) {
+        mutateCharacter($this, $characterId, 2, [
+            'type' => 'update_ability', 'ability' => 'strength', 'score' => $score,
+        ])->assertUnprocessable()->assertJsonPath('message', 'Ability scores must be between 1 and 30.');
+    }
+    mutateCharacter($this, $characterId, 2, [
+        'type' => 'update_ability', 'ability' => 'luck', 'score' => 10,
+    ])->assertUnprocessable()->assertJsonPath('message', 'Unknown ability score.');
+});
+
+it('returns not found without recording an operation for an unknown character', function (): void {
+    $missingId = (int) DB::table('characters')->max('id') + 1000;
+
+    mutateCharacter($this, $missingId, 0, [
+        'type' => 'update_ability', 'ability' => 'wisdom', 'score' => 16,
+    ])->assertNotFound();
+    expect(DB::table('character_operations')->where('character_id', $missingId)->count())->toBe(0);
+});
+
+it('accepts class level twenty but rejects invalid and total-level overflow boundaries', function (): void {
+    $wizardId = (int) DB::table('class_definitions')->where('name', 'Wizard')->value('id');
+    $unknownId = (int) DB::table('class_definitions')->max('id') + 1000;
+    $characterId = (int) DB::table('characters')->insertGetId([
+        'name' => 'Class Boundary', 'created_at' => now(), 'updated_at' => now(),
+    ]);
+
+    mutateCharacter($this, $characterId, 0, [
+        'type' => 'update_class', 'class_definition_id' => $unknownId, 'level' => 1,
+    ])->assertUnprocessable()->assertJsonPath('message', 'Unknown class.');
+    mutateCharacter($this, $characterId, 0, [
+        'type' => 'update_class', 'class_definition_id' => $wizardId, 'level' => 0,
+    ])->assertUnprocessable()->assertJsonPath('message', 'Class level must be between 1 and 20.');
+    mutateCharacter($this, $characterId, 0, [
+        'type' => 'update_class', 'class_definition_id' => $wizardId, 'level' => 20,
+    ])->assertOk()->assertJsonPath('revision', 1);
+    expect((int) DB::table('character_class_levels')->where('character_id', $characterId)->value('level'))
+        ->toBe(20);
+
+    $warlockId = (int) DB::table('class_definitions')->where('name', 'Warlock')->value('id');
+    mutateCharacter($this, $characterId, 1, [
+        'type' => 'update_class', 'class_definition_id' => $warlockId, 'level' => 1,
+    ])->assertUnprocessable()->assertJsonPath('message', 'A character cannot exceed level 20.');
+});
+
+it('records the first class at level one and rejects a subclass from another class', function (): void {
+    $characterId = (int) DB::table('characters')->insertGetId([
+        'name' => 'First Class Contract', 'created_at' => now(), 'updated_at' => now(),
+    ]);
+    $wizardId = (int) DB::table('class_definitions')->where('name', 'Wizard')->value('id');
+    $fighterId = (int) DB::table('class_definitions')->where('name', 'Fighter')->value('id');
+    $foreignSubclassId = (int) DB::table('subclass_definitions')->insertGetId([
+        'content_key' => 'test:fighter:foreign', 'class_definition_id' => $fighterId,
+        'name' => 'Foreign Fighter Subclass', 'rules_edition' => '2024',
+        'created_at' => now(), 'updated_at' => now(),
+    ]);
+
+    mutateCharacter($this, $characterId, 0, [
+        'type' => 'update_class', 'class_definition_id' => $wizardId,
+        'level' => 1, 'subclass_definition_id' => $foreignSubclassId,
+    ])->assertUnprocessable()->assertJsonPath('message', 'That subclass does not belong to the selected class.');
+    mutateCharacter($this, $characterId, 0, [
+        'type' => 'update_class', 'class_definition_id' => $wizardId,
+        'level' => 1, 'subclass_definition_id' => null,
+    ])->assertOk();
+
+    expect((int) DB::table('character_source_instances')->where('character_id', $characterId)
+        ->where('source_type', 'class')->value('acquired_at_character_level'))->toBe(1);
+});
+
+it('preserves nullable class config and fully synchronizes repeated subclass switches', function (): void {
+    $characterId = (int) DB::table('characters')->insertGetId([
+        'name' => 'Subclass Switch Contract', 'created_at' => now(), 'updated_at' => now(),
+    ]);
+    $wizardId = (int) DB::table('class_definitions')->where('name', 'Wizard')->value('id');
+    DB::table('character_source_instances')->insert([
+        'character_id' => $characterId, 'instance_uuid' => Str::uuid()->toString(),
+        'source_type' => 'class', 'source_definition_id' => $wizardId,
+        'display_name' => 'Wizard pending', 'config' => null, 'state' => 'active',
+        'created_at' => now(), 'updated_at' => now(),
+    ]);
+    $subclassA = (int) DB::table('subclass_definitions')->insertGetId([
+        'content_key' => 'test:wizard:switch-a', 'class_definition_id' => $wizardId,
+        'name' => 'Switch A', 'rules_edition' => '2024', 'spellcasting_ability' => 'intelligence',
+        'created_at' => now(), 'updated_at' => now(),
+    ]);
+    $subclassB = (int) DB::table('subclass_definitions')->insertGetId([
+        'content_key' => 'test:wizard:switch-b', 'class_definition_id' => $wizardId,
+        'name' => 'Switch B', 'rules_edition' => '2024', 'spellcasting_ability' => 'intelligence',
+        'created_at' => now(), 'updated_at' => now(),
+    ]);
+
+    mutateCharacter($this, $characterId, 0, [
+        'type' => 'update_class', 'class_definition_id' => $wizardId,
+        'level' => 3, 'subclass_definition_id' => $subclassA,
+    ])->assertOk();
+    $sourceAId = (int) DB::table('character_source_instances')->where('character_id', $characterId)
+        ->where('source_type', 'subclass')->where('source_definition_id', $subclassA)->value('id');
+    DB::table('character_source_instances')->where('id', $sourceAId)->update([
+        'config' => json_encode(['custom' => 'preserved'], JSON_THROW_ON_ERROR),
+    ]);
+    mutateCharacter($this, $characterId, 1, [
+        'type' => 'update_class', 'class_definition_id' => $wizardId,
+        'level' => 4, 'subclass_definition_id' => $subclassB,
+    ])->assertOk();
+    DB::table('subclass_definitions')->where('id', $subclassA)->update(['name' => 'Switch A Renamed']);
+    mutateCharacter($this, $characterId, 2, [
+        'type' => 'update_class', 'class_definition_id' => $wizardId,
+        'level' => 5, 'subclass_definition_id' => $subclassA,
+    ])->assertOk();
+
+    $sources = DB::table('character_source_instances')->where('character_id', $characterId)
+        ->where('source_type', 'subclass')->get()->keyBy('source_definition_id');
+    expect(data_get($sources->get($subclassA), 'state'))->toBe('active')
+        ->and(data_get($sources->get($subclassA), 'display_name'))->toBe('Switch A Renamed')
+        ->and(json_decode((string) data_get($sources->get($subclassA), 'config'), true, 512, JSON_THROW_ON_ERROR))
+        ->toBe(['custom' => 'preserved', 'spellcasting_ability' => 'intelligence'])
+        ->and(data_get($sources->get($subclassB), 'state'))->toBe('tombstoned');
+
+    DB::table('character_source_instances')->whereIn('id', [
+        data_get($sources->get($subclassA), 'id'), data_get($sources->get($subclassB), 'id'),
+    ])->update(['state' => 'active']);
+    DB::table('character_source_instances')->where('id', data_get($sources->get($subclassA), 'id'))
+        ->update(['config' => null]);
+    mutateCharacter($this, $characterId, 3, [
+        'type' => 'update_class', 'class_definition_id' => $wizardId,
+        'level' => 5, 'subclass_definition_id' => $subclassA,
+    ])->assertOk();
+    expect(DB::table('character_source_instances')->where('id', data_get($sources->get($subclassB), 'id'))
+        ->value('state'))->toBe('tombstoned');
+
+    DB::table('character_source_instances')->whereIn('id', [
+        data_get($sources->get($subclassA), 'id'), data_get($sources->get($subclassB), 'id'),
+    ])->update(['state' => 'active']);
+    mutateCharacter($this, $characterId, 4, [
+        'type' => 'update_class', 'class_definition_id' => $wizardId,
+        'level' => 5, 'subclass_definition_id' => $subclassB,
+    ])->assertOk();
+    expect(DB::table('character_source_instances')->where('id', data_get($sources->get($subclassA), 'id'))
+        ->value('state'))->toBe('tombstoned');
+
+    mutateCharacter($this, $characterId, 5, [
+        'type' => 'update_class', 'class_definition_id' => $wizardId,
+        'level' => 5, 'subclass_definition_id' => null,
+    ])->assertOk();
+    expect(DB::table('character_source_instances')->whereIn('id', [
+        data_get($sources->get($subclassA), 'id'), data_get($sources->get($subclassB), 'id'),
+    ])->pluck('state')->unique()->all())->toBe(['tombstoned']);
+});
+
 it('adding a class level generates new slots without disturbing existing slots', function () {
     $characterId = workspaceCharacterId();
     $warlockId = (int) DB::table('class_definitions')->where('name', 'Warlock')->value('id');
@@ -141,6 +881,55 @@ it('adding a class level generates new slots without disturbing existing slots',
         ->whereIn('id', array_column($before, 'id'))->orderBy('id')->get()->map(fn ($row) => (array) $row)->all();
     expect($afterExisting)->toBe($before)
         ->and(DB::table('spell_selection_slots')->where('character_id', $characterId)->count())->toBeGreaterThan(count($before));
+    $classLevel = DB::table('character_class_levels')->where('character_id', $characterId)
+        ->where('class_definition_id', $warlockId)->sole();
+    $source = DB::table('character_source_instances')->where('character_id', $characterId)
+        ->where('source_type', 'class')->where('source_definition_id', $warlockId)->sole();
+    expect((int) data_get($classLevel, 'level'))->toBe(1)
+        ->and((bool) data_get($classLevel, 'is_starting_class'))->toBeFalse()
+        ->and(data_get($classLevel, 'subclass_definition_id'))->toBeNull()
+        ->and(data_get($source, 'display_name'))->toBe('Warlock 1')
+        ->and((int) data_get($source, 'acquired_at_character_level'))->toBe(7)
+        ->and(data_get($source, 'state'))->toBe('active')
+        ->and(json_decode((string) data_get($source, 'config'), true, 512, JSON_THROW_ON_ERROR))
+        ->toBe(['spellcasting_ability' => 'charisma']);
+});
+
+it('updates an existing class and preserves custom source configuration while syncing subclasses', function () {
+    $characterId = workspaceCharacterId();
+    $wizardId = (int) DB::table('class_definitions')->where('name', 'Wizard')->value('id');
+    $subclassId = (int) DB::table('subclass_definitions')->insertGetId([
+        'content_key' => 'test:wizard:exact-update',
+        'class_definition_id' => $wizardId,
+        'name' => 'Exact Update School',
+        'rules_edition' => '2024',
+        'spellcasting_ability' => 'intelligence',
+        'created_at' => now(),
+        'updated_at' => now(),
+    ]);
+    $sourceId = (int) DB::table('character_source_instances')->where('character_id', $characterId)
+        ->where('source_type', 'class')->where('source_definition_id', $wizardId)->value('id');
+    DB::table('character_source_instances')->where('id', $sourceId)->update([
+        'config' => json_encode(['custom' => 'preserved', 'spellcasting_ability' => 'wisdom'], JSON_THROW_ON_ERROR),
+    ]);
+
+    mutateCharacter($this, $characterId, 0, [
+        'type' => 'update_class', 'class_definition_id' => $wizardId,
+        'level' => 2, 'subclass_definition_id' => $subclassId,
+    ])->assertOk();
+
+    $level = DB::table('character_class_levels')->where('character_id', $characterId)
+        ->where('class_definition_id', $wizardId)->sole();
+    $classSource = DB::table('character_source_instances')->where('id', $sourceId)->sole();
+    $subclassSource = DB::table('character_source_instances')->where('character_id', $characterId)
+        ->where('source_type', 'subclass')->where('source_definition_id', $subclassId)->sole();
+    expect((int) data_get($level, 'level'))->toBe(2)
+        ->and((int) data_get($level, 'subclass_definition_id'))->toBe($subclassId)
+        ->and(data_get($classSource, 'display_name'))->toBe('Wizard 2')
+        ->and(json_decode((string) data_get($classSource, 'config'), true, 512, JSON_THROW_ON_ERROR))->toBe([
+            'custom' => 'preserved', 'spellcasting_ability' => 'intelligence',
+        ])->and(data_get($subclassSource, 'display_name'))->toBe('Exact Update School')
+        ->and(data_get($subclassSource, 'state'))->toBe('active');
 });
 
 it('undoes a structural class change through its snapshot inverse', function () {
@@ -170,7 +959,9 @@ it('rejects stale revisions and replays an operation idempotently', function () 
         ->assertOk()->assertJsonPath('idempotent_replay', true)->assertJsonPath('revision', 1);
     mutateCharacter($this, $characterId, 0, [
         'type' => 'update_ability', 'ability' => 'wisdom', 'score' => 18,
-    ])->assertStatus(409)->assertJsonPath('current_revision', 1);
+    ])->assertStatus(409)
+        ->assertJsonPath('message', 'This character changed in another tab. Reload before trying again.')
+        ->assertJsonPath('current_revision', 1);
     expect(DB::table('character_operations')->where('operation_uuid', $operation)->count())->toBe(1);
 });
 
@@ -229,7 +1020,16 @@ it('round-trips source configuration with one audit group and rejects unsupporte
         'type' => 'update_source_config', 'source_instance_id' => $sourceId, 'chosen_list' => 'Cleric',
     ], $operation)->assertOk()->assertJsonPath('revision', 1);
     $after = app(CharacterState::class)->capture($characterId);
-    expect($after)->not->toBe($before);
+    $updatedSource = DB::table('character_source_instances')->find($sourceId);
+    $parent = DB::table('character_source_instances')->find(data_get($updatedSource, 'parent_source_instance_id'));
+    expect($after)->not->toBe($before)
+        ->and(data_get($updatedSource, 'display_name'))->toBe('Magic Initiate: Cleric')
+        ->and(json_decode((string) data_get($updatedSource, 'config'), true, 512, JSON_THROW_ON_ERROR))->toBe([
+            'chosen_list' => 'Cleric', 'spellcasting_ability' => 'wisdom',
+        ])->and(data_get(json_decode((string) data_get($parent, 'config'), true, 512, JSON_THROW_ON_ERROR), 'origin_feat_config'))
+        ->toBe(['chosen_list' => 'Cleric', 'spellcasting_ability' => 'wisdom'])
+        ->and(DB::table('spell_selection_slots')->where('source_instance_id', $sourceId)
+            ->pluck('allowed_spell_lists')->unique()->all())->toBe(['["Cleric"]']);
     $audit = DB::table('change_log')->where('operation_uuid', $operation)->get();
     expect($audit->count())->toBeGreaterThan(1)
         ->and($audit->pluck('group_id')->unique())->toHaveCount(1)
@@ -244,6 +1044,80 @@ it('round-trips source configuration with one audit group and rejects unsupporte
     mutateCharacter($this, $characterId, 1, $changed->json('inverse'))
         ->assertOk()->assertJsonPath('revision', 2);
     expect(app(CharacterState::class)->capture($characterId))->toBe($before);
+});
+
+it('updates a standalone Magic Initiate source and regenerates its slot constraints', function () {
+    $characterId = (int) DB::table('characters')->insertGetId([
+        'name' => 'Standalone Magic Initiate', 'created_at' => now(), 'updated_at' => now(),
+    ]);
+    $definitionId = (int) DB::table('feat_definitions')
+        ->where('content_key', '2024:feat:magic-initiate')->value('id');
+    mutateCharacter($this, $characterId, 0, [
+        'type' => 'add_source', 'source_type' => 'feat',
+        'source_definition_id' => $definitionId,
+        'config' => ['chosen_list' => 'Cleric', 'spellcasting_ability' => 'wisdom'],
+    ])->assertOk();
+    $source = DB::table('character_source_instances')->where('character_id', $characterId)
+        ->whereNull('parent_source_instance_id')->where('source_type', 'feat')->sole();
+
+    mutateCharacter($this, $characterId, 1, [
+        'type' => 'update_source_config', 'source_instance_id' => data_get($source, 'id'),
+        'chosen_list' => 'Wizard',
+    ])->assertOk();
+    $updated = DB::table('character_source_instances')->where('id', data_get($source, 'id'))->sole();
+    expect(data_get($updated, 'display_name'))->toBe('Magic Initiate: Wizard')
+        ->and(json_decode((string) data_get($updated, 'config'), true, 512, JSON_THROW_ON_ERROR))->toBe([
+            'chosen_list' => 'Wizard', 'spellcasting_ability' => 'intelligence',
+        ])->and(DB::table('spell_selection_slots')->where('source_instance_id', data_get($source, 'id'))
+        ->pluck('allowed_spell_lists')->unique()->all())->toBe(['["Wizard"]']);
+});
+
+it('rejects every invalid configurable-source boundary with its domain message', function () {
+    $characterId = workspaceCharacterId();
+    $source = DB::table('character_source_instances')->where('character_id', $characterId)
+        ->where('display_name', 'Magic Initiate: Wizard')->sole();
+    $sourceId = (int) data_get($source, 'id');
+    $parentId = (int) data_get($source, 'parent_source_instance_id');
+    $plainFeatId = (int) DB::table('feat_definitions')->insertGetId([
+        'content_key' => 'test:plain-config-source', 'name' => 'Plain Config Source',
+        'rules_edition' => '2024', 'repeatable' => true, 'grant_rules' => '[]',
+        'created_at' => now(), 'updated_at' => now(),
+    ]);
+    $plainSourceId = (int) DB::table('character_source_instances')->insertGetId([
+        'character_id' => $characterId, 'instance_uuid' => Str::uuid()->toString(),
+        'source_type' => 'feat', 'source_definition_id' => $plainFeatId,
+        'display_name' => 'Plain Config Source', 'config' => '{}', 'state' => 'active',
+        'created_at' => now(), 'updated_at' => now(),
+    ]);
+
+    foreach ([
+        [$sourceId + 100000, 'Configurable source does not belong to this character.'],
+        [$plainSourceId, 'Only Magic Initiate list configuration is editable here.'],
+    ] as [$invalidSourceId, $message]) {
+        mutateCharacter($this, $characterId, 0, [
+            'type' => 'update_source_config', 'source_instance_id' => $invalidSourceId,
+            'chosen_list' => 'Cleric',
+        ])->assertUnprocessable()->assertJsonPath('message', $message);
+    }
+
+    DB::table('character_source_instances')->where('id', $sourceId)->update(['config' => '"scalar"']);
+    mutateCharacter($this, $characterId, 0, [
+        'type' => 'update_source_config', 'source_instance_id' => $sourceId, 'chosen_list' => 'Cleric',
+    ])->assertUnprocessable()->assertJsonPath('message', 'Source configuration must be an object.');
+
+    DB::table('character_source_instances')->where('id', $sourceId)->update(['config' => '{}']);
+    DB::table('character_source_instances')->where('id', $parentId)->update(['config' => '{}']);
+    mutateCharacter($this, $characterId, 0, [
+        'type' => 'update_source_config', 'source_instance_id' => $sourceId, 'chosen_list' => 'Cleric',
+    ])->assertUnprocessable()
+        ->assertJsonPath('message', 'Magic Initiate parent configuration is missing origin_feat_config.');
+
+    DB::table('class_definitions')->where('name', 'Cleric')->update(['spellcasting_ability' => null]);
+    mutateCharacter($this, $characterId, 0, [
+        'type' => 'update_source_config', 'source_instance_id' => $sourceId, 'chosen_list' => 'Cleric',
+    ])->assertUnprocessable()
+        ->assertJsonPath('message', 'Choose a spell list with a defined spellcasting ability.');
+    expect((int) DB::table('characters')->where('id', $characterId)->value('revision'))->toBe(0);
 });
 
 it('adds Magic Initiate through the DSL with independent list and ability config and exact undo redo', function () {
@@ -398,6 +1272,19 @@ it('adds species and background roots with nested Magic Initiate chains and reje
         ->toMatchArray(['configuration_kind' => 'none', 'repeatable' => false]);
 });
 
+it('rejects an unknown source definition before any source row is created', function () {
+    $characterId = workspaceCharacterId();
+    $missingDefinition = (int) DB::table('feat_definitions')->max('id') + 1000;
+    $before = DB::table('character_source_instances')->where('character_id', $characterId)->count();
+
+    mutateCharacter($this, $characterId, 0, [
+        'type' => 'add_source', 'source_type' => 'feat',
+        'source_definition_id' => $missingDefinition, 'config' => [],
+    ])->assertUnprocessable()
+        ->assertJsonPath('message', 'Unknown source definition for the selected source type.');
+    expect(DB::table('character_source_instances')->where('character_id', $characterId)->count())->toBe($before);
+});
+
 it('removes a root source through the command and cascades to its nested feat', function (string $sourceType): void {
     $characterId = workspaceCharacterId();
     $root = DB::table('character_source_instances')
@@ -513,6 +1400,14 @@ it('round-trips warning acknowledgement with idempotent replay and grouped audit
     $changed = mutateCharacter($this, $characterId, 0, [
         'type' => 'acknowledge_warning', 'warning_fingerprint' => $fingerprint, 'note' => 'Intentional.',
     ], $operation)->assertOk()->assertJsonPath('revision', 1);
+    $inverse = $changed->json('inverse');
+    expect(array_keys($inverse))->toBe(['type', 'mode', 'warning_fingerprint', 'integrity'])
+        ->and(collect($inverse)->except('integrity')->all())->toBe([
+            'type' => 'acknowledge_warning',
+            'mode' => 'delete',
+            'warning_fingerprint' => $fingerprint,
+        ]);
+    app(CharacterCommandIntegrity::class)->assertValid($characterId, $inverse);
     expect(DB::table('warning_acknowledgements')->where('character_id', $characterId)->value('note'))
         ->toBe('Intentional.');
     $audit = DB::table('change_log')->where('operation_uuid', $operation)->get();
@@ -526,14 +1421,52 @@ it('round-trips warning acknowledgement with idempotent replay and grouped audit
     expect(DB::table('warning_acknowledgements')->where('character_id', $characterId)->value('note'))
         ->toBe('Intentional.');
 
-    mutateCharacter($this, $characterId, 1, $changed->json('inverse'))
+    $deleted = mutateCharacter($this, $characterId, 1, $inverse)
         ->assertOk()->assertJsonPath('revision', 2);
     expect(DB::table('warning_acknowledgements')->where('character_id', $characterId)->count())->toBe(0);
-    mutateCharacter($this, $characterId, 2, [
+    expect($deleted->json('inverse'))->toBe([
+        'type' => 'acknowledge_warning',
+        'warning_fingerprint' => $fingerprint,
+        'note' => 'Intentional.',
+    ]);
+
+    $restored = mutateCharacter($this, $characterId, 2, $deleted->json('inverse'))
+        ->assertOk()->assertJsonPath('revision', 3);
+    expect($restored->json('inverse'))->toMatchArray([
+        'type' => 'acknowledge_warning', 'mode' => 'delete', 'warning_fingerprint' => $fingerprint,
+    ]);
+    $updated = mutateCharacter($this, $characterId, 3, [
+        'type' => 'acknowledge_warning', 'warning_fingerprint' => $fingerprint,
+        'note' => '  Updated note.  ',
+    ])->assertOk()->assertJsonPath('revision', 4);
+    expect($updated->json('inverse'))->toBe([
+        'type' => 'acknowledge_warning',
+        'warning_fingerprint' => $fingerprint,
+        'note' => 'Intentional.',
+    ])->and(DB::table('warning_acknowledgements')->where('character_id', $characterId)->value('note'))
+        ->toBe('Updated note.');
+
+    mutateCharacter($this, $characterId, 4, [
+        'type' => 'acknowledge_warning',
+        'warning_fingerprint' => "  {$fingerprint}  ",
+        'note' => 'Spaced fingerprint.',
+    ])->assertOk()->assertJsonPath('revision', 5);
+    expect(DB::table('warning_acknowledgements')->where('character_id', $characterId)
+        ->where('warning_fingerprint', $fingerprint)->value('note'))->toBe('Spaced fingerprint.');
+
+    mutateCharacter($this, $characterId, 5, [
+        'type' => 'acknowledge_warning',
+        'warning_fingerprint' => 'conflicting_versions:not-an-active-warning',
+        'note' => 'No.',
+    ])->assertUnprocessable()->assertJsonPath('message', 'The conflicting-version warning is no longer active.');
+    mutateCharacter($this, $characterId, 5, [
+        'type' => 'acknowledge_warning', 'warning_fingerprint' => 'not-a-conflict', 'note' => 'No.',
+    ])->assertUnprocessable()->assertJsonPath('message', 'Unknown warning fingerprint.');
+    mutateCharacter($this, $characterId, 5, [
         'type' => 'acknowledge_warning', 'mode' => 'invalid',
         'warning_fingerprint' => $fingerprint, 'note' => 'No.',
     ])->assertUnprocessable()->assertJsonPath('message', 'Unknown warning acknowledgement mode.');
-    expect((int) DB::table('characters')->where('id', $characterId)->value('revision'))->toBe(2);
+    expect((int) DB::table('characters')->where('id', $characterId)->value('revision'))->toBe(5);
 });
 
 it('merges a stale slot edit only when intervening operations left that slot untouched', function () {

@@ -134,6 +134,199 @@ it('builds the golden read-only report values and duplicate classifications', fu
         ->and(data_get($detectMagic, 'counts_against_limit'))->toBeFalse();
 });
 
+it('returns the complete seeded report contract rather than only its headline totals', function () {
+    $characterId = (int) DB::table('characters')->where('notes', 'seed:a6')->value('id');
+    $report = app(BuildReportBuilder::class)->build($characterId);
+
+    expect(array_keys($report))->toBe([
+        'character', 'caster', 'classes', 'preparation_callout', 'access_routes',
+        'wizard', 'duplicate_assessments',
+    ])->and(data_get($report, 'preparation_callout'))->toBe(
+        'This build possesses 3rd-level slots, but every class can prepare only 1st-level spells. '
+        .'Higher-level slots can upcast those lower-level spells; they do not unlock higher-level choices.',
+    )->and(data_get($report, 'character'))->toBe([
+        'id' => $characterId,
+        'name' => 'A6 Sixfold Spellcaster',
+        'character_level' => 6,
+        'proficiency_bonus' => 3,
+        'abilities' => [
+            'strength' => 10,
+            'dexterity' => 10,
+            'constitution' => 10,
+            'intelligence' => 13,
+            'wisdom' => 13,
+            'charisma' => 17,
+        ],
+    ])->and(data_get($report, 'classes'))->toBe([
+        ['name' => 'Bard', 'subclass' => null, 'class_level' => 1, 'spellcasting_ability' => 'charisma', 'progression_type' => 'full', 'prepared_count' => 4, 'max_preparable_level' => 1],
+        ['name' => 'Cleric', 'subclass' => null, 'class_level' => 1, 'spellcasting_ability' => 'wisdom', 'progression_type' => 'full', 'prepared_count' => 4, 'max_preparable_level' => 1],
+        ['name' => 'Druid', 'subclass' => null, 'class_level' => 1, 'spellcasting_ability' => 'wisdom', 'progression_type' => 'full', 'prepared_count' => 4, 'max_preparable_level' => 1],
+        ['name' => 'Paladin', 'subclass' => null, 'class_level' => 1, 'spellcasting_ability' => 'charisma', 'progression_type' => 'half_up', 'prepared_count' => 2, 'max_preparable_level' => 1],
+        ['name' => 'Sorcerer', 'subclass' => null, 'class_level' => 1, 'spellcasting_ability' => 'charisma', 'progression_type' => 'full', 'prepared_count' => 2, 'max_preparable_level' => 1],
+        ['name' => 'Wizard', 'subclass' => null, 'class_level' => 1, 'spellcasting_ability' => 'intelligence', 'progression_type' => 'full', 'prepared_count' => 4, 'max_preparable_level' => 1],
+    ]);
+
+    $spellbook = collect(data_get($report, 'wizard.spellbook'))->map(
+        static fn (array $entry): array => collect($entry)->except(['spellbook_entry_id', 'spell_version_id'])->all(),
+    )->all();
+    expect($spellbook)->toBe([
+        ['spell_name' => 'Detect Magic', 'level' => 1, 'acquisition' => 'starting', 'copy_cost_gp' => null, 'copy_time_hours' => null, 'active' => true, 'prepared' => false],
+        ['spell_name' => 'Feather Fall', 'level' => 1, 'acquisition' => 'starting', 'copy_cost_gp' => null, 'copy_time_hours' => null, 'active' => true, 'prepared' => false],
+        ['spell_name' => 'Mage Armor', 'level' => 1, 'acquisition' => 'starting', 'copy_cost_gp' => null, 'copy_time_hours' => null, 'active' => true, 'prepared' => true],
+        ['spell_name' => 'Magic Missile', 'level' => 1, 'acquisition' => 'starting', 'copy_cost_gp' => null, 'copy_time_hours' => null, 'active' => true, 'prepared' => true],
+        ['spell_name' => 'Sleep', 'level' => 1, 'acquisition' => 'starting', 'copy_cost_gp' => null, 'copy_time_hours' => null, 'active' => true, 'prepared' => true],
+        ['spell_name' => 'Thunderwave', 'level' => 1, 'acquisition' => 'starting', 'copy_cost_gp' => null, 'copy_time_hours' => null, 'active' => true, 'prepared' => true],
+    ])->and(collect(data_get($report, 'wizard.prepared'))->pluck('spell_name')->all())->toBe([
+        'Mage Armor', 'Magic Missile', 'Sleep', 'Thunderwave',
+    ])->and(collect(data_get($report, 'wizard.ritual_only'))->map(
+        static fn (array $entry): array => collect($entry)->except(['spellbook_entry_id', 'spell_version_id'])->all(),
+    )->all())->toBe([
+        ['spell_name' => 'Detect Magic', 'level' => 1],
+    ])->and(array_is_list(data_get($report, 'wizard.prepared')))->toBeTrue()
+        ->and(array_is_list(data_get($report, 'wizard.ritual_only')))->toBeTrue()
+        ->and(collect(data_get($report, 'wizard.spellbook'))->every(
+            static fn (array $entry): bool => is_int(data_get($entry, 'spellbook_entry_id'))
+                && data_get($entry, 'spellbook_entry_id') > 0
+                && is_int(data_get($entry, 'spell_version_id'))
+                && data_get($entry, 'spell_version_id') > 0,
+        ))->toBeTrue()
+        ->and(collect(data_get($report, 'wizard.ritual_only'))->every(
+            static fn (array $entry): bool => is_int(data_get($entry, 'spellbook_entry_id'))
+                && data_get($entry, 'spellbook_entry_id') > 0
+                && is_int(data_get($entry, 'spell_version_id'))
+                && data_get($entry, 'spell_version_id') > 0,
+        ))->toBeTrue();
+});
+
+it('uses the second-level ordinal in the exact multiclass preparation warning', function () {
+    $characterId = (int) DB::table('characters')->insertGetId([
+        'name' => 'Second-level Callout', 'created_at' => now(), 'updated_at' => now(),
+    ]);
+    foreach (['Bard' => 1, 'Wizard' => 2] as $className => $level) {
+        DB::table('character_class_levels')->insert([
+            'character_id' => $characterId,
+            'class_definition_id' => DB::table('class_definitions')->where('name', $className)->value('id'),
+            'level' => $level,
+            'created_at' => now(),
+            'updated_at' => now(),
+        ]);
+    }
+
+    expect(data_get(app(BuildReportBuilder::class)->build($characterId), 'preparation_callout'))->toBe(
+        'This build possesses 2nd-level slots, but every class can prepare only 1st-level spells. '
+        .'Higher-level slots can upcast those lower-level spells; they do not unlock higher-level choices.',
+    );
+});
+
+it('rejects an unsupported subclass caster fraction with the exact diagnostic', function () {
+    $fighterId = (int) DB::table('class_definitions')->where('name', 'Fighter')->value('id');
+    $subclassId = (int) DB::table('subclass_definitions')->insertGetId([
+        'content_key' => 'test:unsupported:fraction',
+        'class_definition_id' => $fighterId,
+        'name' => 'Unsupported Fraction',
+        'rules_edition' => '2024',
+        'spellcasting_ability' => 'intelligence',
+        'caster_fraction' => '2/3',
+        'caster_rounding' => 'up',
+        'created_at' => now(),
+        'updated_at' => now(),
+    ]);
+    $characterId = (int) DB::table('characters')->insertGetId([
+        'name' => 'Unsupported Fraction', 'created_at' => now(), 'updated_at' => now(),
+    ]);
+    DB::table('character_class_levels')->insert([
+        'character_id' => $characterId,
+        'class_definition_id' => $fighterId,
+        'subclass_definition_id' => $subclassId,
+        'level' => 3,
+        'created_at' => now(),
+        'updated_at' => now(),
+    ]);
+
+    expect(fn (): array => app(BuildReportBuilder::class)->build($characterId))
+        ->toThrow(RuntimeException::class, 'Unsupported caster fraction 2/3 rounded up.');
+});
+
+it('attaches the complete active warning acknowledgement contract', function () {
+    $characterId = (int) DB::table('characters')->where('notes', 'seed:a6')->value('id');
+    DB::table('characters')->where('id', $characterId)->update(['allow_legacy' => true]);
+    $slots = DB::table('spell_selection_slots')->where('character_id', $characterId)
+        ->where('rule_key', 'wizard-cantrips')->whereIn('ordinal', [2, 3])->orderBy('ordinal')->get();
+    $versions = [
+        (int) DB::table('spell_versions')->where('content_key', '2014:chill-touch')->value('id'),
+        (int) DB::table('spell_versions')->where('content_key', '2024:chill-touch')->value('id'),
+    ];
+    foreach ($slots->values() as $index => $slot) {
+        DB::table('spell_selection_slots')->where('id', data_get($slot, 'id'))->update([
+            'current_spell_version_id' => $versions[$index],
+            'selection_eligibility' => 'valid',
+            'selection_invalid_reason' => null,
+        ]);
+    }
+    $initial = app(BuildReportBuilder::class)->build($characterId);
+    $assessment = collect(data_get($initial, 'duplicate_assessments'))->firstWhere('category', 'conflicting_version');
+    $createdAt = '2026-07-22 12:34:56';
+    $acknowledgementId = DB::table('warning_acknowledgements')->insertGetId([
+        'character_id' => $characterId,
+        'warning_fingerprint' => data_get($assessment, 'warning_fingerprint'),
+        'note' => 'Accepted for roleplay',
+        'created_at' => $createdAt,
+        'updated_at' => $createdAt,
+    ]);
+
+    $acknowledgement = data_get(
+        collect(data_get(app(BuildReportBuilder::class)->build($characterId), 'duplicate_assessments'))
+            ->firstWhere('category', 'conflicting_version'),
+        'acknowledgement',
+    );
+    expect($acknowledgement)->toBe([
+        'id' => $acknowledgementId,
+        'note' => 'Accepted for roleplay',
+        'created_at' => $createdAt,
+    ]);
+});
+
+it('maps every supported subclass caster fraction to its published contribution', function (
+    string $fraction,
+    string $rounding,
+    string $progressionType,
+    int $casterLevel,
+) {
+    $fighterId = (int) DB::table('class_definitions')->where('name', 'Fighter')->value('id');
+    $subclassId = DB::table('subclass_definitions')->insertGetId([
+        'content_key' => "test:{$fraction}:{$rounding}",
+        'class_definition_id' => $fighterId,
+        'name' => "Test {$fraction} {$rounding}",
+        'rules_edition' => '2024',
+        'spellcasting_ability' => 'intelligence',
+        'caster_fraction' => $fraction,
+        'caster_rounding' => $rounding,
+        'created_at' => now(),
+        'updated_at' => now(),
+    ]);
+    $characterId = DB::table('characters')->insertGetId([
+        'name' => 'Fraction contract', 'created_at' => now(), 'updated_at' => now(),
+    ]);
+    DB::table('character_class_levels')->insert([
+        'character_id' => $characterId,
+        'class_definition_id' => $fighterId,
+        'subclass_definition_id' => $subclassId,
+        'level' => 5,
+        'created_at' => now(),
+        'updated_at' => now(),
+    ]);
+
+    $report = app(BuildReportBuilder::class)->build($characterId);
+    expect(data_get($report, 'classes.0.progression_type'))->toBe($progressionType)
+        ->and(data_get($report, 'classes.0.spellcasting_ability'))->toBe('intelligence')
+        ->and(data_get($report, 'caster.caster_level'))->toBe($casterLevel);
+})->with([
+    ['1/2', 'up', 'half_up', 3],
+    ['1/2', 'down', 'half_down', 2],
+    ['1/3', 'up', 'third_up', 2],
+    ['1/3', 'down', 'third_down', 1],
+]);
+
 it('describes Pact Magic slots without inventing zero-level shared slots', function () {
     $warlockId = DB::table('class_definitions')->where('name', 'Warlock')->value('id');
     $characterId = DB::table('characters')->insertGetId([

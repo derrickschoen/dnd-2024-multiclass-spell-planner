@@ -205,6 +205,9 @@ it('rejects command-specific malformed fields before domain execution', function
         'type' => 'set_slot', 'slot_id' => 1, 'mode' => 'clear', 'extra' => true,
     ], 'Unknown command field: extra.'],
     'slot missing id' => [['type' => 'set_slot', 'mode' => 'clear'], 'slot_id must be an integer.'],
+    'slot unknown mode' => [[
+        'type' => 'set_slot', 'slot_id' => 1, 'mode' => 'unknown',
+    ], 'Unknown slot mutation mode.'],
     'select missing spell' => [[
         'type' => 'set_slot', 'slot_id' => 1, 'mode' => 'select',
     ], 'spell_version_id must be an integer.'],
