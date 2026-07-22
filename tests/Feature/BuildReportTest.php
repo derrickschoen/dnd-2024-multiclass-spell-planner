@@ -85,6 +85,85 @@ it('seeds the requested six-class character and generates both Magic Initiates t
             ->where('spell_version_id', data_get($slot, 'current_spell_version_id'))
             ->exists())->toBeTrue();
     }
+
+    $mutt = DB::table('characters')->where('notes', 'like', "seed:mutt\n%")->sole();
+    $muttId = (int) data_get($mutt, 'id');
+    expect(data_get($mutt, 'name'))->toBe('Mutt')
+        ->and((bool) data_get($mutt, 'allow_legacy'))->toBeTrue()
+        ->and(data_get($mutt, 'revision'))->toBe(41)
+        ->and(data_get($mutt, 'notes'))->toContain(
+            'sheet:max_hp=43',
+            'sheet:advancement=milestone',
+            'INFERRED abilities (PDF has no scores)',
+            'INFERRED leveled-spell class attribution',
+        );
+
+    $muttClasses = DB::table('character_class_levels as level')
+        ->join('class_definitions as class', 'class.id', '=', 'level.class_definition_id')
+        ->where('level.character_id', $muttId)
+        ->orderBy('class.name')
+        ->pluck('level.level', 'class.name')
+        ->all();
+    expect($muttClasses)->toBe([
+        'Bard' => 1, 'Cleric' => 1, 'Druid' => 1, 'Paladin' => 1,
+        'Sorcerer' => 1, 'Wizard' => 1,
+    ])->and(DB::table('character_operations')->where('character_id', $muttId)->count())->toBe(41)
+        ->and(DB::table('change_log')->where('character_id', $muttId)
+            ->where('action_type', 'add_source')->distinct()->count('operation_uuid'))->toBe(6)
+        ->and(DB::table('change_log')->where('character_id', $muttId)
+            ->where('action_type', 'set_slot')->distinct()->count('operation_uuid'))->toBe(34)
+        ->and(DB::table('change_log')->where('character_id', $muttId)
+            ->where('action_type', 'update_character_rules')->distinct()->count('operation_uuid'))->toBe(1);
+
+    $muttSlots = DB::table('spell_selection_slots')->where('character_id', $muttId)->get();
+    expect($muttSlots)->toHaveCount(34)
+        ->and($muttSlots->whereNotNull('current_spell_version_id'))->toHaveCount(34)
+        ->and($muttSlots->every(
+            static fn (object $slot): bool => data_get($slot, 'selection_eligibility') === 'valid',
+        ))->toBeTrue();
+
+    $duplicates = DB::table('spell_selection_slots as slot')
+        ->join('spell_versions as version', 'version.id', '=', 'slot.current_spell_version_id')
+        ->join('character_source_instances as source', 'source.id', '=', 'slot.source_instance_id')
+        ->where('slot.character_id', $muttId)
+        ->select(['version.display_name as spell_name', 'source.display_name as source_name'])
+        ->orderBy('version.display_name')
+        ->orderBy('source.display_name')
+        ->get()
+        ->groupBy('spell_name')
+        ->filter(static fn ($rows): bool => $rows->count() > 1)
+        ->map(static fn ($rows): array => $rows->pluck('source_name')->all())
+        ->all();
+    expect($duplicates)->toBe([
+        'Bane' => ['Bard 1', 'Cleric 1'],
+        'Healing Word' => ['Cleric 1', 'Druid 1'],
+        'Shield' => ['Sorcerer 1', 'Wizard 1'],
+    ]);
+
+    foreach (['2014:mold-earth' => 'Wizard', '2014:shape-water' => 'Druid'] as $versionKey => $list) {
+        expect(DB::table('spell_list_memberships as membership')
+            ->join('spell_versions as version', 'version.id', '=', 'membership.spell_version_id')
+            ->where('version.content_key', $versionKey)
+            ->where('membership.spell_list_key', $list)
+            ->exists())->toBeTrue();
+    }
+
+    $selectedIdentityIds = $muttSlots->pluck('current_spell_version_id')
+        ->map(static fn (mixed $versionId): int => (int) DB::table('spell_versions')
+            ->where('id', $versionId)->value('spell_identity_id'));
+    $spellbookIdentityIds = DB::table('wizard_spellbook_entries as entry')
+        ->join('spell_versions as version', 'version.id', '=', 'entry.spell_version_id')
+        ->where('entry.character_id', $muttId)
+        ->pluck('version.spell_identity_id');
+    expect($selectedIdentityIds->unique())->toHaveCount(31)
+        ->and($selectedIdentityIds->merge($spellbookIdentityIds)->unique())->toHaveCount(33)
+        ->and(DB::table('wizard_spellbook_entries')->where('character_id', $muttId)->count())->toBe(6);
+    foreach (['2024:ray-of-sickness', '2024:sleep'] as $omittedVersionKey) {
+        $versionId = DB::table('spell_versions')->where('content_key', $omittedVersionKey)->value('id');
+        expect($muttSlots->contains('current_spell_version_id', $versionId))->toBeFalse()
+            ->and(DB::table('wizard_spellbook_entries')
+                ->where('character_id', $muttId)->where('spell_version_id', $versionId)->exists())->toBeFalse();
+    }
 });
 
 it('builds the golden read-only report values and duplicate classifications', function () {

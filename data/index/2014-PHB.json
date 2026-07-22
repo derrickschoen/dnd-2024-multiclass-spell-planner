@@ -17,7 +17,11 @@
       "dexterity"
     ],
     "effectReliabilityCategory": "saving_throw",
-    "spellLists": [],
+    "spellLists": [
+      "Artificer",
+      "Sorcerer",
+      "Wizard"
+    ],
     "sourceBooks": [
       "Player's Handbook"
     ],
@@ -40,7 +44,12 @@
     "attackModes": [],
     "saveAbilities": [],
     "effectReliabilityCategory": "fixed_effect",
-    "spellLists": [],
+    "spellLists": [
+      "Bard",
+      "Sorcerer",
+      "Warlock",
+      "Wizard"
+    ],
     "sourceBooks": [
       "Player's Handbook"
     ],
@@ -65,7 +74,11 @@
     ],
     "saveAbilities": [],
     "effectReliabilityCategory": "attack_roll",
-    "spellLists": [],
+    "spellLists": [
+      "Sorcerer",
+      "Warlock",
+      "Wizard"
+    ],
     "sourceBooks": [
       "Player's Handbook"
     ],
@@ -88,7 +101,12 @@
     "attackModes": [],
     "saveAbilities": [],
     "effectReliabilityCategory": "fixed_effect",
-    "spellLists": [],
+    "spellLists": [
+      "Artificer",
+      "Bard",
+      "Sorcerer",
+      "Wizard"
+    ],
     "sourceBooks": [
       "Player's Handbook"
     ],
@@ -111,7 +129,9 @@
     "attackModes": [],
     "saveAbilities": [],
     "effectReliabilityCategory": "fixed_effect",
-    "spellLists": [],
+    "spellLists": [
+      "Druid"
+    ],
     "sourceBooks": [
       "Player's Handbook"
     ],
@@ -136,7 +156,9 @@
     ],
     "saveAbilities": [],
     "effectReliabilityCategory": "attack_roll",
-    "spellLists": [],
+    "spellLists": [
+      "Warlock"
+    ],
     "sourceBooks": [
       "Player's Handbook"
     ],
@@ -161,7 +183,11 @@
     ],
     "saveAbilities": [],
     "effectReliabilityCategory": "attack_roll",
-    "spellLists": [],
+    "spellLists": [
+      "Artificer",
+      "Sorcerer",
+      "Wizard"
+    ],
     "sourceBooks": [
       "Player's Handbook"
     ],
@@ -184,7 +210,12 @@
     "attackModes": [],
     "saveAbilities": [],
     "effectReliabilityCategory": "fixed_effect",
-    "spellLists": [],
+    "spellLists": [
+      "Bard",
+      "Sorcerer",
+      "Warlock",
+      "Wizard"
+    ],
     "sourceBooks": [
       "Player's Handbook"
     ],
@@ -207,7 +238,11 @@
     "attackModes": [],
     "saveAbilities": [],
     "effectReliabilityCategory": "fixed_effect",
-    "spellLists": [],
+    "spellLists": [
+      "Artificer",
+      "Cleric",
+      "Druid"
+    ],
     "sourceBooks": [
       "Player's Handbook"
     ],
@@ -232,7 +267,13 @@
       "dexterity"
     ],
     "effectReliabilityCategory": "saving_throw",
-    "spellLists": [],
+    "spellLists": [
+      "Artificer",
+      "Bard",
+      "Cleric",
+      "Sorcerer",
+      "Wizard"
+    ],
     "sourceBooks": [
       "Player's Handbook"
     ],
@@ -255,7 +296,13 @@
     "attackModes": [],
     "saveAbilities": [],
     "effectReliabilityCategory": "fixed_effect",
-    "spellLists": [],
+    "spellLists": [
+      "Artificer",
+      "Bard",
+      "Sorcerer",
+      "Warlock",
+      "Wizard"
+    ],
     "sourceBooks": [
       "Player's Handbook"
     ],
@@ -278,7 +325,14 @@
     "attackModes": [],
     "saveAbilities": [],
     "effectReliabilityCategory": "fixed_effect",
-    "spellLists": [],
+    "spellLists": [
+      "Artificer",
+      "Bard",
+      "Cleric",
+      "Druid",
+      "Sorcerer",
+      "Wizard"
+    ],
     "sourceBooks": [
       "Player's Handbook"
     ],
@@ -301,7 +355,12 @@
     "attackModes": [],
     "saveAbilities": [],
     "effectReliabilityCategory": "fixed_effect",
-    "spellLists": [],
+    "spellLists": [
+      "Artificer",
+      "Bard",
+      "Sorcerer",
+      "Wizard"
+    ],
     "sourceBooks": [
       "Player's Handbook"
     ],
@@ -324,7 +383,12 @@
     "attackModes": [],
     "saveAbilities": [],
     "effectReliabilityCategory": "fixed_effect",
-    "spellLists": [],
+    "spellLists": [
+      "Bard",
+      "Sorcerer",
+      "Warlock",
+      "Wizard"
+    ],
     "sourceBooks": [
       "Player's Handbook"
     ],
@@ -349,7 +413,13 @@
       "constitution"
     ],
     "effectReliabilityCategory": "saving_throw",
-    "spellLists": [],
+    "spellLists": [
+      "Artificer",
+      "Druid",
+      "Sorcerer",
+      "Warlock",
+      "Wizard"
+    ],
     "sourceBooks": [
       "Player's Handbook"
     ],
@@ -372,7 +442,13 @@
     "attackModes": [],
     "saveAbilities": [],
     "effectReliabilityCategory": "fixed_effect",
-    "spellLists": [],
+    "spellLists": [
+      "Artificer",
+      "Bard",
+      "Sorcerer",
+      "Warlock",
+      "Wizard"
+    ],
     "sourceBooks": [
       "Player's Handbook"
     ],
@@ -397,7 +473,9 @@
     ],
     "saveAbilities": [],
     "effectReliabilityCategory": "attack_roll",
-    "spellLists": [],
+    "spellLists": [
+      "Druid"
+    ],
     "sourceBooks": [
       "Player's Handbook"
     ],
@@ -422,7 +500,11 @@
     ],
     "saveAbilities": [],
     "effectReliabilityCategory": "attack_roll",
-    "spellLists": [],
+    "spellLists": [
+      "Artificer",
+      "Sorcerer",
+      "Wizard"
+    ],
     "sourceBooks": [
       "Player's Handbook"
     ],
@@ -445,7 +527,11 @@
     "attackModes": [],
     "saveAbilities": [],
     "effectReliabilityCategory": "fixed_effect",
-    "spellLists": [],
+    "spellLists": [
+      "Artificer",
+      "Cleric",
+      "Druid"
+    ],
     "sourceBooks": [
       "Player's Handbook"
     ],
@@ -470,7 +556,9 @@
       "dexterity"
     ],
     "effectReliabilityCategory": "saving_throw",
-    "spellLists": [],
+    "spellLists": [
+      "Cleric"
+    ],
     "sourceBooks": [
       "Player's Handbook"
     ],
@@ -493,7 +581,9 @@
     "attackModes": [],
     "saveAbilities": [],
     "effectReliabilityCategory": "fixed_effect",
-    "spellLists": [],
+    "spellLists": [
+      "Druid"
+    ],
     "sourceBooks": [
       "Player's Handbook"
     ],
@@ -518,7 +608,11 @@
     ],
     "saveAbilities": [],
     "effectReliabilityCategory": "attack_roll",
-    "spellLists": [],
+    "spellLists": [
+      "Artificer",
+      "Sorcerer",
+      "Wizard"
+    ],
     "sourceBooks": [
       "Player's Handbook"
     ],
@@ -541,7 +635,10 @@
     "attackModes": [],
     "saveAbilities": [],
     "effectReliabilityCategory": "fixed_effect",
-    "spellLists": [],
+    "spellLists": [
+      "Artificer",
+      "Cleric"
+    ],
     "sourceBooks": [
       "Player's Handbook"
     ],
@@ -564,7 +661,9 @@
     "attackModes": [],
     "saveAbilities": [],
     "effectReliabilityCategory": "fixed_effect",
-    "spellLists": [],
+    "spellLists": [
+      "Cleric"
+    ],
     "sourceBooks": [
       "Player's Handbook"
     ],
@@ -589,7 +688,10 @@
     ],
     "saveAbilities": [],
     "effectReliabilityCategory": "attack_roll",
-    "spellLists": [],
+    "spellLists": [
+      "Artificer",
+      "Druid"
+    ],
     "sourceBooks": [
       "Player's Handbook"
     ],
@@ -612,7 +714,12 @@
     "attackModes": [],
     "saveAbilities": [],
     "effectReliabilityCategory": "fixed_effect",
-    "spellLists": [],
+    "spellLists": [
+      "Bard",
+      "Sorcerer",
+      "Warlock",
+      "Wizard"
+    ],
     "sourceBooks": [
       "Player's Handbook"
     ],
@@ -637,7 +744,9 @@
       "wisdom"
     ],
     "effectReliabilityCategory": "saving_throw",
-    "spellLists": [],
+    "spellLists": [
+      "Bard"
+    ],
     "sourceBooks": [
       "Player's Handbook"
     ],
@@ -660,7 +769,11 @@
     "attackModes": [],
     "saveAbilities": [],
     "effectReliabilityCategory": "fixed_effect",
-    "spellLists": [],
+    "spellLists": [
+      "Artificer",
+      "Ranger",
+      "Wizard"
+    ],
     "sourceBooks": [
       "Player's Handbook"
     ],
@@ -685,7 +798,11 @@
       "wisdom"
     ],
     "effectReliabilityCategory": "saving_throw",
-    "spellLists": [],
+    "spellLists": [
+      "Bard",
+      "Druid",
+      "Ranger"
+    ],
     "sourceBooks": [
       "Player's Handbook"
     ],
@@ -708,7 +825,9 @@
     "attackModes": [],
     "saveAbilities": [],
     "effectReliabilityCategory": "fixed_effect",
-    "spellLists": [],
+    "spellLists": [
+      "Warlock"
+    ],
     "sourceBooks": [
       "Player's Handbook"
     ],
@@ -733,7 +852,9 @@
       "strength"
     ],
     "effectReliabilityCategory": "saving_throw",
-    "spellLists": [],
+    "spellLists": [
+      "Warlock"
+    ],
     "sourceBooks": [
       "Player's Handbook"
     ],
@@ -758,7 +879,10 @@
       "charisma"
     ],
     "effectReliabilityCategory": "saving_throw",
-    "spellLists": [],
+    "spellLists": [
+      "Bard",
+      "Cleric"
+    ],
     "sourceBooks": [
       "Player's Handbook"
     ],
@@ -781,7 +905,10 @@
     "attackModes": [],
     "saveAbilities": [],
     "effectReliabilityCategory": "fixed_effect",
-    "spellLists": [],
+    "spellLists": [
+      "Cleric",
+      "Paladin"
+    ],
     "sourceBooks": [
       "Player's Handbook"
     ],
@@ -806,7 +933,10 @@
       "dexterity"
     ],
     "effectReliabilityCategory": "saving_throw",
-    "spellLists": [],
+    "spellLists": [
+      "Sorcerer",
+      "Wizard"
+    ],
     "sourceBooks": [
       "Player's Handbook"
     ],
@@ -831,7 +961,13 @@
       "wisdom"
     ],
     "effectReliabilityCategory": "saving_throw",
-    "spellLists": [],
+    "spellLists": [
+      "Bard",
+      "Druid",
+      "Sorcerer",
+      "Warlock",
+      "Wizard"
+    ],
     "sourceBooks": [
       "Player's Handbook"
     ],
@@ -856,7 +992,10 @@
     ],
     "saveAbilities": [],
     "effectReliabilityCategory": "attack_roll",
-    "spellLists": [],
+    "spellLists": [
+      "Sorcerer",
+      "Wizard"
+    ],
     "sourceBooks": [
       "Player's Handbook"
     ],
@@ -879,7 +1018,10 @@
     "attackModes": [],
     "saveAbilities": [],
     "effectReliabilityCategory": "fixed_effect",
-    "spellLists": [],
+    "spellLists": [
+      "Sorcerer",
+      "Wizard"
+    ],
     "sourceBooks": [
       "Player's Handbook"
     ],
@@ -904,7 +1046,10 @@
       "wisdom"
     ],
     "effectReliabilityCategory": "saving_throw",
-    "spellLists": [],
+    "spellLists": [
+      "Cleric",
+      "Paladin"
+    ],
     "sourceBooks": [
       "Player's Handbook"
     ],
@@ -929,7 +1074,9 @@
       "wisdom"
     ],
     "effectReliabilityCategory": "saving_throw",
-    "spellLists": [],
+    "spellLists": [
+      "Paladin"
+    ],
     "sourceBooks": [
       "Player's Handbook"
     ],
@@ -952,7 +1099,12 @@
     "attackModes": [],
     "saveAbilities": [],
     "effectReliabilityCategory": "fixed_effect",
-    "spellLists": [],
+    "spellLists": [
+      "Bard",
+      "Sorcerer",
+      "Warlock",
+      "Wizard"
+    ],
     "sourceBooks": [
       "Player's Handbook"
     ],
@@ -975,7 +1127,10 @@
     "attackModes": [],
     "saveAbilities": [],
     "effectReliabilityCategory": "fixed_effect",
-    "spellLists": [],
+    "spellLists": [
+      "Cleric",
+      "Druid"
+    ],
     "sourceBooks": [
       "Player's Handbook"
     ],
@@ -998,7 +1153,14 @@
     "attackModes": [],
     "saveAbilities": [],
     "effectReliabilityCategory": "modifier_scaled",
-    "spellLists": [],
+    "spellLists": [
+      "Artificer",
+      "Bard",
+      "Cleric",
+      "Druid",
+      "Paladin",
+      "Ranger"
+    ],
     "sourceBooks": [
       "Player's Handbook"
     ],
@@ -1021,7 +1183,10 @@
     "attackModes": [],
     "saveAbilities": [],
     "effectReliabilityCategory": "fixed_effect",
-    "spellLists": [],
+    "spellLists": [
+      "Cleric",
+      "Paladin"
+    ],
     "sourceBooks": [
       "Player's Handbook"
     ],
@@ -1044,7 +1209,16 @@
     "attackModes": [],
     "saveAbilities": [],
     "effectReliabilityCategory": "fixed_effect",
-    "spellLists": [],
+    "spellLists": [
+      "Artificer",
+      "Bard",
+      "Cleric",
+      "Druid",
+      "Paladin",
+      "Ranger",
+      "Sorcerer",
+      "Wizard"
+    ],
     "sourceBooks": [
       "Player's Handbook"
     ],
@@ -1067,7 +1241,12 @@
     "attackModes": [],
     "saveAbilities": [],
     "effectReliabilityCategory": "fixed_effect",
-    "spellLists": [],
+    "spellLists": [
+      "Cleric",
+      "Druid",
+      "Paladin",
+      "Ranger"
+    ],
     "sourceBooks": [
       "Player's Handbook"
     ],
@@ -1090,7 +1269,12 @@
     "attackModes": [],
     "saveAbilities": [],
     "effectReliabilityCategory": "fixed_effect",
-    "spellLists": [],
+    "spellLists": [
+      "Artificer",
+      "Bard",
+      "Sorcerer",
+      "Wizard"
+    ],
     "sourceBooks": [
       "Player's Handbook"
     ],
@@ -1115,7 +1299,9 @@
       "wisdom"
     ],
     "effectReliabilityCategory": "saving_throw",
-    "spellLists": [],
+    "spellLists": [
+      "Bard"
+    ],
     "sourceBooks": [
       "Player's Handbook"
     ],
@@ -1138,7 +1324,9 @@
     "attackModes": [],
     "saveAbilities": [],
     "effectReliabilityCategory": "fixed_effect",
-    "spellLists": [],
+    "spellLists": [
+      "Paladin"
+    ],
     "sourceBooks": [
       "Player's Handbook"
     ],
@@ -1163,7 +1351,9 @@
       "strength"
     ],
     "effectReliabilityCategory": "saving_throw",
-    "spellLists": [],
+    "spellLists": [
+      "Ranger"
+    ],
     "sourceBooks": [
       "Player's Handbook"
     ],
@@ -1188,7 +1378,9 @@
       "strength"
     ],
     "effectReliabilityCategory": "saving_throw",
-    "spellLists": [],
+    "spellLists": [
+      "Druid"
+    ],
     "sourceBooks": [
       "Player's Handbook"
     ],
@@ -1211,7 +1403,12 @@
     "attackModes": [],
     "saveAbilities": [],
     "effectReliabilityCategory": "fixed_effect",
-    "spellLists": [],
+    "spellLists": [
+      "Artificer",
+      "Sorcerer",
+      "Warlock",
+      "Wizard"
+    ],
     "sourceBooks": [
       "Player's Handbook"
     ],
@@ -1236,7 +1433,11 @@
       "dexterity"
     ],
     "effectReliabilityCategory": "saving_throw",
-    "spellLists": [],
+    "spellLists": [
+      "Artificer",
+      "Bard",
+      "Druid"
+    ],
     "sourceBooks": [
       "Player's Handbook"
     ],
@@ -1259,7 +1460,11 @@
     "attackModes": [],
     "saveAbilities": [],
     "effectReliabilityCategory": "fixed_effect",
-    "spellLists": [],
+    "spellLists": [
+      "Artificer",
+      "Sorcerer",
+      "Wizard"
+    ],
     "sourceBooks": [
       "Player's Handbook"
     ],
@@ -1282,7 +1487,12 @@
     "attackModes": [],
     "saveAbilities": [],
     "effectReliabilityCategory": "fixed_effect",
-    "spellLists": [],
+    "spellLists": [
+      "Artificer",
+      "Bard",
+      "Sorcerer",
+      "Wizard"
+    ],
     "sourceBooks": [
       "Player's Handbook"
     ],
@@ -1305,7 +1515,9 @@
     "attackModes": [],
     "saveAbilities": [],
     "effectReliabilityCategory": "fixed_effect",
-    "spellLists": [],
+    "spellLists": [
+      "Wizard"
+    ],
     "sourceBooks": [
       "Player's Handbook"
     ],
@@ -1328,7 +1540,12 @@
     "attackModes": [],
     "saveAbilities": [],
     "effectReliabilityCategory": "fixed_effect",
-    "spellLists": [],
+    "spellLists": [
+      "Druid",
+      "Ranger",
+      "Sorcerer",
+      "Wizard"
+    ],
     "sourceBooks": [
       "Player's Handbook"
     ],
@@ -1351,7 +1568,10 @@
     "attackModes": [],
     "saveAbilities": [],
     "effectReliabilityCategory": "fixed_effect",
-    "spellLists": [],
+    "spellLists": [
+      "Druid",
+      "Ranger"
+    ],
     "sourceBooks": [
       "Player's Handbook"
     ],
@@ -1376,7 +1596,10 @@
       "dexterity"
     ],
     "effectReliabilityCategory": "saving_throw",
-    "spellLists": [],
+    "spellLists": [
+      "Artificer",
+      "Wizard"
+    ],
     "sourceBooks": [
       "Player's Handbook"
     ],
@@ -1401,7 +1624,9 @@
     ],
     "saveAbilities": [],
     "effectReliabilityCategory": "attack_roll",
-    "spellLists": [],
+    "spellLists": [
+      "Cleric"
+    ],
     "sourceBooks": [
       "Player's Handbook"
     ],
@@ -1426,7 +1651,9 @@
       "dexterity"
     ],
     "effectReliabilityCategory": "saving_throw",
-    "spellLists": [],
+    "spellLists": [
+      "Ranger"
+    ],
     "sourceBooks": [
       "Player's Handbook"
     ],
@@ -1449,7 +1676,11 @@
     "attackModes": [],
     "saveAbilities": [],
     "effectReliabilityCategory": "modifier_scaled",
-    "spellLists": [],
+    "spellLists": [
+      "Bard",
+      "Cleric",
+      "Druid"
+    ],
     "sourceBooks": [
       "Player's Handbook"
     ],
@@ -1474,7 +1705,9 @@
       "dexterity"
     ],
     "effectReliabilityCategory": "saving_throw",
-    "spellLists": [],
+    "spellLists": [
+      "Warlock"
+    ],
     "sourceBooks": [
       "Player's Handbook"
     ],
@@ -1497,7 +1730,10 @@
     "attackModes": [],
     "saveAbilities": [],
     "effectReliabilityCategory": "modifier_scaled",
-    "spellLists": [],
+    "spellLists": [
+      "Bard",
+      "Paladin"
+    ],
     "sourceBooks": [
       "Player's Handbook"
     ],
@@ -1520,7 +1756,9 @@
     "attackModes": [],
     "saveAbilities": [],
     "effectReliabilityCategory": "fixed_effect",
-    "spellLists": [],
+    "spellLists": [
+      "Warlock"
+    ],
     "sourceBooks": [
       "Player's Handbook"
     ],
@@ -1543,7 +1781,9 @@
     "attackModes": [],
     "saveAbilities": [],
     "effectReliabilityCategory": "fixed_effect",
-    "spellLists": [],
+    "spellLists": [
+      "Ranger"
+    ],
     "sourceBooks": [
       "Player's Handbook"
     ],
@@ -1566,7 +1806,11 @@
     "attackModes": [],
     "saveAbilities": [],
     "effectReliabilityCategory": "fixed_effect",
-    "spellLists": [],
+    "spellLists": [
+      "Artificer",
+      "Bard",
+      "Wizard"
+    ],
     "sourceBooks": [
       "Player's Handbook"
     ],
@@ -1589,7 +1833,11 @@
     "attackModes": [],
     "saveAbilities": [],
     "effectReliabilityCategory": "fixed_effect",
-    "spellLists": [],
+    "spellLists": [
+      "Bard",
+      "Warlock",
+      "Wizard"
+    ],
     "sourceBooks": [
       "Player's Handbook"
     ],
@@ -1614,7 +1862,9 @@
     ],
     "saveAbilities": [],
     "effectReliabilityCategory": "attack_roll",
-    "spellLists": [],
+    "spellLists": [
+      "Cleric"
+    ],
     "sourceBooks": [
       "Player's Handbook"
     ],
@@ -1637,7 +1887,13 @@
     "attackModes": [],
     "saveAbilities": [],
     "effectReliabilityCategory": "fixed_effect",
-    "spellLists": [],
+    "spellLists": [
+      "Artificer",
+      "Druid",
+      "Ranger",
+      "Sorcerer",
+      "Wizard"
+    ],
     "sourceBooks": [
       "Player's Handbook"
     ],
@@ -1660,7 +1916,13 @@
     "attackModes": [],
     "saveAbilities": [],
     "effectReliabilityCategory": "fixed_effect",
-    "spellLists": [],
+    "spellLists": [
+      "Artificer",
+      "Bard",
+      "Druid",
+      "Ranger",
+      "Wizard"
+    ],
     "sourceBooks": [
       "Player's Handbook"
     ],
@@ -1683,7 +1945,10 @@
     "attackModes": [],
     "saveAbilities": [],
     "effectReliabilityCategory": "fixed_effect",
-    "spellLists": [],
+    "spellLists": [
+      "Sorcerer",
+      "Wizard"
+    ],
     "sourceBooks": [
       "Player's Handbook"
     ],
@@ -1706,7 +1971,10 @@
     "attackModes": [],
     "saveAbilities": [],
     "effectReliabilityCategory": "fixed_effect",
-    "spellLists": [],
+    "spellLists": [
+      "Sorcerer",
+      "Wizard"
+    ],
     "sourceBooks": [
       "Player's Handbook"
     ],
@@ -1729,7 +1997,12 @@
     "attackModes": [],
     "saveAbilities": [],
     "effectReliabilityCategory": "fixed_effect",
-    "spellLists": [],
+    "spellLists": [
+      "Cleric",
+      "Paladin",
+      "Warlock",
+      "Wizard"
+    ],
     "sourceBooks": [
       "Player's Handbook"
     ],
@@ -1752,7 +2025,12 @@
     "attackModes": [],
     "saveAbilities": [],
     "effectReliabilityCategory": "fixed_effect",
-    "spellLists": [],
+    "spellLists": [
+      "Artificer",
+      "Cleric",
+      "Druid",
+      "Paladin"
+    ],
     "sourceBooks": [
       "Player's Handbook"
     ],
@@ -1779,7 +2057,10 @@
       "constitution"
     ],
     "effectReliabilityCategory": "mixed",
-    "spellLists": [],
+    "spellLists": [
+      "Sorcerer",
+      "Wizard"
+    ],
     "sourceBooks": [
       "Player's Handbook"
     ],
@@ -1804,7 +2085,10 @@
       "wisdom"
     ],
     "effectReliabilityCategory": "saving_throw",
-    "spellLists": [],
+    "spellLists": [
+      "Artificer",
+      "Cleric"
+    ],
     "sourceBooks": [
       "Player's Handbook"
     ],
@@ -1829,7 +2113,9 @@
       "constitution"
     ],
     "effectReliabilityCategory": "saving_throw",
-    "spellLists": [],
+    "spellLists": [
+      "Paladin"
+    ],
     "sourceBooks": [
       "Player's Handbook"
     ],
@@ -1852,7 +2138,10 @@
     "attackModes": [],
     "saveAbilities": [],
     "effectReliabilityCategory": "fixed_effect",
-    "spellLists": [],
+    "spellLists": [
+      "Sorcerer",
+      "Wizard"
+    ],
     "sourceBooks": [
       "Player's Handbook"
     ],
@@ -1875,7 +2164,10 @@
     "attackModes": [],
     "saveAbilities": [],
     "effectReliabilityCategory": "fixed_effect",
-    "spellLists": [],
+    "spellLists": [
+      "Cleric",
+      "Paladin"
+    ],
     "sourceBooks": [
       "Player's Handbook"
     ],
@@ -1898,7 +2190,11 @@
     "attackModes": [],
     "saveAbilities": [],
     "effectReliabilityCategory": "fixed_effect",
-    "spellLists": [],
+    "spellLists": [
+      "Bard",
+      "Sorcerer",
+      "Wizard"
+    ],
     "sourceBooks": [
       "Player's Handbook"
     ],
@@ -1921,7 +2217,11 @@
     "attackModes": [],
     "saveAbilities": [],
     "effectReliabilityCategory": "fixed_effect",
-    "spellLists": [],
+    "spellLists": [
+      "Bard",
+      "Sorcerer",
+      "Wizard"
+    ],
     "sourceBooks": [
       "Player's Handbook"
     ],
@@ -1944,7 +2244,11 @@
     "attackModes": [],
     "saveAbilities": [],
     "effectReliabilityCategory": "fixed_effect",
-    "spellLists": [],
+    "spellLists": [
+      "Bard",
+      "Druid",
+      "Ranger"
+    ],
     "sourceBooks": [
       "Player's Handbook"
     ],
@@ -1969,7 +2273,10 @@
       "wisdom"
     ],
     "effectReliabilityCategory": "saving_throw",
-    "spellLists": [],
+    "spellLists": [
+      "Bard",
+      "Wizard"
+    ],
     "sourceBooks": [
       "Player's Handbook"
     ],
@@ -1992,7 +2299,9 @@
     "attackModes": [],
     "saveAbilities": [],
     "effectReliabilityCategory": "fixed_effect",
-    "spellLists": [],
+    "spellLists": [
+      "Wizard"
+    ],
     "sourceBooks": [
       "Player's Handbook"
     ],
@@ -2017,7 +2326,9 @@
       "strength"
     ],
     "effectReliabilityCategory": "saving_throw",
-    "spellLists": [],
+    "spellLists": [
+      "Paladin"
+    ],
     "sourceBooks": [
       "Player's Handbook"
     ],
@@ -2042,7 +2353,12 @@
       "constitution"
     ],
     "effectReliabilityCategory": "saving_throw",
-    "spellLists": [],
+    "spellLists": [
+      "Bard",
+      "Druid",
+      "Sorcerer",
+      "Wizard"
+    ],
     "sourceBooks": [
       "Player's Handbook"
     ],
@@ -2065,7 +2381,11 @@
     "attackModes": [],
     "saveAbilities": [],
     "effectReliabilityCategory": "fixed_effect",
-    "spellLists": [],
+    "spellLists": [
+      "Bard",
+      "Warlock",
+      "Wizard"
+    ],
     "sourceBooks": [
       "Player's Handbook"
     ],
@@ -2090,7 +2410,11 @@
     ],
     "saveAbilities": [],
     "effectReliabilityCategory": "attack_roll",
-    "spellLists": [],
+    "spellLists": [
+      "Sorcerer",
+      "Warlock",
+      "Wizard"
+    ],
     "sourceBooks": [
       "Player's Handbook"
     ],
@@ -2115,7 +2439,9 @@
       "wisdom"
     ],
     "effectReliabilityCategory": "saving_throw",
-    "spellLists": [],
+    "spellLists": [
+      "Paladin"
+    ],
     "sourceBooks": [
       "Player's Handbook"
     ],
@@ -2138,7 +2464,11 @@
     "attackModes": [],
     "saveAbilities": [],
     "effectReliabilityCategory": "fixed_effect",
-    "spellLists": [],
+    "spellLists": [
+      "Artificer",
+      "Cleric",
+      "Paladin"
+    ],
     "sourceBooks": [
       "Player's Handbook"
     ],
@@ -2161,7 +2491,11 @@
     "attackModes": [],
     "saveAbilities": [],
     "effectReliabilityCategory": "fixed_effect",
-    "spellLists": [],
+    "spellLists": [
+      "Artificer",
+      "Sorcerer",
+      "Wizard"
+    ],
     "sourceBooks": [
       "Player's Handbook"
     ],
@@ -2184,7 +2518,11 @@
     "attackModes": [],
     "saveAbilities": [],
     "effectReliabilityCategory": "fixed_effect",
-    "spellLists": [],
+    "spellLists": [
+      "Bard",
+      "Druid",
+      "Ranger"
+    ],
     "sourceBooks": [
       "Player's Handbook"
     ],
@@ -2207,7 +2545,10 @@
     "attackModes": [],
     "saveAbilities": [],
     "effectReliabilityCategory": "fixed_effect",
-    "spellLists": [],
+    "spellLists": [
+      "Artificer",
+      "Wizard"
+    ],
     "sourceBooks": [
       "Player's Handbook"
     ],
@@ -2230,7 +2571,9 @@
     "attackModes": [],
     "saveAbilities": [],
     "effectReliabilityCategory": "fixed_effect",
-    "spellLists": [],
+    "spellLists": [
+      "Cleric"
+    ],
     "sourceBooks": [
       "Player's Handbook"
     ],
@@ -2253,7 +2596,10 @@
     "attackModes": [],
     "saveAbilities": [],
     "effectReliabilityCategory": "fixed_effect",
-    "spellLists": [],
+    "spellLists": [
+      "Druid",
+      "Ranger"
+    ],
     "sourceBooks": [
       "Player's Handbook"
     ],
@@ -2276,7 +2622,10 @@
     "attackModes": [],
     "saveAbilities": [],
     "effectReliabilityCategory": "fixed_effect",
-    "spellLists": [],
+    "spellLists": [
+      "Druid",
+      "Ranger"
+    ],
     "sourceBooks": [
       "Player's Handbook"
     ],
@@ -2301,7 +2650,12 @@
       "constitution"
     ],
     "effectReliabilityCategory": "saving_throw",
-    "spellLists": [],
+    "spellLists": [
+      "Bard",
+      "Cleric",
+      "Sorcerer",
+      "Wizard"
+    ],
     "sourceBooks": [
       "Player's Handbook"
     ],
@@ -2324,7 +2678,11 @@
     "attackModes": [],
     "saveAbilities": [],
     "effectReliabilityCategory": "fixed_effect",
-    "spellLists": [],
+    "spellLists": [
+      "Artificer",
+      "Sorcerer",
+      "Wizard"
+    ],
     "sourceBooks": [
       "Player's Handbook"
     ],
@@ -2347,7 +2705,9 @@
     "attackModes": [],
     "saveAbilities": [],
     "effectReliabilityCategory": "fixed_effect",
-    "spellLists": [],
+    "spellLists": [
+      "Paladin"
+    ],
     "sourceBooks": [
       "Player's Handbook"
     ],
@@ -2372,7 +2732,10 @@
       "charisma"
     ],
     "effectReliabilityCategory": "saving_throw",
-    "spellLists": [],
+    "spellLists": [
+      "Bard",
+      "Cleric"
+    ],
     "sourceBooks": [
       "Player's Handbook"
     ],
@@ -2395,7 +2758,12 @@
     "attackModes": [],
     "saveAbilities": [],
     "effectReliabilityCategory": "fixed_effect",
-    "spellLists": [],
+    "spellLists": [
+      "Bard",
+      "Sorcerer",
+      "Warlock",
+      "Wizard"
+    ],
     "sourceBooks": [
       "Player's Handbook"
     ],
@@ -2418,7 +2786,11 @@
     "attackModes": [],
     "saveAbilities": [],
     "effectReliabilityCategory": "fixed_effect",
-    "spellLists": [],
+    "spellLists": [
+      "Artificer",
+      "Cleric",
+      "Wizard"
+    ],
     "sourceBooks": [
       "Player's Handbook"
     ],
@@ -2443,7 +2815,9 @@
       "dexterity"
     ],
     "effectReliabilityCategory": "saving_throw",
-    "spellLists": [],
+    "spellLists": [
+      "Ranger"
+    ],
     "sourceBooks": [
       "Player's Handbook"
     ],
@@ -2468,7 +2842,12 @@
       "wisdom"
     ],
     "effectReliabilityCategory": "saving_throw",
-    "spellLists": [],
+    "spellLists": [
+      "Bard",
+      "Sorcerer",
+      "Warlock",
+      "Wizard"
+    ],
     "sourceBooks": [
       "Player's Handbook"
     ],
@@ -2491,7 +2870,11 @@
     "attackModes": [],
     "saveAbilities": [],
     "effectReliabilityCategory": "fixed_effect",
-    "spellLists": [],
+    "spellLists": [
+      "Sorcerer",
+      "Warlock",
+      "Wizard"
+    ],
     "sourceBooks": [
       "Player's Handbook"
     ],
@@ -2514,7 +2897,13 @@
     "attackModes": [],
     "saveAbilities": [],
     "effectReliabilityCategory": "fixed_effect",
-    "spellLists": [],
+    "spellLists": [
+      "Artificer",
+      "Druid",
+      "Ranger",
+      "Sorcerer",
+      "Wizard"
+    ],
     "sourceBooks": [
       "Player's Handbook"
     ],
@@ -2539,7 +2928,11 @@
       "wisdom"
     ],
     "effectReliabilityCategory": "saving_throw",
-    "spellLists": [],
+    "spellLists": [
+      "Bard",
+      "Sorcerer",
+      "Wizard"
+    ],
     "sourceBooks": [
       "Player's Handbook"
     ],
@@ -2562,7 +2955,13 @@
     "attackModes": [],
     "saveAbilities": [],
     "effectReliabilityCategory": "fixed_effect",
-    "spellLists": [],
+    "spellLists": [
+      "Artificer",
+      "Bard",
+      "Cleric",
+      "Druid",
+      "Sorcerer"
+    ],
     "sourceBooks": [
       "Player's Handbook"
     ],
@@ -2588,7 +2987,11 @@
       "strength"
     ],
     "effectReliabilityCategory": "saving_throw",
-    "spellLists": [],
+    "spellLists": [
+      "Artificer",
+      "Sorcerer",
+      "Wizard"
+    ],
     "sourceBooks": [
       "Player's Handbook"
     ],
@@ -2613,7 +3016,10 @@
       "wisdom"
     ],
     "effectReliabilityCategory": "saving_throw",
-    "spellLists": [],
+    "spellLists": [
+      "Bard",
+      "Warlock"
+    ],
     "sourceBooks": [
       "Player's Handbook"
     ],
@@ -2636,7 +3042,9 @@
     "attackModes": [],
     "saveAbilities": [],
     "effectReliabilityCategory": "fixed_effect",
-    "spellLists": [],
+    "spellLists": [
+      "Paladin"
+    ],
     "sourceBooks": [
       "Player's Handbook"
     ],
@@ -2659,7 +3067,11 @@
     "attackModes": [],
     "saveAbilities": [],
     "effectReliabilityCategory": "fixed_effect",
-    "spellLists": [],
+    "spellLists": [
+      "Cleric",
+      "Druid",
+      "Ranger"
+    ],
     "sourceBooks": [
       "Player's Handbook"
     ],
@@ -2684,7 +3096,9 @@
     ],
     "saveAbilities": [],
     "effectReliabilityCategory": "attack_roll",
-    "spellLists": [],
+    "spellLists": [
+      "Druid"
+    ],
     "sourceBooks": [
       "Player's Handbook"
     ],
@@ -2709,7 +3123,10 @@
       "dexterity"
     ],
     "effectReliabilityCategory": "saving_throw",
-    "spellLists": [],
+    "spellLists": [
+      "Druid",
+      "Wizard"
+    ],
     "sourceBooks": [
       "Player's Handbook"
     ],
@@ -2732,7 +3149,10 @@
     "attackModes": [],
     "saveAbilities": [],
     "effectReliabilityCategory": "fixed_effect",
-    "spellLists": [],
+    "spellLists": [
+      "Cleric",
+      "Wizard"
+    ],
     "sourceBooks": [
       "Player's Handbook"
     ],
@@ -2757,7 +3177,11 @@
       "strength"
     ],
     "effectReliabilityCategory": "saving_throw",
-    "spellLists": [],
+    "spellLists": [
+      "Druid",
+      "Sorcerer",
+      "Wizard"
+    ],
     "sourceBooks": [
       "Player's Handbook"
     ],
@@ -2782,7 +3206,11 @@
       "constitution"
     ],
     "effectReliabilityCategory": "saving_throw",
-    "spellLists": [],
+    "spellLists": [
+      "Artificer",
+      "Bard",
+      "Druid"
+    ],
     "sourceBooks": [
       "Player's Handbook"
     ],
@@ -2807,7 +3235,14 @@
       "wisdom"
     ],
     "effectReliabilityCategory": "saving_throw",
-    "spellLists": [],
+    "spellLists": [
+      "Bard",
+      "Cleric",
+      "Druid",
+      "Sorcerer",
+      "Warlock",
+      "Wizard"
+    ],
     "sourceBooks": [
       "Player's Handbook"
     ],
@@ -2830,7 +3265,13 @@
     "attackModes": [],
     "saveAbilities": [],
     "effectReliabilityCategory": "fixed_effect",
-    "spellLists": [],
+    "spellLists": [
+      "Artificer",
+      "Bard",
+      "Sorcerer",
+      "Warlock",
+      "Wizard"
+    ],
     "sourceBooks": [
       "Player's Handbook"
     ],
@@ -2853,7 +3294,11 @@
     "attackModes": [],
     "saveAbilities": [],
     "effectReliabilityCategory": "fixed_effect",
-    "spellLists": [],
+    "spellLists": [
+      "Bard",
+      "Sorcerer",
+      "Wizard"
+    ],
     "sourceBooks": [
       "Player's Handbook"
     ],
@@ -2876,7 +3321,14 @@
     "attackModes": [],
     "saveAbilities": [],
     "effectReliabilityCategory": "fixed_effect",
-    "spellLists": [],
+    "spellLists": [
+      "Artificer",
+      "Bard",
+      "Cleric",
+      "Druid",
+      "Paladin",
+      "Ranger"
+    ],
     "sourceBooks": [
       "Player's Handbook"
     ],
@@ -2901,7 +3353,11 @@
       "constitution"
     ],
     "effectReliabilityCategory": "saving_throw",
-    "spellLists": [],
+    "spellLists": [
+      "Artificer",
+      "Sorcerer",
+      "Wizard"
+    ],
     "sourceBooks": [
       "Player's Handbook"
     ],
@@ -2924,7 +3380,11 @@
     "attackModes": [],
     "saveAbilities": [],
     "effectReliabilityCategory": "fixed_effect",
-    "spellLists": [],
+    "spellLists": [
+      "Bard",
+      "Druid",
+      "Ranger"
+    ],
     "sourceBooks": [
       "Player's Handbook"
     ],
@@ -2947,7 +3407,14 @@
     "attackModes": [],
     "saveAbilities": [],
     "effectReliabilityCategory": "fixed_effect",
-    "spellLists": [],
+    "spellLists": [
+      "Bard",
+      "Cleric",
+      "Druid",
+      "Paladin",
+      "Ranger",
+      "Wizard"
+    ],
     "sourceBooks": [
       "Player's Handbook"
     ],
@@ -2970,7 +3437,11 @@
     "attackModes": [],
     "saveAbilities": [],
     "effectReliabilityCategory": "fixed_effect",
-    "spellLists": [],
+    "spellLists": [
+      "Artificer",
+      "Bard",
+      "Wizard"
+    ],
     "sourceBooks": [
       "Player's Handbook"
     ],
@@ -2993,7 +3464,11 @@
     "attackModes": [],
     "saveAbilities": [],
     "effectReliabilityCategory": "fixed_effect",
-    "spellLists": [],
+    "spellLists": [
+      "Artificer",
+      "Paladin",
+      "Wizard"
+    ],
     "sourceBooks": [
       "Player's Handbook"
     ],
@@ -3018,7 +3493,9 @@
     ],
     "saveAbilities": [],
     "effectReliabilityCategory": "attack_roll",
-    "spellLists": [],
+    "spellLists": [
+      "Wizard"
+    ],
     "sourceBooks": [
       "Player's Handbook"
     ],
@@ -3041,7 +3518,11 @@
     "attackModes": [],
     "saveAbilities": [],
     "effectReliabilityCategory": "fixed_effect",
-    "spellLists": [],
+    "spellLists": [
+      "Sorcerer",
+      "Warlock",
+      "Wizard"
+    ],
     "sourceBooks": [
       "Player's Handbook"
     ],
@@ -3064,7 +3545,11 @@
     "attackModes": [],
     "saveAbilities": [],
     "effectReliabilityCategory": "fixed_effect",
-    "spellLists": [],
+    "spellLists": [
+      "Sorcerer",
+      "Warlock",
+      "Wizard"
+    ],
     "sourceBooks": [
       "Player's Handbook"
     ],
@@ -3089,7 +3574,9 @@
       "constitution"
     ],
     "effectReliabilityCategory": "saving_throw",
-    "spellLists": [],
+    "spellLists": [
+      "Druid"
+    ],
     "sourceBooks": [
       "Player's Handbook"
     ],
@@ -3112,7 +3599,9 @@
     "attackModes": [],
     "saveAbilities": [],
     "effectReliabilityCategory": "fixed_effect",
-    "spellLists": [],
+    "spellLists": [
+      "Wizard"
+    ],
     "sourceBooks": [
       "Player's Handbook"
     ],
@@ -3135,7 +3624,10 @@
     "attackModes": [],
     "saveAbilities": [],
     "effectReliabilityCategory": "fixed_effect",
-    "spellLists": [],
+    "spellLists": [
+      "Druid",
+      "Ranger"
+    ],
     "sourceBooks": [
       "Player's Handbook"
     ],
@@ -3160,7 +3652,11 @@
       "intelligence"
     ],
     "effectReliabilityCategory": "saving_throw",
-    "spellLists": [],
+    "spellLists": [
+      "Bard",
+      "Sorcerer",
+      "Wizard"
+    ],
     "sourceBooks": [
       "Player's Handbook"
     ],
@@ -3183,7 +3679,9 @@
     "attackModes": [],
     "saveAbilities": [],
     "effectReliabilityCategory": "modifier_scaled",
-    "spellLists": [],
+    "spellLists": [
+      "Cleric"
+    ],
     "sourceBooks": [
       "Player's Handbook"
     ],
@@ -3206,7 +3704,13 @@
     "attackModes": [],
     "saveAbilities": [],
     "effectReliabilityCategory": "fixed_effect",
-    "spellLists": [],
+    "spellLists": [
+      "Artificer",
+      "Cleric",
+      "Druid",
+      "Paladin",
+      "Ranger"
+    ],
     "sourceBooks": [
       "Player's Handbook"
     ],
@@ -3233,7 +3737,10 @@
       "constitution"
     ],
     "effectReliabilityCategory": "mixed",
-    "spellLists": [],
+    "spellLists": [
+      "Warlock",
+      "Wizard"
+    ],
     "sourceBooks": [
       "Player's Handbook"
     ],
@@ -3256,7 +3763,10 @@
     "attackModes": [],
     "saveAbilities": [],
     "effectReliabilityCategory": "fixed_effect",
-    "spellLists": [],
+    "spellLists": [
+      "Artificer",
+      "Wizard"
+    ],
     "sourceBooks": [
       "Player's Handbook"
     ],
@@ -3281,7 +3791,10 @@
     ],
     "saveAbilities": [],
     "effectReliabilityCategory": "attack_roll",
-    "spellLists": [],
+    "spellLists": [
+      "Sorcerer",
+      "Wizard"
+    ],
     "sourceBooks": [
       "Player's Handbook"
     ],
@@ -3304,7 +3817,12 @@
     "attackModes": [],
     "saveAbilities": [],
     "effectReliabilityCategory": "fixed_effect",
-    "spellLists": [],
+    "spellLists": [
+      "Artificer",
+      "Bard",
+      "Sorcerer",
+      "Wizard"
+    ],
     "sourceBooks": [
       "Player's Handbook"
     ],
@@ -3329,7 +3847,12 @@
       "constitution"
     ],
     "effectReliabilityCategory": "saving_throw",
-    "spellLists": [],
+    "spellLists": [
+      "Bard",
+      "Sorcerer",
+      "Warlock",
+      "Wizard"
+    ],
     "sourceBooks": [
       "Player's Handbook"
     ],
@@ -3352,7 +3875,11 @@
     "attackModes": [],
     "saveAbilities": [],
     "effectReliabilityCategory": "fixed_effect",
-    "spellLists": [],
+    "spellLists": [
+      "Bard",
+      "Cleric",
+      "Ranger"
+    ],
     "sourceBooks": [
       "Player's Handbook"
     ],
@@ -3375,7 +3902,12 @@
     "attackModes": [],
     "saveAbilities": [],
     "effectReliabilityCategory": "fixed_effect",
-    "spellLists": [],
+    "spellLists": [
+      "Artificer",
+      "Sorcerer",
+      "Warlock",
+      "Wizard"
+    ],
     "sourceBooks": [
       "Player's Handbook"
     ],
@@ -3398,7 +3930,10 @@
     "attackModes": [],
     "saveAbilities": [],
     "effectReliabilityCategory": "fixed_effect",
-    "spellLists": [],
+    "spellLists": [
+      "Druid",
+      "Ranger"
+    ],
     "sourceBooks": [
       "Player's Handbook"
     ],
@@ -3423,7 +3958,9 @@
     ],
     "saveAbilities": [],
     "effectReliabilityCategory": "attack_roll",
-    "spellLists": [],
+    "spellLists": [
+      "Cleric"
+    ],
     "sourceBooks": [
       "Player's Handbook"
     ],
@@ -3448,7 +3985,12 @@
       "wisdom"
     ],
     "effectReliabilityCategory": "saving_throw",
-    "spellLists": [],
+    "spellLists": [
+      "Bard",
+      "Sorcerer",
+      "Warlock",
+      "Wizard"
+    ],
     "sourceBooks": [
       "Player's Handbook"
     ],
@@ -3471,7 +4013,9 @@
     "attackModes": [],
     "saveAbilities": [],
     "effectReliabilityCategory": "fixed_effect",
-    "spellLists": [],
+    "spellLists": [
+      "Cleric"
+    ],
     "sourceBooks": [
       "Player's Handbook"
     ],
@@ -3496,7 +4040,11 @@
       "dexterity"
     ],
     "effectReliabilityCategory": "saving_throw",
-    "spellLists": [],
+    "spellLists": [
+      "Artificer",
+      "Sorcerer",
+      "Wizard"
+    ],
     "sourceBooks": [
       "Player's Handbook"
     ],
@@ -3521,7 +4069,11 @@
       "charisma"
     ],
     "effectReliabilityCategory": "saving_throw",
-    "spellLists": [],
+    "spellLists": [
+      "Bard",
+      "Cleric",
+      "Paladin"
+    ],
     "sourceBooks": [
       "Player's Handbook"
     ],
@@ -3544,7 +4096,10 @@
     "attackModes": [],
     "saveAbilities": [],
     "effectReliabilityCategory": "fixed_effect",
-    "spellLists": [],
+    "spellLists": [
+      "Cleric",
+      "Wizard"
+    ],
     "sourceBooks": [
       "Player's Handbook"
     ],
@@ -3567,7 +4122,9 @@
     "attackModes": [],
     "saveAbilities": [],
     "effectReliabilityCategory": "fixed_effect",
-    "spellLists": [],
+    "spellLists": [
+      "Paladin"
+    ],
     "sourceBooks": [
       "Player's Handbook"
     ],
@@ -3592,7 +4149,9 @@
       "wisdom"
     ],
     "effectReliabilityCategory": "saving_throw",
-    "spellLists": [],
+    "spellLists": [
+      "Cleric"
+    ],
     "sourceBooks": [
       "Player's Handbook"
     ],
@@ -3617,7 +4176,11 @@
       "wisdom"
     ],
     "effectReliabilityCategory": "saving_throw",
-    "spellLists": [],
+    "spellLists": [
+      "Bard",
+      "Cleric",
+      "Wizard"
+    ],
     "sourceBooks": [
       "Player's Handbook"
     ],
@@ -3642,7 +4205,9 @@
       "constitution"
     ],
     "effectReliabilityCategory": "saving_throw",
-    "spellLists": [],
+    "spellLists": [
+      "Paladin"
+    ],
     "sourceBooks": [
       "Player's Handbook"
     ],
@@ -3665,7 +4230,11 @@
     "attackModes": [],
     "saveAbilities": [],
     "effectReliabilityCategory": "fixed_effect",
-    "spellLists": [],
+    "spellLists": [
+      "Artificer",
+      "Sorcerer",
+      "Wizard"
+    ],
     "sourceBooks": [
       "Player's Handbook"
     ],
@@ -3690,7 +4259,9 @@
       "dexterity"
     ],
     "effectReliabilityCategory": "saving_throw",
-    "spellLists": [],
+    "spellLists": [
+      "Druid"
+    ],
     "sourceBooks": [
       "Player's Handbook"
     ],
@@ -3713,7 +4284,12 @@
     "attackModes": [],
     "saveAbilities": [],
     "effectReliabilityCategory": "fixed_effect",
-    "spellLists": [],
+    "spellLists": [
+      "Bard",
+      "Cleric",
+      "Sorcerer",
+      "Wizard"
+    ],
     "sourceBooks": [
       "Player's Handbook"
     ],
@@ -3736,7 +4312,10 @@
     "attackModes": [],
     "saveAbilities": [],
     "effectReliabilityCategory": "fixed_effect",
-    "spellLists": [],
+    "spellLists": [
+      "Druid",
+      "Ranger"
+    ],
     "sourceBooks": [
       "Player's Handbook"
     ],
@@ -3761,7 +4340,9 @@
       "dexterity"
     ],
     "effectReliabilityCategory": "saving_throw",
-    "spellLists": [],
+    "spellLists": [
+      "Ranger"
+    ],
     "sourceBooks": [
       "Player's Handbook"
     ],
@@ -3784,7 +4365,11 @@
     "attackModes": [],
     "saveAbilities": [],
     "effectReliabilityCategory": "fixed_effect",
-    "spellLists": [],
+    "spellLists": [
+      "Sorcerer",
+      "Warlock",
+      "Wizard"
+    ],
     "sourceBooks": [
       "Player's Handbook"
     ],
@@ -3807,7 +4392,11 @@
     "attackModes": [],
     "saveAbilities": [],
     "effectReliabilityCategory": "fixed_effect",
-    "spellLists": [],
+    "spellLists": [
+      "Artificer",
+      "Cleric",
+      "Paladin"
+    ],
     "sourceBooks": [
       "Player's Handbook"
     ],
@@ -3830,7 +4419,9 @@
     "attackModes": [],
     "saveAbilities": [],
     "effectReliabilityCategory": "fixed_effect",
-    "spellLists": [],
+    "spellLists": [
+      "Paladin"
+    ],
     "sourceBooks": [
       "Player's Handbook"
     ],
@@ -3853,7 +4444,13 @@
     "attackModes": [],
     "saveAbilities": [],
     "effectReliabilityCategory": "fixed_effect",
-    "spellLists": [],
+    "spellLists": [
+      "Cleric",
+      "Druid",
+      "Paladin",
+      "Ranger",
+      "Sorcerer"
+    ],
     "sourceBooks": [
       "Player's Handbook"
     ],
@@ -3876,7 +4473,16 @@
     "attackModes": [],
     "saveAbilities": [],
     "effectReliabilityCategory": "fixed_effect",
-    "spellLists": [],
+    "spellLists": [
+      "Artificer",
+      "Bard",
+      "Cleric",
+      "Druid",
+      "Paladin",
+      "Sorcerer",
+      "Warlock",
+      "Wizard"
+    ],
     "sourceBooks": [
       "Player's Handbook"
     ],
@@ -3899,7 +4505,10 @@
     "attackModes": [],
     "saveAbilities": [],
     "effectReliabilityCategory": "fixed_effect",
-    "spellLists": [],
+    "spellLists": [
+      "Artificer",
+      "Paladin"
+    ],
     "sourceBooks": [
       "Player's Handbook"
     ],
@@ -3924,7 +4533,12 @@
       "wisdom"
     ],
     "effectReliabilityCategory": "saving_throw",
-    "spellLists": [],
+    "spellLists": [
+      "Bard",
+      "Sorcerer",
+      "Warlock",
+      "Wizard"
+    ],
     "sourceBooks": [
       "Player's Handbook"
     ],
@@ -3947,7 +4561,12 @@
     "attackModes": [],
     "saveAbilities": [],
     "effectReliabilityCategory": "fixed_effect",
-    "spellLists": [],
+    "spellLists": [
+      "Bard",
+      "Cleric",
+      "Druid",
+      "Wizard"
+    ],
     "sourceBooks": [
       "Player's Handbook"
     ],
@@ -3972,7 +4591,10 @@
       "dexterity"
     ],
     "effectReliabilityCategory": "saving_throw",
-    "spellLists": [],
+    "spellLists": [
+      "Sorcerer",
+      "Wizard"
+    ],
     "sourceBooks": [
       "Player's Handbook"
     ],
@@ -3995,7 +4617,12 @@
     "attackModes": [],
     "saveAbilities": [],
     "effectReliabilityCategory": "fixed_effect",
-    "spellLists": [],
+    "spellLists": [
+      "Artificer",
+      "Sorcerer",
+      "Warlock",
+      "Wizard"
+    ],
     "sourceBooks": [
       "Player's Handbook"
     ],
@@ -4020,7 +4647,11 @@
       "constitution"
     ],
     "effectReliabilityCategory": "saving_throw",
-    "spellLists": [],
+    "spellLists": [
+      "Sorcerer",
+      "Warlock",
+      "Wizard"
+    ],
     "sourceBooks": [
       "Player's Handbook"
     ],
@@ -4045,7 +4676,12 @@
       "dexterity"
     ],
     "effectReliabilityCategory": "saving_throw",
-    "spellLists": [],
+    "spellLists": [
+      "Artificer",
+      "Bard",
+      "Cleric",
+      "Wizard"
+    ],
     "sourceBooks": [
       "Player's Handbook"
     ],
@@ -4070,7 +4706,11 @@
       "dexterity"
     ],
     "effectReliabilityCategory": "saving_throw",
-    "spellLists": [],
+    "spellLists": [
+      "Artificer",
+      "Sorcerer",
+      "Wizard"
+    ],
     "sourceBooks": [
       "Player's Handbook"
     ],
@@ -4095,7 +4735,9 @@
       "dexterity"
     ],
     "effectReliabilityCategory": "saving_throw",
-    "spellLists": [],
+    "spellLists": [
+      "Warlock"
+    ],
     "sourceBooks": [
       "Player's Handbook"
     ],
@@ -4120,7 +4762,12 @@
       "wisdom"
     ],
     "effectReliabilityCategory": "saving_throw",
-    "spellLists": [],
+    "spellLists": [
+      "Bard",
+      "Sorcerer",
+      "Warlock",
+      "Wizard"
+    ],
     "sourceBooks": [
       "Player's Handbook"
     ],
@@ -4143,7 +4790,10 @@
     "attackModes": [],
     "saveAbilities": [],
     "effectReliabilityCategory": "fixed_effect",
-    "spellLists": [],
+    "spellLists": [
+      "Bard",
+      "Wizard"
+    ],
     "sourceBooks": [
       "Player's Handbook"
     ],
@@ -4168,7 +4818,9 @@
       "dexterity"
     ],
     "effectReliabilityCategory": "saving_throw",
-    "spellLists": [],
+    "spellLists": [
+      "Ranger"
+    ],
     "sourceBooks": [
       "Player's Handbook"
     ],
@@ -4193,7 +4845,10 @@
       "dexterity"
     ],
     "effectReliabilityCategory": "saving_throw",
-    "spellLists": [],
+    "spellLists": [
+      "Sorcerer",
+      "Wizard"
+    ],
     "sourceBooks": [
       "Player's Handbook"
     ],
@@ -4216,7 +4871,12 @@
     "attackModes": [],
     "saveAbilities": [],
     "effectReliabilityCategory": "fixed_effect",
-    "spellLists": [],
+    "spellLists": [
+      "Cleric",
+      "Paladin",
+      "Warlock",
+      "Wizard"
+    ],
     "sourceBooks": [
       "Player's Handbook"
     ],
@@ -4239,7 +4899,12 @@
     "attackModes": [],
     "saveAbilities": [],
     "effectReliabilityCategory": "fixed_effect",
-    "spellLists": [],
+    "spellLists": [
+      "Bard",
+      "Sorcerer",
+      "Warlock",
+      "Wizard"
+    ],
     "sourceBooks": [
       "Player's Handbook"
     ],
@@ -4262,7 +4927,9 @@
     "attackModes": [],
     "saveAbilities": [],
     "effectReliabilityCategory": "modifier_scaled",
-    "spellLists": [],
+    "spellLists": [
+      "Cleric"
+    ],
     "sourceBooks": [
       "Player's Handbook"
     ],
@@ -4285,7 +4952,10 @@
     "attackModes": [],
     "saveAbilities": [],
     "effectReliabilityCategory": "fixed_effect",
-    "spellLists": [],
+    "spellLists": [
+      "Cleric",
+      "Druid"
+    ],
     "sourceBooks": [
       "Player's Handbook"
     ],
@@ -4308,7 +4978,11 @@
     "attackModes": [],
     "saveAbilities": [],
     "effectReliabilityCategory": "fixed_effect",
-    "spellLists": [],
+    "spellLists": [
+      "Bard",
+      "Ranger",
+      "Wizard"
+    ],
     "sourceBooks": [
       "Player's Handbook"
     ],
@@ -4331,7 +5005,9 @@
     "attackModes": [],
     "saveAbilities": [],
     "effectReliabilityCategory": "fixed_effect",
-    "spellLists": [],
+    "spellLists": [
+      "Wizard"
+    ],
     "sourceBooks": [
       "Player's Handbook"
     ],
@@ -4354,7 +5030,11 @@
     "attackModes": [],
     "saveAbilities": [],
     "effectReliabilityCategory": "fixed_effect",
-    "spellLists": [],
+    "spellLists": [
+      "Bard",
+      "Druid",
+      "Ranger"
+    ],
     "sourceBooks": [
       "Player's Handbook"
     ],
@@ -4377,7 +5057,14 @@
     "attackModes": [],
     "saveAbilities": [],
     "effectReliabilityCategory": "fixed_effect",
-    "spellLists": [],
+    "spellLists": [
+      "Artificer",
+      "Cleric",
+      "Druid",
+      "Ranger",
+      "Sorcerer",
+      "Wizard"
+    ],
     "sourceBooks": [
       "Player's Handbook"
     ],
@@ -4400,7 +5087,12 @@
     "attackModes": [],
     "saveAbilities": [],
     "effectReliabilityCategory": "fixed_effect",
-    "spellLists": [],
+    "spellLists": [
+      "Cleric",
+      "Paladin",
+      "Warlock",
+      "Wizard"
+    ],
     "sourceBooks": [
       "Player's Handbook"
     ],
@@ -4423,7 +5115,11 @@
     "attackModes": [],
     "saveAbilities": [],
     "effectReliabilityCategory": "fixed_effect",
-    "spellLists": [],
+    "spellLists": [
+      "Artificer",
+      "Cleric",
+      "Paladin"
+    ],
     "sourceBooks": [
       "Player's Handbook"
     ],
@@ -4446,7 +5142,11 @@
     "attackModes": [],
     "saveAbilities": [],
     "effectReliabilityCategory": "fixed_effect",
-    "spellLists": [],
+    "spellLists": [
+      "Bard",
+      "Cleric",
+      "Wizard"
+    ],
     "sourceBooks": [
       "Player's Handbook"
     ],
@@ -4472,7 +5172,11 @@
       "constitution"
     ],
     "effectReliabilityCategory": "saving_throw",
-    "spellLists": [],
+    "spellLists": [
+      "Druid",
+      "Sorcerer",
+      "Wizard"
+    ],
     "sourceBooks": [
       "Player's Handbook"
     ],
@@ -4498,7 +5202,10 @@
       "dexterity"
     ],
     "effectReliabilityCategory": "saving_throw",
-    "spellLists": [],
+    "spellLists": [
+      "Sorcerer",
+      "Wizard"
+    ],
     "sourceBooks": [
       "Player's Handbook"
     ],
@@ -4521,7 +5228,10 @@
     "attackModes": [],
     "saveAbilities": [],
     "effectReliabilityCategory": "fixed_effect",
-    "spellLists": [],
+    "spellLists": [
+      "Bard",
+      "Cleric"
+    ],
     "sourceBooks": [
       "Player's Handbook"
     ],
@@ -4544,7 +5254,11 @@
     "attackModes": [],
     "saveAbilities": [],
     "effectReliabilityCategory": "fixed_effect",
-    "spellLists": [],
+    "spellLists": [
+      "Bard",
+      "Druid",
+      "Ranger"
+    ],
     "sourceBooks": [
       "Player's Handbook"
     ],
@@ -4569,7 +5283,9 @@
       "wisdom"
     ],
     "effectReliabilityCategory": "saving_throw",
-    "spellLists": [],
+    "spellLists": [
+      "Cleric"
+    ],
     "sourceBooks": [
       "Player's Handbook"
     ],
@@ -4594,7 +5310,11 @@
       "constitution"
     ],
     "effectReliabilityCategory": "saving_throw",
-    "spellLists": [],
+    "spellLists": [
+      "Bard",
+      "Sorcerer",
+      "Wizard"
+    ],
     "sourceBooks": [
       "Player's Handbook"
     ],
@@ -4617,7 +5337,13 @@
     "attackModes": [],
     "saveAbilities": [],
     "effectReliabilityCategory": "fixed_effect",
-    "spellLists": [],
+    "spellLists": [
+      "Bard",
+      "Cleric",
+      "Sorcerer",
+      "Warlock",
+      "Wizard"
+    ],
     "sourceBooks": [
       "Player's Handbook"
     ],
@@ -4642,7 +5368,10 @@
     ],
     "saveAbilities": [],
     "effectReliabilityCategory": "attack_roll",
-    "spellLists": [],
+    "spellLists": [
+      "Warlock",
+      "Wizard"
+    ],
     "sourceBooks": [
       "Player's Handbook"
     ],
@@ -4665,7 +5394,13 @@
     "attackModes": [],
     "saveAbilities": [],
     "effectReliabilityCategory": "fixed_effect",
-    "spellLists": [],
+    "spellLists": [
+      "Artificer",
+      "Druid",
+      "Ranger",
+      "Sorcerer",
+      "Wizard"
+    ],
     "sourceBooks": [
       "Player's Handbook"
     ],
@@ -4688,7 +5423,13 @@
     "attackModes": [],
     "saveAbilities": [],
     "effectReliabilityCategory": "fixed_effect",
-    "spellLists": [],
+    "spellLists": [
+      "Artificer",
+      "Cleric",
+      "Druid",
+      "Ranger",
+      "Sorcerer"
+    ],
     "sourceBooks": [
       "Player's Handbook"
     ],
@@ -4713,7 +5454,10 @@
       "strength"
     ],
     "effectReliabilityCategory": "saving_throw",
-    "spellLists": [],
+    "spellLists": [
+      "Druid",
+      "Ranger"
+    ],
     "sourceBooks": [
       "Player's Handbook"
     ],
@@ -4736,7 +5480,10 @@
     "attackModes": [],
     "saveAbilities": [],
     "effectReliabilityCategory": "fixed_effect",
-    "spellLists": [],
+    "spellLists": [
+      "Artificer",
+      "Wizard"
+    ],
     "sourceBooks": [
       "Player's Handbook"
     ],
@@ -4759,7 +5506,9 @@
     "attackModes": [],
     "saveAbilities": [],
     "effectReliabilityCategory": "fixed_effect",
-    "spellLists": [],
+    "spellLists": [
+      "Paladin"
+    ],
     "sourceBooks": [
       "Player's Handbook"
     ],
@@ -4782,7 +5531,9 @@
     "attackModes": [],
     "saveAbilities": [],
     "effectReliabilityCategory": "fixed_effect",
-    "spellLists": [],
+    "spellLists": [
+      "Paladin"
+    ],
     "sourceBooks": [
       "Player's Handbook"
     ],
@@ -4807,7 +5558,13 @@
       "charisma"
     ],
     "effectReliabilityCategory": "saving_throw",
-    "spellLists": [],
+    "spellLists": [
+      "Cleric",
+      "Paladin",
+      "Sorcerer",
+      "Warlock",
+      "Wizard"
+    ],
     "sourceBooks": [
       "Player's Handbook"
     ],
@@ -4832,7 +5589,12 @@
       "constitution"
     ],
     "effectReliabilityCategory": "saving_throw",
-    "spellLists": [],
+    "spellLists": [
+      "Druid",
+      "Sorcerer",
+      "Warlock",
+      "Wizard"
+    ],
     "sourceBooks": [
       "Player's Handbook"
     ],
@@ -4857,7 +5619,9 @@
       "wisdom"
     ],
     "effectReliabilityCategory": "saving_throw",
-    "spellLists": [],
+    "spellLists": [
+      "Bard"
+    ],
     "sourceBooks": [
       "Player's Handbook"
     ],
@@ -4882,7 +5646,12 @@
       "wisdom"
     ],
     "effectReliabilityCategory": "saving_throw",
-    "spellLists": [],
+    "spellLists": [
+      "Bard",
+      "Druid",
+      "Sorcerer",
+      "Wizard"
+    ],
     "sourceBooks": [
       "Player's Handbook"
     ],
@@ -4905,7 +5674,10 @@
     "attackModes": [],
     "saveAbilities": [],
     "effectReliabilityCategory": "fixed_effect",
-    "spellLists": [],
+    "spellLists": [
+      "Druid",
+      "Wizard"
+    ],
     "sourceBooks": [
       "Player's Handbook"
     ],
@@ -4928,7 +5700,10 @@
     "attackModes": [],
     "saveAbilities": [],
     "effectReliabilityCategory": "fixed_effect",
-    "spellLists": [],
+    "spellLists": [
+      "Druid",
+      "Ranger"
+    ],
     "sourceBooks": [
       "Player's Handbook"
     ],
@@ -4953,7 +5728,11 @@
       "strength"
     ],
     "effectReliabilityCategory": "saving_throw",
-    "spellLists": [],
+    "spellLists": [
+      "Cleric",
+      "Druid",
+      "Wizard"
+    ],
     "sourceBooks": [
       "Player's Handbook"
     ],
@@ -4976,7 +5755,10 @@
     "attackModes": [],
     "saveAbilities": [],
     "effectReliabilityCategory": "fixed_effect",
-    "spellLists": [],
+    "spellLists": [
+      "Cleric",
+      "Paladin"
+    ],
     "sourceBooks": [
       "Player's Handbook"
     ],
@@ -4999,7 +5781,12 @@
     "attackModes": [],
     "saveAbilities": [],
     "effectReliabilityCategory": "fixed_effect",
-    "spellLists": [],
+    "spellLists": [
+      "Bard",
+      "Sorcerer",
+      "Warlock",
+      "Wizard"
+    ],
     "sourceBooks": [
       "Player's Handbook"
     ],
@@ -5022,7 +5809,9 @@
     "attackModes": [],
     "saveAbilities": [],
     "effectReliabilityCategory": "fixed_effect",
-    "spellLists": [],
+    "spellLists": [
+      "Cleric"
+    ],
     "sourceBooks": [
       "Player's Handbook"
     ],
@@ -5047,7 +5836,10 @@
       "wisdom"
     ],
     "effectReliabilityCategory": "saving_throw",
-    "spellLists": [],
+    "spellLists": [
+      "Druid",
+      "Sorcerer"
+    ],
     "sourceBooks": [
       "Player's Handbook"
     ],
@@ -5072,7 +5864,9 @@
       "dexterity"
     ],
     "effectReliabilityCategory": "saving_throw",
-    "spellLists": [],
+    "spellLists": [
+      "Wizard"
+    ],
     "sourceBooks": [
       "Player's Handbook"
     ],
@@ -5095,7 +5889,10 @@
     "attackModes": [],
     "saveAbilities": [],
     "effectReliabilityCategory": "fixed_effect",
-    "spellLists": [],
+    "spellLists": [
+      "Artificer",
+      "Wizard"
+    ],
     "sourceBooks": [
       "Player's Handbook"
     ],
@@ -5118,7 +5915,9 @@
     "attackModes": [],
     "saveAbilities": [],
     "effectReliabilityCategory": "fixed_effect",
-    "spellLists": [],
+    "spellLists": [
+      "Wizard"
+    ],
     "sourceBooks": [
       "Player's Handbook"
     ],
@@ -5141,7 +5940,13 @@
     "attackModes": [],
     "saveAbilities": [],
     "effectReliabilityCategory": "fixed_effect",
-    "spellLists": [],
+    "spellLists": [
+      "Artificer",
+      "Bard",
+      "Cleric",
+      "Druid",
+      "Ranger"
+    ],
     "sourceBooks": [
       "Player's Handbook"
     ],
@@ -5164,7 +5969,9 @@
     "attackModes": [],
     "saveAbilities": [],
     "effectReliabilityCategory": "fixed_effect",
-    "spellLists": [],
+    "spellLists": [
+      "Druid"
+    ],
     "sourceBooks": [
       "Player's Handbook"
     ],
@@ -5189,7 +5996,10 @@
       "dexterity"
     ],
     "effectReliabilityCategory": "saving_throw",
-    "spellLists": [],
+    "spellLists": [
+      "Druid",
+      "Ranger"
+    ],
     "sourceBooks": [
       "Player's Handbook"
     ],
@@ -5212,7 +6022,11 @@
     "attackModes": [],
     "saveAbilities": [],
     "effectReliabilityCategory": "fixed_effect",
-    "spellLists": [],
+    "spellLists": [
+      "Bard",
+      "Sorcerer",
+      "Wizard"
+    ],
     "sourceBooks": [
       "Player's Handbook"
     ],
@@ -5237,7 +6051,9 @@
       "dexterity"
     ],
     "effectReliabilityCategory": "saving_throw",
-    "spellLists": [],
+    "spellLists": [
+      "Cleric"
+    ],
     "sourceBooks": [
       "Player's Handbook"
     ],
@@ -5260,7 +6076,12 @@
     "attackModes": [],
     "saveAbilities": [],
     "effectReliabilityCategory": "fixed_effect",
-    "spellLists": [],
+    "spellLists": [
+      "Bard",
+      "Druid",
+      "Warlock",
+      "Wizard"
+    ],
     "sourceBooks": [
       "Player's Handbook"
     ],
@@ -5285,7 +6106,11 @@
       "dexterity"
     ],
     "effectReliabilityCategory": "saving_throw",
-    "spellLists": [],
+    "spellLists": [
+      "Druid",
+      "Sorcerer",
+      "Wizard"
+    ],
     "sourceBooks": [
       "Player's Handbook"
     ],
@@ -5308,7 +6133,10 @@
     "attackModes": [],
     "saveAbilities": [],
     "effectReliabilityCategory": "fixed_effect",
-    "spellLists": [],
+    "spellLists": [
+      "Artificer",
+      "Wizard"
+    ],
     "sourceBooks": [
       "Player's Handbook"
     ],
@@ -5331,7 +6159,14 @@
     "attackModes": [],
     "saveAbilities": [],
     "effectReliabilityCategory": "fixed_effect",
-    "spellLists": [],
+    "spellLists": [
+      "Bard",
+      "Cleric",
+      "Druid",
+      "Paladin",
+      "Ranger",
+      "Wizard"
+    ],
     "sourceBooks": [
       "Player's Handbook"
     ],
@@ -5354,7 +6189,10 @@
     "attackModes": [],
     "saveAbilities": [],
     "effectReliabilityCategory": "modifier_scaled",
-    "spellLists": [],
+    "spellLists": [
+      "Artificer",
+      "Wizard"
+    ],
     "sourceBooks": [
       "Player's Handbook"
     ],
@@ -5377,7 +6215,10 @@
     "attackModes": [],
     "saveAbilities": [],
     "effectReliabilityCategory": "fixed_effect",
-    "spellLists": [],
+    "spellLists": [
+      "Artificer",
+      "Wizard"
+    ],
     "sourceBooks": [
       "Player's Handbook"
     ],
@@ -5402,7 +6243,10 @@
       "dexterity"
     ],
     "effectReliabilityCategory": "saving_throw",
-    "spellLists": [],
+    "spellLists": [
+      "Artificer",
+      "Wizard"
+    ],
     "sourceBooks": [
       "Player's Handbook"
     ],
@@ -5427,7 +6271,9 @@
       "wisdom"
     ],
     "effectReliabilityCategory": "saving_throw",
-    "spellLists": [],
+    "spellLists": [
+      "Wizard"
+    ],
     "sourceBooks": [
       "Player's Handbook"
     ],
@@ -5452,7 +6298,12 @@
       "wisdom"
     ],
     "effectReliabilityCategory": "saving_throw",
-    "spellLists": [],
+    "spellLists": [
+      "Bard",
+      "Druid",
+      "Sorcerer",
+      "Wizard"
+    ],
     "sourceBooks": [
       "Player's Handbook"
     ],
@@ -5477,7 +6328,9 @@
       "wisdom"
     ],
     "effectReliabilityCategory": "saving_throw",
-    "spellLists": [],
+    "spellLists": [
+      "Paladin"
+    ],
     "sourceBooks": [
       "Player's Handbook"
     ],
@@ -5500,7 +6353,12 @@
     "attackModes": [],
     "saveAbilities": [],
     "effectReliabilityCategory": "fixed_effect",
-    "spellLists": [],
+    "spellLists": [
+      "Artificer",
+      "Cleric",
+      "Druid",
+      "Wizard"
+    ],
     "sourceBooks": [
       "Player's Handbook"
     ],
@@ -5523,7 +6381,13 @@
     "attackModes": [],
     "saveAbilities": [],
     "effectReliabilityCategory": "fixed_effect",
-    "spellLists": [],
+    "spellLists": [
+      "Artificer",
+      "Druid",
+      "Ranger",
+      "Sorcerer",
+      "Wizard"
+    ],
     "sourceBooks": [
       "Player's Handbook"
     ],
@@ -5548,7 +6412,11 @@
       "dexterity"
     ],
     "effectReliabilityCategory": "saving_throw",
-    "spellLists": [],
+    "spellLists": [
+      "Druid",
+      "Sorcerer",
+      "Wizard"
+    ],
     "sourceBooks": [
       "Player's Handbook"
     ],
@@ -5571,7 +6439,12 @@
     "attackModes": [],
     "saveAbilities": [],
     "effectReliabilityCategory": "fixed_effect",
-    "spellLists": [],
+    "spellLists": [
+      "Artificer",
+      "Bard",
+      "Sorcerer",
+      "Wizard"
+    ],
     "sourceBooks": [
       "Player's Handbook"
     ],
@@ -5594,7 +6467,9 @@
     "attackModes": [],
     "saveAbilities": [],
     "effectReliabilityCategory": "fixed_effect",
-    "spellLists": [],
+    "spellLists": [
+      "Druid"
+    ],
     "sourceBooks": [
       "Player's Handbook"
     ],
@@ -5617,7 +6492,10 @@
     "attackModes": [],
     "saveAbilities": [],
     "effectReliabilityCategory": "fixed_effect",
-    "spellLists": [],
+    "spellLists": [
+      "Bard",
+      "Druid"
+    ],
     "sourceBooks": [
       "Player's Handbook"
     ],
@@ -5640,7 +6518,9 @@
     "attackModes": [],
     "saveAbilities": [],
     "effectReliabilityCategory": "fixed_effect",
-    "spellLists": [],
+    "spellLists": [
+      "Paladin"
+    ],
     "sourceBooks": [
       "Player's Handbook"
     ],
@@ -5663,7 +6543,10 @@
     "attackModes": [],
     "saveAbilities": [],
     "effectReliabilityCategory": "fixed_effect",
-    "spellLists": [],
+    "spellLists": [
+      "Artificer",
+      "Wizard"
+    ],
     "sourceBooks": [
       "Player's Handbook"
     ],
@@ -5686,7 +6569,9 @@
     "attackModes": [],
     "saveAbilities": [],
     "effectReliabilityCategory": "fixed_effect",
-    "spellLists": [],
+    "spellLists": [
+      "Paladin"
+    ],
     "sourceBooks": [
       "Player's Handbook"
     ],
@@ -5711,7 +6596,10 @@
       "constitution"
     ],
     "effectReliabilityCategory": "saving_throw",
-    "spellLists": [],
+    "spellLists": [
+      "Sorcerer",
+      "Wizard"
+    ],
     "sourceBooks": [
       "Player's Handbook"
     ],
@@ -5734,7 +6622,9 @@
     "attackModes": [],
     "saveAbilities": [],
     "effectReliabilityCategory": "fixed_effect",
-    "spellLists": [],
+    "spellLists": [
+      "Cleric"
+    ],
     "sourceBooks": [
       "Player's Handbook"
     ],
@@ -5757,7 +6647,10 @@
     "attackModes": [],
     "saveAbilities": [],
     "effectReliabilityCategory": "fixed_effect",
-    "spellLists": [],
+    "spellLists": [
+      "Druid",
+      "Ranger"
+    ],
     "sourceBooks": [
       "Player's Handbook"
     ],
@@ -5782,7 +6675,10 @@
       "constitution"
     ],
     "effectReliabilityCategory": "saving_throw",
-    "spellLists": [],
+    "spellLists": [
+      "Sorcerer",
+      "Wizard"
+    ],
     "sourceBooks": [
       "Player's Handbook"
     ],
@@ -5805,7 +6701,10 @@
     "attackModes": [],
     "saveAbilities": [],
     "effectReliabilityCategory": "fixed_effect",
-    "spellLists": [],
+    "spellLists": [
+      "Druid",
+      "Wizard"
+    ],
     "sourceBooks": [
       "Player's Handbook"
     ],
@@ -5830,7 +6729,9 @@
       "dexterity"
     ],
     "effectReliabilityCategory": "saving_throw",
-    "spellLists": [],
+    "spellLists": [
+      "Ranger"
+    ],
     "sourceBooks": [
       "Player's Handbook"
     ],
@@ -5855,7 +6756,10 @@
       "intelligence"
     ],
     "effectReliabilityCategory": "saving_throw",
-    "spellLists": [],
+    "spellLists": [
+      "Warlock",
+      "Wizard"
+    ],
     "sourceBooks": [
       "Player's Handbook"
     ],
@@ -5882,7 +6786,10 @@
       "constitution"
     ],
     "effectReliabilityCategory": "mixed",
-    "spellLists": [],
+    "spellLists": [
+      "Cleric",
+      "Druid"
+    ],
     "sourceBooks": [
       "Player's Handbook"
     ],
@@ -5905,7 +6812,11 @@
     "attackModes": [],
     "saveAbilities": [],
     "effectReliabilityCategory": "fixed_effect",
-    "spellLists": [],
+    "spellLists": [
+      "Artificer",
+      "Sorcerer",
+      "Wizard"
+    ],
     "sourceBooks": [
       "Player's Handbook"
     ],
@@ -5930,7 +6841,9 @@
       "constitution"
     ],
     "effectReliabilityCategory": "saving_throw",
-    "spellLists": [],
+    "spellLists": [
+      "Paladin"
+    ],
     "sourceBooks": [
       "Player's Handbook"
     ],
@@ -5953,7 +6866,10 @@
     "attackModes": [],
     "saveAbilities": [],
     "effectReliabilityCategory": "fixed_effect",
-    "spellLists": [],
+    "spellLists": [
+      "Cleric",
+      "Paladin"
+    ],
     "sourceBooks": [
       "Player's Handbook"
     ],
@@ -5978,7 +6894,11 @@
       "wisdom"
     ],
     "effectReliabilityCategory": "saving_throw",
-    "spellLists": [],
+    "spellLists": [
+      "Bard",
+      "Sorcerer",
+      "Wizard"
+    ],
     "sourceBooks": [
       "Player's Handbook"
     ],
@@ -6003,7 +6923,11 @@
       "wisdom"
     ],
     "effectReliabilityCategory": "saving_throw",
-    "spellLists": [],
+    "spellLists": [
+      "Bard",
+      "Warlock",
+      "Wizard"
+    ],
     "sourceBooks": [
       "Player's Handbook"
     ],
@@ -6028,7 +6952,9 @@
       "dexterity"
     ],
     "effectReliabilityCategory": "saving_throw",
-    "spellLists": [],
+    "spellLists": [
+      "Cleric"
+    ],
     "sourceBooks": [
       "Player's Handbook"
     ],
@@ -6053,7 +6979,13 @@
       "wisdom"
     ],
     "effectReliabilityCategory": "saving_throw",
-    "spellLists": [],
+    "spellLists": [
+      "Bard",
+      "Cleric",
+      "Druid",
+      "Paladin",
+      "Wizard"
+    ],
     "sourceBooks": [
       "Player's Handbook"
     ],
@@ -6076,7 +7008,12 @@
     "attackModes": [],
     "saveAbilities": [],
     "effectReliabilityCategory": "fixed_effect",
-    "spellLists": [],
+    "spellLists": [
+      "Artificer",
+      "Bard",
+      "Cleric",
+      "Druid"
+    ],
     "sourceBooks": [
       "Player's Handbook"
     ],
@@ -6101,7 +7038,9 @@
       "charisma"
     ],
     "effectReliabilityCategory": "saving_throw",
-    "spellLists": [],
+    "spellLists": [
+      "Cleric"
+    ],
     "sourceBooks": [
       "Player's Handbook"
     ],
@@ -6126,7 +7065,12 @@
       "wisdom"
     ],
     "effectReliabilityCategory": "saving_throw",
-    "spellLists": [],
+    "spellLists": [
+      "Bard",
+      "Sorcerer",
+      "Warlock",
+      "Wizard"
+    ],
     "sourceBooks": [
       "Player's Handbook"
     ],
@@ -6151,7 +7095,11 @@
       "constitution"
     ],
     "effectReliabilityCategory": "saving_throw",
-    "spellLists": [],
+    "spellLists": [
+      "Cleric",
+      "Druid",
+      "Sorcerer"
+    ],
     "sourceBooks": [
       "Player's Handbook"
     ],
@@ -6174,7 +7122,11 @@
     "attackModes": [],
     "saveAbilities": [],
     "effectReliabilityCategory": "fixed_effect",
-    "spellLists": [],
+    "spellLists": [
+      "Bard",
+      "Cleric",
+      "Wizard"
+    ],
     "sourceBooks": [
       "Player's Handbook"
     ],
@@ -6197,7 +7149,11 @@
     "attackModes": [],
     "saveAbilities": [],
     "effectReliabilityCategory": "modifier_scaled",
-    "spellLists": [],
+    "spellLists": [
+      "Bard",
+      "Cleric",
+      "Druid"
+    ],
     "sourceBooks": [
       "Player's Handbook"
     ],
@@ -6220,7 +7176,10 @@
     "attackModes": [],
     "saveAbilities": [],
     "effectReliabilityCategory": "fixed_effect",
-    "spellLists": [],
+    "spellLists": [
+      "Bard",
+      "Wizard"
+    ],
     "sourceBooks": [
       "Player's Handbook"
     ],
@@ -6245,7 +7204,10 @@
       "wisdom"
     ],
     "effectReliabilityCategory": "saving_throw",
-    "spellLists": [],
+    "spellLists": [
+      "Bard",
+      "Wizard"
+    ],
     "sourceBooks": [
       "Player's Handbook"
     ],
@@ -6268,7 +7230,9 @@
     "attackModes": [],
     "saveAbilities": [],
     "effectReliabilityCategory": "fixed_effect",
-    "spellLists": [],
+    "spellLists": [
+      "Wizard"
+    ],
     "sourceBooks": [
       "Player's Handbook"
     ],
@@ -6293,7 +7257,12 @@
       "charisma"
     ],
     "effectReliabilityCategory": "saving_throw",
-    "spellLists": [],
+    "spellLists": [
+      "Bard",
+      "Cleric",
+      "Druid",
+      "Wizard"
+    ],
     "sourceBooks": [
       "Player's Handbook"
     ],
@@ -6316,7 +7285,11 @@
     "attackModes": [],
     "saveAbilities": [],
     "effectReliabilityCategory": "fixed_effect",
-    "spellLists": [],
+    "spellLists": [
+      "Bard",
+      "Cleric",
+      "Paladin"
+    ],
     "sourceBooks": [
       "Player's Handbook"
     ],
@@ -6339,7 +7312,9 @@
     "attackModes": [],
     "saveAbilities": [],
     "effectReliabilityCategory": "fixed_effect",
-    "spellLists": [],
+    "spellLists": [
+      "Wizard"
+    ],
     "sourceBooks": [
       "Player's Handbook"
     ],
@@ -6362,7 +7337,9 @@
     "attackModes": [],
     "saveAbilities": [],
     "effectReliabilityCategory": "fixed_effect",
-    "spellLists": [],
+    "spellLists": [
+      "Druid"
+    ],
     "sourceBooks": [
       "Player's Handbook"
     ],
@@ -6387,7 +7364,13 @@
       "wisdom"
     ],
     "effectReliabilityCategory": "saving_throw",
-    "spellLists": [],
+    "spellLists": [
+      "Bard",
+      "Cleric",
+      "Druid",
+      "Warlock",
+      "Wizard"
+    ],
     "sourceBooks": [
       "Player's Handbook"
     ],
@@ -6412,7 +7395,11 @@
       "charisma"
     ],
     "effectReliabilityCategory": "saving_throw",
-    "spellLists": [],
+    "spellLists": [
+      "Bard",
+      "Sorcerer",
+      "Wizard"
+    ],
     "sourceBooks": [
       "Player's Handbook"
     ],
@@ -6435,7 +7422,9 @@
     "attackModes": [],
     "saveAbilities": [],
     "effectReliabilityCategory": "fixed_effect",
-    "spellLists": [],
+    "spellLists": [
+      "Ranger"
+    ],
     "sourceBooks": [
       "Player's Handbook"
     ],
@@ -6458,7 +7447,10 @@
     "attackModes": [],
     "saveAbilities": [],
     "effectReliabilityCategory": "fixed_effect",
-    "spellLists": [],
+    "spellLists": [
+      "Sorcerer",
+      "Wizard"
+    ],
     "sourceBooks": [
       "Player's Handbook"
     ],
@@ -6481,7 +7473,11 @@
     "attackModes": [],
     "saveAbilities": [],
     "effectReliabilityCategory": "fixed_effect",
-    "spellLists": [],
+    "spellLists": [
+      "Bard",
+      "Sorcerer",
+      "Wizard"
+    ],
     "sourceBooks": [
       "Player's Handbook"
     ],
@@ -6504,7 +7500,10 @@
     "attackModes": [],
     "saveAbilities": [],
     "effectReliabilityCategory": "fixed_effect",
-    "spellLists": [],
+    "spellLists": [
+      "Druid",
+      "Ranger"
+    ],
     "sourceBooks": [
       "Player's Handbook"
     ],
@@ -6527,7 +7526,9 @@
     "attackModes": [],
     "saveAbilities": [],
     "effectReliabilityCategory": "fixed_effect",
-    "spellLists": [],
+    "spellLists": [
+      "Wizard"
+    ],
     "sourceBooks": [
       "Player's Handbook"
     ],
@@ -6552,7 +7553,12 @@
       "dexterity"
     ],
     "effectReliabilityCategory": "saving_throw",
-    "spellLists": [],
+    "spellLists": [
+      "Artificer",
+      "Druid",
+      "Sorcerer",
+      "Wizard"
+    ],
     "sourceBooks": [
       "Player's Handbook"
     ],
@@ -6575,7 +7581,11 @@
     "attackModes": [],
     "saveAbilities": [],
     "effectReliabilityCategory": "fixed_effect",
-    "spellLists": [],
+    "spellLists": [
+      "Sorcerer",
+      "Warlock",
+      "Wizard"
+    ],
     "sourceBooks": [
       "Player's Handbook"
     ],
@@ -6600,7 +7610,9 @@
       "dexterity"
     ],
     "effectReliabilityCategory": "saving_throw",
-    "spellLists": [],
+    "spellLists": [
+      "Cleric"
+    ],
     "sourceBooks": [
       "Player's Handbook"
     ],
@@ -6625,7 +7637,10 @@
       "dexterity"
     ],
     "effectReliabilityCategory": "saving_throw",
-    "spellLists": [],
+    "spellLists": [
+      "Sorcerer",
+      "Wizard"
+    ],
     "sourceBooks": [
       "Player's Handbook"
     ],
@@ -6650,7 +7665,11 @@
       "constitution"
     ],
     "effectReliabilityCategory": "saving_throw",
-    "spellLists": [],
+    "spellLists": [
+      "Sorcerer",
+      "Warlock",
+      "Wizard"
+    ],
     "sourceBooks": [
       "Player's Handbook"
     ],
@@ -6673,7 +7692,10 @@
     "attackModes": [],
     "saveAbilities": [],
     "effectReliabilityCategory": "fixed_effect",
-    "spellLists": [],
+    "spellLists": [
+      "Druid",
+      "Warlock"
+    ],
     "sourceBooks": [
       "Player's Handbook"
     ],
@@ -6696,7 +7718,9 @@
     "attackModes": [],
     "saveAbilities": [],
     "effectReliabilityCategory": "fixed_effect",
-    "spellLists": [],
+    "spellLists": [
+      "Wizard"
+    ],
     "sourceBooks": [
       "Player's Handbook"
     ],
@@ -6719,7 +7743,11 @@
     "attackModes": [],
     "saveAbilities": [],
     "effectReliabilityCategory": "fixed_effect",
-    "spellLists": [],
+    "spellLists": [
+      "Cleric",
+      "Warlock",
+      "Wizard"
+    ],
     "sourceBooks": [
       "Player's Handbook"
     ],
@@ -6744,7 +7772,10 @@
       "dexterity"
     ],
     "effectReliabilityCategory": "saving_throw",
-    "spellLists": [],
+    "spellLists": [
+      "Sorcerer",
+      "Wizard"
+    ],
     "sourceBooks": [
       "Player's Handbook"
     ],
@@ -6767,7 +7798,9 @@
     "attackModes": [],
     "saveAbilities": [],
     "effectReliabilityCategory": "fixed_effect",
-    "spellLists": [],
+    "spellLists": [
+      "Wizard"
+    ],
     "sourceBooks": [
       "Player's Handbook"
     ],
@@ -6792,7 +7825,12 @@
       "wisdom"
     ],
     "effectReliabilityCategory": "saving_throw",
-    "spellLists": [],
+    "spellLists": [
+      "Bard",
+      "Sorcerer",
+      "Warlock",
+      "Wizard"
+    ],
     "sourceBooks": [
       "Player's Handbook"
     ],
@@ -6815,7 +7853,11 @@
     "attackModes": [],
     "saveAbilities": [],
     "effectReliabilityCategory": "fixed_effect",
-    "spellLists": [],
+    "spellLists": [
+      "Bard",
+      "Cleric",
+      "Druid"
+    ],
     "sourceBooks": [
       "Player's Handbook"
     ],
@@ -6840,7 +7882,10 @@
       "constitution"
     ],
     "effectReliabilityCategory": "saving_throw",
-    "spellLists": [],
+    "spellLists": [
+      "Warlock",
+      "Wizard"
+    ],
     "sourceBooks": [
       "Player's Handbook"
     ],
@@ -6863,7 +7908,9 @@
     "attackModes": [],
     "saveAbilities": [],
     "effectReliabilityCategory": "fixed_effect",
-    "spellLists": [],
+    "spellLists": [
+      "Cleric"
+    ],
     "sourceBooks": [
       "Player's Handbook"
     ],
@@ -6886,7 +7933,10 @@
     "attackModes": [],
     "saveAbilities": [],
     "effectReliabilityCategory": "fixed_effect",
-    "spellLists": [],
+    "spellLists": [
+      "Sorcerer",
+      "Wizard"
+    ],
     "sourceBooks": [
       "Player's Handbook"
     ],
@@ -6909,7 +7959,10 @@
     "attackModes": [],
     "saveAbilities": [],
     "effectReliabilityCategory": "fixed_effect",
-    "spellLists": [],
+    "spellLists": [
+      "Bard",
+      "Wizard"
+    ],
     "sourceBooks": [
       "Player's Handbook"
     ],
@@ -6934,7 +7987,9 @@
       "constitution"
     ],
     "effectReliabilityCategory": "saving_throw",
-    "spellLists": [],
+    "spellLists": [
+      "Cleric"
+    ],
     "sourceBooks": [
       "Player's Handbook"
     ],
@@ -6957,7 +8012,10 @@
     "attackModes": [],
     "saveAbilities": [],
     "effectReliabilityCategory": "fixed_effect",
-    "spellLists": [],
+    "spellLists": [
+      "Cleric",
+      "Druid"
+    ],
     "sourceBooks": [
       "Player's Handbook"
     ],
@@ -6982,7 +8040,10 @@
       "wisdom"
     ],
     "effectReliabilityCategory": "saving_throw",
-    "spellLists": [],
+    "spellLists": [
+      "Cleric",
+      "Druid"
+    ],
     "sourceBooks": [
       "Player's Handbook"
     ],
@@ -7007,7 +8068,9 @@
       "charisma"
     ],
     "effectReliabilityCategory": "saving_throw",
-    "spellLists": [],
+    "spellLists": [
+      "Wizard"
+    ],
     "sourceBooks": [
       "Player's Handbook"
     ],
@@ -7032,7 +8095,12 @@
       "wisdom"
     ],
     "effectReliabilityCategory": "saving_throw",
-    "spellLists": [],
+    "spellLists": [
+      "Bard",
+      "Sorcerer",
+      "Warlock",
+      "Wizard"
+    ],
     "sourceBooks": [
       "Player's Handbook"
     ],
@@ -7055,7 +8123,11 @@
     "attackModes": [],
     "saveAbilities": [],
     "effectReliabilityCategory": "fixed_effect",
-    "spellLists": [],
+    "spellLists": [
+      "Druid",
+      "Sorcerer",
+      "Wizard"
+    ],
     "sourceBooks": [
       "Player's Handbook"
     ],
@@ -7080,7 +8152,9 @@
       "constitution"
     ],
     "effectReliabilityCategory": "saving_throw",
-    "spellLists": [],
+    "spellLists": [
+      "Wizard"
+    ],
     "sourceBooks": [
       "Player's Handbook"
     ],
@@ -7106,7 +8180,10 @@
       "wisdom"
     ],
     "effectReliabilityCategory": "saving_throw",
-    "spellLists": [],
+    "spellLists": [
+      "Bard",
+      "Wizard"
+    ],
     "sourceBooks": [
       "Player's Handbook"
     ],
@@ -7129,7 +8206,9 @@
     "attackModes": [],
     "saveAbilities": [],
     "effectReliabilityCategory": "fixed_effect",
-    "spellLists": [],
+    "spellLists": [
+      "Cleric"
+    ],
     "sourceBooks": [
       "Player's Handbook"
     ],
@@ -7152,7 +8231,10 @@
     "attackModes": [],
     "saveAbilities": [],
     "effectReliabilityCategory": "fixed_effect",
-    "spellLists": [],
+    "spellLists": [
+      "Bard",
+      "Wizard"
+    ],
     "sourceBooks": [
       "Player's Handbook"
     ],
@@ -7177,7 +8259,11 @@
       "constitution"
     ],
     "effectReliabilityCategory": "saving_throw",
-    "spellLists": [],
+    "spellLists": [
+      "Druid",
+      "Sorcerer",
+      "Wizard"
+    ],
     "sourceBooks": [
       "Player's Handbook"
     ],
@@ -7200,7 +8286,9 @@
     "attackModes": [],
     "saveAbilities": [],
     "effectReliabilityCategory": "fixed_effect",
-    "spellLists": [],
+    "spellLists": [
+      "Druid"
+    ],
     "sourceBooks": [
       "Player's Handbook"
     ],
@@ -7223,7 +8311,13 @@
     "attackModes": [],
     "saveAbilities": [],
     "effectReliabilityCategory": "fixed_effect",
-    "spellLists": [],
+    "spellLists": [
+      "Bard",
+      "Cleric",
+      "Sorcerer",
+      "Warlock",
+      "Wizard"
+    ],
     "sourceBooks": [
       "Player's Handbook"
     ],
@@ -7249,7 +8343,9 @@
       "constitution"
     ],
     "effectReliabilityCategory": "saving_throw",
-    "spellLists": [],
+    "spellLists": [
+      "Wizard"
+    ],
     "sourceBooks": [
       "Player's Handbook"
     ],
@@ -7274,7 +8370,9 @@
       "dexterity"
     ],
     "effectReliabilityCategory": "saving_throw",
-    "spellLists": [],
+    "spellLists": [
+      "Druid"
+    ],
     "sourceBooks": [
       "Player's Handbook"
     ],
@@ -7297,7 +8395,9 @@
     "attackModes": [],
     "saveAbilities": [],
     "effectReliabilityCategory": "fixed_effect",
-    "spellLists": [],
+    "spellLists": [
+      "Druid"
+    ],
     "sourceBooks": [
       "Player's Handbook"
     ],
@@ -7320,7 +8420,9 @@
     "attackModes": [],
     "saveAbilities": [],
     "effectReliabilityCategory": "fixed_effect",
-    "spellLists": [],
+    "spellLists": [
+      "Cleric"
+    ],
     "sourceBooks": [
       "Player's Handbook"
     ],
@@ -7343,7 +8445,9 @@
     "attackModes": [],
     "saveAbilities": [],
     "effectReliabilityCategory": "fixed_effect",
-    "spellLists": [],
+    "spellLists": [
+      "Cleric"
+    ],
     "sourceBooks": [
       "Player's Handbook"
     ],
@@ -7368,7 +8472,10 @@
       "dexterity"
     ],
     "effectReliabilityCategory": "saving_throw",
-    "spellLists": [],
+    "spellLists": [
+      "Sorcerer",
+      "Wizard"
+    ],
     "sourceBooks": [
       "Player's Handbook"
     ],
@@ -7393,7 +8500,9 @@
       "charisma"
     ],
     "effectReliabilityCategory": "saving_throw",
-    "spellLists": [],
+    "spellLists": [
+      "Cleric"
+    ],
     "sourceBooks": [
       "Player's Handbook"
     ],
@@ -7416,7 +8525,13 @@
     "attackModes": [],
     "saveAbilities": [],
     "effectReliabilityCategory": "fixed_effect",
-    "spellLists": [],
+    "spellLists": [
+      "Bard",
+      "Cleric",
+      "Sorcerer",
+      "Warlock",
+      "Wizard"
+    ],
     "sourceBooks": [
       "Player's Handbook"
     ],
@@ -7441,7 +8556,11 @@
       "constitution"
     ],
     "effectReliabilityCategory": "saving_throw",
-    "spellLists": [],
+    "spellLists": [
+      "Sorcerer",
+      "Warlock",
+      "Wizard"
+    ],
     "sourceBooks": [
       "Player's Handbook"
     ],
@@ -7466,7 +8585,11 @@
       "dexterity"
     ],
     "effectReliabilityCategory": "saving_throw",
-    "spellLists": [],
+    "spellLists": [
+      "Cleric",
+      "Druid",
+      "Sorcerer"
+    ],
     "sourceBooks": [
       "Player's Handbook"
     ],
@@ -7491,7 +8614,11 @@
       "charisma"
     ],
     "effectReliabilityCategory": "saving_throw",
-    "spellLists": [],
+    "spellLists": [
+      "Bard",
+      "Warlock",
+      "Wizard"
+    ],
     "sourceBooks": [
       "Player's Handbook"
     ],
@@ -7514,7 +8641,11 @@
     "attackModes": [],
     "saveAbilities": [],
     "effectReliabilityCategory": "fixed_effect",
-    "spellLists": [],
+    "spellLists": [
+      "Bard",
+      "Druid",
+      "Wizard"
+    ],
     "sourceBooks": [
       "Player's Handbook"
     ],
@@ -7537,7 +8668,10 @@
     "attackModes": [],
     "saveAbilities": [],
     "effectReliabilityCategory": "fixed_effect",
-    "spellLists": [],
+    "spellLists": [
+      "Bard",
+      "Wizard"
+    ],
     "sourceBooks": [
       "Player's Handbook"
     ],
@@ -7562,7 +8696,10 @@
     ],
     "saveAbilities": [],
     "effectReliabilityCategory": "attack_roll",
-    "spellLists": [],
+    "spellLists": [
+      "Bard",
+      "Wizard"
+    ],
     "sourceBooks": [
       "Player's Handbook"
     ],
@@ -7589,7 +8726,13 @@
       "charisma"
     ],
     "effectReliabilityCategory": "mixed",
-    "spellLists": [],
+    "spellLists": [
+      "Cleric",
+      "Druid",
+      "Sorcerer",
+      "Warlock",
+      "Wizard"
+    ],
     "sourceBooks": [
       "Player's Handbook"
     ],
@@ -7614,7 +8757,11 @@
       "dexterity"
     ],
     "effectReliabilityCategory": "saving_throw",
-    "spellLists": [],
+    "spellLists": [
+      "Bard",
+      "Sorcerer",
+      "Wizard"
+    ],
     "sourceBooks": [
       "Player's Handbook"
     ],
@@ -7637,7 +8784,10 @@
     "attackModes": [],
     "saveAbilities": [],
     "effectReliabilityCategory": "fixed_effect",
-    "spellLists": [],
+    "spellLists": [
+      "Bard",
+      "Wizard"
+    ],
     "sourceBooks": [
       "Player's Handbook"
     ],
@@ -7660,7 +8810,11 @@
     "attackModes": [],
     "saveAbilities": [],
     "effectReliabilityCategory": "fixed_effect",
-    "spellLists": [],
+    "spellLists": [
+      "Bard",
+      "Cleric",
+      "Druid"
+    ],
     "sourceBooks": [
       "Player's Handbook"
     ],
@@ -7683,7 +8837,10 @@
     "attackModes": [],
     "saveAbilities": [],
     "effectReliabilityCategory": "fixed_effect",
-    "spellLists": [],
+    "spellLists": [
+      "Bard",
+      "Cleric"
+    ],
     "sourceBooks": [
       "Player's Handbook"
     ],
@@ -7708,7 +8865,11 @@
       "dexterity"
     ],
     "effectReliabilityCategory": "saving_throw",
-    "spellLists": [],
+    "spellLists": [
+      "Druid",
+      "Sorcerer",
+      "Wizard"
+    ],
     "sourceBooks": [
       "Player's Handbook"
     ],
@@ -7731,7 +8892,9 @@
     "attackModes": [],
     "saveAbilities": [],
     "effectReliabilityCategory": "fixed_effect",
-    "spellLists": [],
+    "spellLists": [
+      "Wizard"
+    ],
     "sourceBooks": [
       "Player's Handbook"
     ],
@@ -7754,7 +8917,9 @@
     "attackModes": [],
     "saveAbilities": [],
     "effectReliabilityCategory": "fixed_effect",
-    "spellLists": [],
+    "spellLists": [
+      "Wizard"
+    ],
     "sourceBooks": [
       "Player's Handbook"
     ],
@@ -7777,7 +8942,11 @@
     "attackModes": [],
     "saveAbilities": [],
     "effectReliabilityCategory": "fixed_effect",
-    "spellLists": [],
+    "spellLists": [
+      "Bard",
+      "Cleric",
+      "Wizard"
+    ],
     "sourceBooks": [
       "Player's Handbook"
     ],
@@ -7800,7 +8969,11 @@
     "attackModes": [],
     "saveAbilities": [],
     "effectReliabilityCategory": "fixed_effect",
-    "spellLists": [],
+    "spellLists": [
+      "Bard",
+      "Sorcerer",
+      "Wizard"
+    ],
     "sourceBooks": [
       "Player's Handbook"
     ],
@@ -7823,7 +8996,9 @@
     "attackModes": [],
     "saveAbilities": [],
     "effectReliabilityCategory": "fixed_effect",
-    "spellLists": [],
+    "spellLists": [
+      "Druid"
+    ],
     "sourceBooks": [
       "Player's Handbook"
     ],
@@ -7846,7 +9021,10 @@
     "attackModes": [],
     "saveAbilities": [],
     "effectReliabilityCategory": "fixed_effect",
-    "spellLists": [],
+    "spellLists": [
+      "Cleric",
+      "Wizard"
+    ],
     "sourceBooks": [
       "Player's Handbook"
     ],
@@ -7869,7 +9047,10 @@
     "attackModes": [],
     "saveAbilities": [],
     "effectReliabilityCategory": "fixed_effect",
-    "spellLists": [],
+    "spellLists": [
+      "Druid",
+      "Wizard"
+    ],
     "sourceBooks": [
       "Player's Handbook"
     ],
@@ -7892,7 +9073,9 @@
     "attackModes": [],
     "saveAbilities": [],
     "effectReliabilityCategory": "fixed_effect",
-    "spellLists": [],
+    "spellLists": [
+      "Wizard"
+    ],
     "sourceBooks": [
       "Player's Handbook"
     ],
@@ -7915,7 +9098,11 @@
     "attackModes": [],
     "saveAbilities": [],
     "effectReliabilityCategory": "fixed_effect",
-    "spellLists": [],
+    "spellLists": [
+      "Cleric",
+      "Druid",
+      "Wizard"
+    ],
     "sourceBooks": [
       "Player's Handbook"
     ],
@@ -7938,7 +9125,10 @@
     "attackModes": [],
     "saveAbilities": [],
     "effectReliabilityCategory": "fixed_effect",
-    "spellLists": [],
+    "spellLists": [
+      "Warlock",
+      "Wizard"
+    ],
     "sourceBooks": [
       "Player's Handbook"
     ],
@@ -7963,7 +9153,12 @@
       "wisdom"
     ],
     "effectReliabilityCategory": "saving_throw",
-    "spellLists": [],
+    "spellLists": [
+      "Bard",
+      "Sorcerer",
+      "Warlock",
+      "Wizard"
+    ],
     "sourceBooks": [
       "Player's Handbook"
     ],
@@ -7989,7 +9184,11 @@
       "dexterity"
     ],
     "effectReliabilityCategory": "saving_throw",
-    "spellLists": [],
+    "spellLists": [
+      "Cleric",
+      "Druid",
+      "Sorcerer"
+    ],
     "sourceBooks": [
       "Player's Handbook"
     ],
@@ -8014,7 +9213,12 @@
       "intelligence"
     ],
     "effectReliabilityCategory": "saving_throw",
-    "spellLists": [],
+    "spellLists": [
+      "Bard",
+      "Druid",
+      "Warlock",
+      "Wizard"
+    ],
     "sourceBooks": [
       "Player's Handbook"
     ],
@@ -8037,7 +9241,10 @@
     "attackModes": [],
     "saveAbilities": [],
     "effectReliabilityCategory": "fixed_effect",
-    "spellLists": [],
+    "spellLists": [
+      "Bard",
+      "Warlock"
+    ],
     "sourceBooks": [
       "Player's Handbook"
     ],
@@ -8062,7 +9269,9 @@
       "constitution"
     ],
     "effectReliabilityCategory": "saving_throw",
-    "spellLists": [],
+    "spellLists": [
+      "Cleric"
+    ],
     "sourceBooks": [
       "Player's Handbook"
     ],
@@ -8087,7 +9296,10 @@
       "dexterity"
     ],
     "effectReliabilityCategory": "saving_throw",
-    "spellLists": [],
+    "spellLists": [
+      "Sorcerer",
+      "Wizard"
+    ],
     "sourceBooks": [
       "Player's Handbook"
     ],
@@ -8110,7 +9322,9 @@
     "attackModes": [],
     "saveAbilities": [],
     "effectReliabilityCategory": "fixed_effect",
-    "spellLists": [],
+    "spellLists": [
+      "Wizard"
+    ],
     "sourceBooks": [
       "Player's Handbook"
     ],
@@ -8133,7 +9347,10 @@
     "attackModes": [],
     "saveAbilities": [],
     "effectReliabilityCategory": "fixed_effect",
-    "spellLists": [],
+    "spellLists": [
+      "Bard",
+      "Wizard"
+    ],
     "sourceBooks": [
       "Player's Handbook"
     ],
@@ -8158,7 +9375,12 @@
       "constitution"
     ],
     "effectReliabilityCategory": "saving_throw",
-    "spellLists": [],
+    "spellLists": [
+      "Bard",
+      "Sorcerer",
+      "Warlock",
+      "Wizard"
+    ],
     "sourceBooks": [
       "Player's Handbook"
     ],
@@ -8183,7 +9405,11 @@
       "constitution"
     ],
     "effectReliabilityCategory": "saving_throw",
-    "spellLists": [],
+    "spellLists": [
+      "Druid",
+      "Sorcerer",
+      "Wizard"
+    ],
     "sourceBooks": [
       "Player's Handbook"
     ],
@@ -8206,7 +9432,9 @@
     "attackModes": [],
     "saveAbilities": [],
     "effectReliabilityCategory": "fixed_effect",
-    "spellLists": [],
+    "spellLists": [
+      "Wizard"
+    ],
     "sourceBooks": [
       "Player's Handbook"
     ],
@@ -8231,7 +9459,9 @@
       "strength"
     ],
     "effectReliabilityCategory": "saving_throw",
-    "spellLists": [],
+    "spellLists": [
+      "Druid"
+    ],
     "sourceBooks": [
       "Player's Handbook"
     ],
@@ -8254,7 +9484,11 @@
     "attackModes": [],
     "saveAbilities": [],
     "effectReliabilityCategory": "fixed_effect",
-    "spellLists": [],
+    "spellLists": [
+      "Cleric",
+      "Warlock",
+      "Wizard"
+    ],
     "sourceBooks": [
       "Player's Handbook"
     ],
@@ -8277,7 +9511,12 @@
     "attackModes": [],
     "saveAbilities": [],
     "effectReliabilityCategory": "fixed_effect",
-    "spellLists": [],
+    "spellLists": [
+      "Bard",
+      "Druid",
+      "Warlock",
+      "Wizard"
+    ],
     "sourceBooks": [
       "Player's Handbook"
     ],
@@ -8300,7 +9539,11 @@
     "attackModes": [],
     "saveAbilities": [],
     "effectReliabilityCategory": "fixed_effect",
-    "spellLists": [],
+    "spellLists": [
+      "Cleric",
+      "Sorcerer",
+      "Wizard"
+    ],
     "sourceBooks": [
       "Player's Handbook"
     ],
@@ -8325,7 +9568,10 @@
       "wisdom"
     ],
     "effectReliabilityCategory": "saving_throw",
-    "spellLists": [],
+    "spellLists": [
+      "Warlock",
+      "Wizard"
+    ],
     "sourceBooks": [
       "Player's Handbook"
     ],
@@ -8348,7 +9594,9 @@
     "attackModes": [],
     "saveAbilities": [],
     "effectReliabilityCategory": "fixed_effect",
-    "spellLists": [],
+    "spellLists": [
+      "Cleric"
+    ],
     "sourceBooks": [
       "Player's Handbook"
     ],
@@ -8373,7 +9621,10 @@
       "dexterity"
     ],
     "effectReliabilityCategory": "saving_throw",
-    "spellLists": [],
+    "spellLists": [
+      "Sorcerer",
+      "Wizard"
+    ],
     "sourceBooks": [
       "Player's Handbook"
     ],
@@ -8396,7 +9647,9 @@
     "attackModes": [],
     "saveAbilities": [],
     "effectReliabilityCategory": "fixed_effect",
-    "spellLists": [],
+    "spellLists": [
+      "Bard"
+    ],
     "sourceBooks": [
       "Player's Handbook"
     ],
@@ -8419,7 +9672,12 @@
     "attackModes": [],
     "saveAbilities": [],
     "effectReliabilityCategory": "fixed_effect",
-    "spellLists": [],
+    "spellLists": [
+      "Bard",
+      "Sorcerer",
+      "Warlock",
+      "Wizard"
+    ],
     "sourceBooks": [
       "Player's Handbook"
     ],
@@ -8445,7 +9703,9 @@
       "dexterity"
     ],
     "effectReliabilityCategory": "saving_throw",
-    "spellLists": [],
+    "spellLists": [
+      "Wizard"
+    ],
     "sourceBooks": [
       "Player's Handbook"
     ],
@@ -8468,7 +9728,10 @@
     "attackModes": [],
     "saveAbilities": [],
     "effectReliabilityCategory": "fixed_effect",
-    "spellLists": [],
+    "spellLists": [
+      "Druid",
+      "Wizard"
+    ],
     "sourceBooks": [
       "Player's Handbook"
     ],
@@ -8493,7 +9756,9 @@
       "constitution"
     ],
     "effectReliabilityCategory": "saving_throw",
-    "spellLists": [],
+    "spellLists": [
+      "Druid"
+    ],
     "sourceBooks": [
       "Player's Handbook"
     ],
@@ -8516,7 +9781,10 @@
     "attackModes": [],
     "saveAbilities": [],
     "effectReliabilityCategory": "fixed_effect",
-    "spellLists": [],
+    "spellLists": [
+      "Sorcerer",
+      "Wizard"
+    ],
     "sourceBooks": [
       "Player's Handbook"
     ],
@@ -8541,7 +9809,11 @@
       "wisdom"
     ],
     "effectReliabilityCategory": "saving_throw",
-    "spellLists": [],
+    "spellLists": [
+      "Bard",
+      "Warlock",
+      "Wizard"
+    ],
     "sourceBooks": [
       "Player's Handbook"
     ],
@@ -8564,7 +9836,10 @@
     "attackModes": [],
     "saveAbilities": [],
     "effectReliabilityCategory": "fixed_effect",
-    "spellLists": [],
+    "spellLists": [
+      "Cleric",
+      "Druid"
+    ],
     "sourceBooks": [
       "Player's Handbook"
     ],
@@ -8589,7 +9864,9 @@
       "wisdom"
     ],
     "effectReliabilityCategory": "saving_throw",
-    "spellLists": [],
+    "spellLists": [
+      "Wizard"
+    ],
     "sourceBooks": [
       "Player's Handbook"
     ],
@@ -8612,7 +9889,10 @@
     "attackModes": [],
     "saveAbilities": [],
     "effectReliabilityCategory": "fixed_effect",
-    "spellLists": [],
+    "spellLists": [
+      "Sorcerer",
+      "Wizard"
+    ],
     "sourceBooks": [
       "Player's Handbook"
     ],

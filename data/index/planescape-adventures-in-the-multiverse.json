@@ -15,7 +15,11 @@
     "attackModes": [],
     "saveAbilities": [],
     "effectReliabilityCategory": "fixed_effect",
-    "spellLists": [],
+    "spellLists": [
+      "Sorcerer",
+      "Warlock",
+      "Wizard"
+    ],
     "sourceBooks": [
       "Planescape - Adventures in the Multiverse"
     ],
@@ -38,7 +42,11 @@
     "attackModes": [],
     "saveAbilities": [],
     "effectReliabilityCategory": "fixed_effect",
-    "spellLists": [],
+    "spellLists": [
+      "Sorcerer",
+      "Warlock",
+      "Wizard"
+    ],
     "sourceBooks": [
       "Planescape - Adventures in the Multiverse"
     ],

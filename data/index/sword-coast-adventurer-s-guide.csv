@@ -1,2 +1,2 @@
 identityKey,versionKey,name,edition,level,school,castingTime,range,components,duration,concentration,ritual,attackModes,saveAbilities,effectReliabilityCategory,spellLists,sourceBooks,sourcePage,sourceSlug
-green-flame-blade,2014:green-flame-blade,Green-Flame Blade,2014,0,Evocation,1 Action,Self (5-foot radius),"S, M",Instantaneous,false,false,,,modifier_scaled,,Tasha's Cauldron of Everything;Sword Coast Adventurer's Guide,,green-flame-blade
+green-flame-blade,2014:green-flame-blade,Green-Flame Blade,2014,0,Evocation,1 Action,Self (5-foot radius),"S, M",Instantaneous,false,false,,,modifier_scaled,Artificer,Tasha's Cauldron of Everything;Sword Coast Adventurer's Guide,,green-flame-blade

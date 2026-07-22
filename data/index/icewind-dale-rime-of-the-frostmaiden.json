@@ -17,7 +17,9 @@
       "constitution"
     ],
     "effectReliabilityCategory": "saving_throw",
-    "spellLists": [],
+    "spellLists": [
+      "Wizard"
+    ],
     "sourceBooks": [
       "Icewind Dale - Rime of the Frostmaiden"
     ],
@@ -40,7 +42,9 @@
     "attackModes": [],
     "saveAbilities": [],
     "effectReliabilityCategory": "fixed_effect",
-    "spellLists": [],
+    "spellLists": [
+      "Wizard"
+    ],
     "sourceBooks": [
       "Icewind Dale - Rime of the Frostmaiden"
     ],

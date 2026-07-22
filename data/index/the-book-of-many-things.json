@@ -17,7 +17,12 @@
       "dexterity"
     ],
     "effectReliabilityCategory": "saving_throw",
-    "spellLists": [],
+    "spellLists": [
+      "Bard",
+      "Sorcerer",
+      "Warlock",
+      "Wizard"
+    ],
     "sourceBooks": [
       "The Book of Many Things"
     ],
@@ -42,7 +47,12 @@
       "wisdom"
     ],
     "effectReliabilityCategory": "saving_throw",
-    "spellLists": [],
+    "spellLists": [
+      "Bard",
+      "Sorcerer",
+      "Warlock",
+      "Wizard"
+    ],
     "sourceBooks": [
       "The Book of Many Things"
     ],

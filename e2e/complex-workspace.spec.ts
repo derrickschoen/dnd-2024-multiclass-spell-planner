@@ -1,6 +1,7 @@
 import { expect, test, type Locator, type Page, type Response } from '@playwright/test';
 import {
     auditLog,
+    buildReport,
     character,
     characterOperations,
     classLevel,
@@ -44,6 +45,8 @@ interface MutationBody {
                 category: string;
                 explanation: string;
                 selection_count: number;
+                sources: string[];
+                slots: string[];
                 versions: Array<{
                     spell_version_id: number;
                     content_key: string;
@@ -71,6 +74,15 @@ interface MutationBody {
 interface CommandMutationBody extends MutationBody {
     inverse: Record<string, unknown>;
 }
+
+type DatabaseBuildReport = MutationBody['workspace']['report'] & {
+    character: { proficiency_bonus: number };
+    wizard: {
+        spellbook: Array<{ spell_name: string; prepared: boolean }>;
+        prepared: Array<{ spell_name: string }>;
+        ritual_only: Array<{ spell_name: string }>;
+    };
+};
 
 test.beforeEach(async ({ page }) => {
     resetDatabase();
@@ -886,6 +898,130 @@ test('S17: removing a feat in the browser orphans selections and undo restores i
     for (const slot of slotsBefore) {
         await expect(slotRow(page, slot.id).locator('td').nth(10)).toContainText('Valid');
     }
+});
+
+test('T10: Mutt exposes five-class duplicates and all six class preparation ceilings', async ({ page }) => {
+    const muttId = 2;
+    await page.goto(`/characters/${muttId}`);
+    await expect(page.getByRole('heading', { name: 'Mutt', level: 1 })).toBeVisible();
+    await expect(page.getByText(/revision 41$/)).toBeVisible();
+    await expect(page.getByRole('checkbox', { name: /Allow legacy 2014 spell versions/ })).toBeChecked();
+
+    const mutt = character(muttId);
+    expect(mutt).toEqual(expect.objectContaining({
+        id: muttId,
+        name: 'Mutt',
+        revision: 41,
+        allow_legacy: 1,
+        intelligence: 13,
+        wisdom: 13,
+        charisma: 17,
+    }));
+    expect(String(mutt.notes)).toContain('sheet:max_hp=43');
+    expect(String(mutt.notes)).toContain('sheet:advancement=milestone');
+    expect(String(mutt.notes)).toContain('INFERRED abilities (PDF has no scores)');
+
+    const report = buildReport<DatabaseBuildReport>(muttId);
+    expect(report.caster).toEqual({
+        caster_level: 6,
+        slots: [
+            { level: 1, count: 4 },
+            { level: 2, count: 3 },
+            { level: 3, count: 3 },
+        ],
+        pact_magic: null,
+    });
+    expect(report.classes.map((item) => ({
+        name: item.name,
+        class_level: item.class_level,
+        max_preparable_level: item.max_preparable_level,
+    }))).toEqual([
+        { name: 'Bard', class_level: 1, max_preparable_level: 1 },
+        { name: 'Cleric', class_level: 1, max_preparable_level: 1 },
+        { name: 'Druid', class_level: 1, max_preparable_level: 1 },
+        { name: 'Paladin', class_level: 1, max_preparable_level: 1 },
+        { name: 'Sorcerer', class_level: 1, max_preparable_level: 1 },
+        { name: 'Wizard', class_level: 1, max_preparable_level: 1 },
+    ]);
+
+    const muttSlots = slotFixtures(muttId);
+    expect(muttSlots).toHaveLength(34);
+    expect(muttSlots.every((slot) => slot.current_spell_version_id !== null)).toBe(true);
+    expect(muttSlots.every((slot) => slot.selection_eligibility === 'valid')).toBe(true);
+    const expectedDuplicateSources: Record<string, string[]> = {
+        Bane: ['Bard 1', 'Cleric 1'],
+        'Healing Word': ['Cleric 1', 'Druid 1'],
+        Shield: ['Sorcerer 1', 'Wizard 1'],
+    };
+    const duplicateSources = Object.fromEntries(Object.keys(expectedDuplicateSources).map((spellName) => [
+        spellName,
+        muttSlots.filter((slot) => slot.spell_name === spellName).map((slot) => slot.source_name).sort(),
+    ]));
+    expect(duplicateSources).toEqual(expectedDuplicateSources);
+    expect(new Set(Object.values(duplicateSources).flat())).toEqual(new Set([
+        'Bard 1', 'Cleric 1', 'Druid 1', 'Sorcerer 1', 'Wizard 1',
+    ]));
+    for (const [spellName, sourceNames] of Object.entries(expectedDuplicateSources)) {
+        const assessment = report.duplicate_assessments.find((item) => item.spell_name === spellName);
+        expect(assessment).toEqual(expect.objectContaining({
+            category: 'wasteful',
+            selection_count: 2,
+            explanation: `${spellName} consumes limits in more than one selection.`,
+        }));
+        expect(assessment?.sources.toSorted()).toEqual(sourceNames);
+        await expect(duplicateWarning(page, spellName)).toContainText(
+            `${spellName} consumes limits in more than one selection.`,
+        );
+    }
+
+    const shapeWater = requireSlot(
+        muttSlots.find((slot) => slot.spell_name === 'Shape Water'),
+        "Mutt's Shape Water slot",
+    );
+    const moldEarth = requireSlot(
+        muttSlots.find((slot) => slot.spell_name === 'Mold Earth'),
+        "Mutt's Mold Earth slot",
+    );
+    expect({
+        source: shapeWater.source_name,
+        version: shapeWater.current_spell_version_id,
+        lists: shapeWater.allowed_spell_lists,
+    }).toEqual({ source: 'Druid 1', version: spellVersionId('2014:shape-water'), lists: '["Druid"]' });
+    expect({
+        source: moldEarth.source_name,
+        version: moldEarth.current_spell_version_id,
+        lists: moldEarth.allowed_spell_lists,
+    }).toEqual({ source: 'Wizard 1', version: spellVersionId('2014:mold-earth'), lists: '["Wizard"]' });
+
+    const muttAudit = auditLog(muttId);
+    const operationCount = (actionType: string): number => new Set(
+        muttAudit.filter((entry) => entry.action_type === actionType).map((entry) => entry.operation_uuid),
+    ).size;
+    expect(characterOperations(muttId)).toHaveLength(41);
+    expect({
+        add_source: operationCount('add_source'),
+        set_slot: operationCount('set_slot'),
+        update_character_rules: operationCount('update_character_rules'),
+    }).toEqual({ add_source: 6, set_slot: 34, update_character_rules: 1 });
+
+    // Reassert every pre-existing seed golden from a fresh database-level report:
+    // adding Mutt must not perturb character 1.
+    const a6 = buildReport<DatabaseBuildReport>(1);
+    expect(a6.character.proficiency_bonus).toBe(3);
+    expect(a6.caster).toEqual({
+        caster_level: 6,
+        slots: [{ level: 1, count: 4 }, { level: 2, count: 3 }, { level: 3, count: 3 }],
+        pact_magic: null,
+    });
+    expect(a6.classes.every((item) => item.max_preparable_level === 1)).toBe(true);
+    expect(a6.duplicate_assessments.find((item) => item.spell_name === 'Mage Hand')?.category).toBe('wasteful');
+    expect(a6.duplicate_assessments.find((item) => item.spell_name === 'Entangle')?.category).toBe('none');
+    expect(a6.access_routes.find((route) => route.spell_name === 'Detect Magic')).toEqual(expect.objectContaining({
+        origin: 'capability',
+        casting_mode: 'ritual_only',
+        is_selection: false,
+        counts_against_limit: false,
+    }));
 });
 
 function requireSlot<T extends SlotFixture | ReturnType<typeof slots>[number]>(

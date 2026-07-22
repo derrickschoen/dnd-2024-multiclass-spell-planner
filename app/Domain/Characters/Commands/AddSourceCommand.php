@@ -43,7 +43,7 @@ final class AddSourceCommand implements CharacterCommand
             throw new InvalidArgumentException('Unknown source definition for the selected source type.');
         }
 
-        if (! data_get($definition, 'repeatable') && DB::table('character_source_instances')
+        if (($sourceType === 'class' || ! data_get($definition, 'repeatable')) && DB::table('character_source_instances')
             ->where('character_id', $characterId)
             ->where('source_type', $sourceType)
             ->where('source_definition_id', $definitionId)
@@ -55,6 +55,11 @@ final class AddSourceCommand implements CharacterCommand
         $config = data_get($this->payload, 'config');
         if (! is_array($config)) {
             throw new InvalidArgumentException('Source config must be an object.');
+        }
+        if ($sourceType === 'class') {
+            $this->addClass($characterId, $definition, $config);
+
+            return;
         }
         $this->validateConfiguration(data_get($definition, 'content_key'), $config);
 
@@ -68,6 +73,63 @@ final class AddSourceCommand implements CharacterCommand
             'config' => json_encode($config, JSON_THROW_ON_ERROR),
             'acquired_at_character_level' => max(1, DB::table('character_class_levels')
                 ->where('character_id', $characterId)->sum('level')),
+            'state' => 'active',
+            'created_at' => now(),
+            'updated_at' => now(),
+        ]);
+        $this->generator->generateForSource($sourceId);
+    }
+
+    /** @param array<string, mixed> $config */
+    private function addClass(int $characterId, object $definition, array $config): void
+    {
+        $level = data_get($config, 'level');
+        if (! is_int($level) || $level < 1 || $level > 20) {
+            throw new InvalidArgumentException('Class source level must be between 1 and 20.');
+        }
+        $classId = (int) data_get($definition, 'id');
+        if (DB::table('character_class_levels')
+            ->where('character_id', $characterId)
+            ->where('class_definition_id', $classId)
+            ->exists()) {
+            throw new InvalidArgumentException(data_get($definition, 'name').' is not repeatable.');
+        }
+        $otherLevels = (int) DB::table('character_class_levels')
+            ->where('character_id', $characterId)
+            ->sum('level');
+        if ($otherLevels + $level > 20) {
+            throw new InvalidArgumentException('A character cannot exceed level 20.');
+        }
+
+        $acquisitions = data_get($config, 'wizard_spellbook_acquisitions');
+        if ($acquisitions !== null && data_get($definition, 'name') !== 'Wizard') {
+            throw new InvalidArgumentException('Only a Wizard class source can configure a spellbook.');
+        }
+        if ($acquisitions !== null && (! is_array($acquisitions) || ! array_is_list($acquisitions))) {
+            throw new InvalidArgumentException('Wizard spellbook acquisitions must be a list.');
+        }
+
+        $this->before = $this->state->capture($characterId);
+        DB::table('character_class_levels')->insert([
+            'character_id' => $characterId,
+            'class_definition_id' => $classId,
+            'level' => $level,
+            'is_starting_class' => $otherLevels === 0,
+            'created_at' => now(),
+            'updated_at' => now(),
+        ]);
+        $sourceConfig = ['spellcasting_ability' => data_get($definition, 'spellcasting_ability')];
+        if ($acquisitions !== null) {
+            $sourceConfig['wizard_spellbook_acquisitions'] = $acquisitions;
+        }
+        $sourceId = DB::table('character_source_instances')->insertGetId([
+            'character_id' => $characterId,
+            'instance_uuid' => Str::uuid()->toString(),
+            'source_type' => 'class',
+            'source_definition_id' => $classId,
+            'display_name' => data_get($definition, 'name')." {$level}",
+            'config' => json_encode($sourceConfig, JSON_THROW_ON_ERROR),
+            'acquired_at_character_level' => $otherLevels + 1,
             'state' => 'active',
             'created_at' => now(),
             'updated_at' => now(),
@@ -105,6 +167,7 @@ final class AddSourceCommand implements CharacterCommand
     private function definitionTable(string $sourceType): string
     {
         return match ($sourceType) {
+            'class' => 'class_definitions',
             'feat' => 'feat_definitions',
             'species' => 'species_definitions',
             'background' => 'background_definitions',

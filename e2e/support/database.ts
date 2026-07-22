@@ -26,8 +26,8 @@ export interface SlotFixture extends SlotRow {
     spell_name: string | null;
 }
 
-function phpDatabase<T>(action: string, argument?: string): T {
-    const args = ['e2e/support/database.php', action, '1'];
+function phpDatabase<T>(action: string, argument?: string, characterId = 1): T {
+    const args = ['e2e/support/database.php', action, String(characterId)];
     if (argument !== undefined) args.push(argument);
     const output = execFileSync('php', args, {
         cwd: projectRoot,
@@ -44,24 +44,24 @@ export function resetDatabase(): void {
     });
 }
 
-export function slots(): SlotRow[] {
-    return phpDatabase<SlotRow[]>('slots');
+export function slots(characterId = 1): SlotRow[] {
+    return phpDatabase<SlotRow[]>('slots', undefined, characterId);
 }
 
-export function slotFixtures(): SlotFixture[] {
-    return phpDatabase<SlotFixture[]>('slot-fixtures');
+export function slotFixtures(characterId = 1): SlotFixture[] {
+    return phpDatabase<SlotFixture[]>('slot-fixtures', undefined, characterId);
 }
 
-export function character(): DatabaseRow {
-    return phpDatabase<DatabaseRow>('character');
+export function character(characterId = 1): DatabaseRow {
+    return phpDatabase<DatabaseRow>('character', undefined, characterId);
 }
 
-export function auditLog(): DatabaseRow[] {
-    return phpDatabase<DatabaseRow[]>('audit');
+export function auditLog(characterId = 1): DatabaseRow[] {
+    return phpDatabase<DatabaseRow[]>('audit', undefined, characterId);
 }
 
-export function characterOperations(): DatabaseRow[] {
-    return phpDatabase<DatabaseRow[]>('operations');
+export function characterOperations(characterId = 1): DatabaseRow[] {
+    return phpDatabase<DatabaseRow[]>('operations', undefined, characterId);
 }
 
 export function warningAcknowledgements(): DatabaseRow[] {
@@ -80,14 +80,18 @@ export function savePointSnapshot(label: string): PersistedCharacterState {
     return phpDatabase<PersistedCharacterState>('save-point-snapshot', label);
 }
 
-export function source(displayName: string): DatabaseRow {
-    return phpDatabase<DatabaseRow>('source', displayName);
+export function source(displayName: string, characterId = 1): DatabaseRow {
+    return phpDatabase<DatabaseRow>('source', displayName, characterId);
 }
 
-export function classLevel(className: string): number {
-    return phpDatabase<number>('class-level', className);
+export function classLevel(className: string, characterId = 1): number {
+    return phpDatabase<number>('class-level', className, characterId);
 }
 
 export function spellVersionId(contentKey: string): number {
     return phpDatabase<number>('spell-version-id', contentKey);
+}
+
+export function buildReport<T>(characterId = 1): T {
+    return phpDatabase<T>('build-report', undefined, characterId);
 }

@@ -1,10 +1,10 @@
 identityKey,versionKey,name,edition,level,school,castingTime,range,components,duration,concentration,ritual,attackModes,saveAbilities,effectReliabilityCategory,spellLists,sourceBooks,sourcePage,sourceSlug
-booming-blade,2014:booming-blade,Booming Blade,2014,0,Evocation,1 Action,Self (5-foot radius),"S, M",1 round,false,false,,,fixed_effect,,Tasha's Cauldron of Everything,,booming-blade
-green-flame-blade,2014:green-flame-blade,Green-Flame Blade,2014,0,Evocation,1 Action,Self (5-foot radius),"S, M",Instantaneous,false,false,,,modifier_scaled,,Tasha's Cauldron of Everything;Sword Coast Adventurer's Guide,,green-flame-blade
-lightning-lure,2014:lightning-lure,Lightning Lure,2014,0,Evocation,1 Action,Self (15-foot radius),V,Instantaneous,false,false,,strength,saving_throw,,Tasha's Cauldron of Everything,,lightning-lure
+booming-blade,2014:booming-blade,Booming Blade,2014,0,Evocation,1 Action,Self (5-foot radius),"S, M",1 round,false,false,,,fixed_effect,Artificer,Tasha's Cauldron of Everything,,booming-blade
+green-flame-blade,2014:green-flame-blade,Green-Flame Blade,2014,0,Evocation,1 Action,Self (5-foot radius),"S, M",Instantaneous,false,false,,,modifier_scaled,Artificer,Tasha's Cauldron of Everything;Sword Coast Adventurer's Guide,,green-flame-blade
+lightning-lure,2014:lightning-lure,Lightning Lure,2014,0,Evocation,1 Action,Self (15-foot radius),V,Instantaneous,false,false,,strength,saving_throw,Artificer,Tasha's Cauldron of Everything,,lightning-lure
 mind-sliver,2014:mind-sliver,Mind Sliver,2014,0,Enchantment,1 Action,60 feet,V,1 round,false,false,,intelligence,saving_throw,,Tasha's Cauldron of Everything,,mind-sliver
-sword-burst,2014:sword-burst,Sword Burst,2014,0,Conjuration,1 Action,Self (5-foot radius),V,Instantaneous,false,false,,dexterity,saving_throw,,Tasha's Cauldron of Everything,,sword-burst
-tasha-s-caustic-brew,2014:tasha-s-caustic-brew,Tasha's Caustic Brew,2014,1,Evocation,1 Action,Self (30-foot line),"V, S, M","Concentration, up to 1 minute",true,false,,dexterity,saving_throw,,Tasha's Cauldron of Everything,,tashas-caustic-brew
+sword-burst,2014:sword-burst,Sword Burst,2014,0,Conjuration,1 Action,Self (5-foot radius),V,Instantaneous,false,false,,dexterity,saving_throw,Artificer,Tasha's Cauldron of Everything,,sword-burst
+tasha-s-caustic-brew,2014:tasha-s-caustic-brew,Tasha's Caustic Brew,2014,1,Evocation,1 Action,Self (30-foot line),"V, S, M","Concentration, up to 1 minute",true,false,,dexterity,saving_throw,Artificer,Tasha's Cauldron of Everything,,tashas-caustic-brew
 summon-beast,2014:summon-beast,Summon Beast,2014,2,Conjuration,1 Action,90 feet,"V, S, M","Concentration, up to 1 hour",true,false,,,fixed_effect,,Tasha's Cauldron of Everything,,summon-beast
 tasha-s-mind-whip,2014:tasha-s-mind-whip,Tasha's Mind Whip,2014,2,Enchantment,1 Action,90 feet,V,1 round,false,false,,intelligence,saving_throw,,Tasha's Cauldron of Everything,,tashas-mind-whip
 intellect-fortress,2014:intellect-fortress,Intellect Fortress,2014,3,Abjuration,1 Action,30 feet,V,"Concentration, up to 1 hour",true,false,,charisma,saving_throw,,Tasha's Cauldron of Everything,,intellect-fortress

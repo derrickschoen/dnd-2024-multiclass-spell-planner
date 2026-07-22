@@ -159,7 +159,9 @@
       "constitution"
     ],
     "effectReliabilityCategory": "saving_throw",
-    "spellLists": [],
+    "spellLists": [
+      "Wizard"
+    ],
     "sourceBooks": [
       "Explorer's Guide to Wildemount"
     ],
@@ -184,7 +186,9 @@
       "constitution"
     ],
     "effectReliabilityCategory": "saving_throw",
-    "spellLists": [],
+    "spellLists": [
+      "Wizard"
+    ],
     "sourceBooks": [
       "Explorer's Guide to Wildemount"
     ],
@@ -209,7 +213,9 @@
       "wisdom"
     ],
     "effectReliabilityCategory": "saving_throw",
-    "spellLists": [],
+    "spellLists": [
+      "Wizard"
+    ],
     "sourceBooks": [
       "Explorer's Guide to Wildemount"
     ],
@@ -234,7 +240,9 @@
       "constitution"
     ],
     "effectReliabilityCategory": "saving_throw",
-    "spellLists": [],
+    "spellLists": [
+      "Wizard"
+    ],
     "sourceBooks": [
       "Explorer's Guide to Wildemount"
     ],
@@ -259,7 +267,9 @@
       "constitution"
     ],
     "effectReliabilityCategory": "saving_throw",
-    "spellLists": [],
+    "spellLists": [
+      "Wizard"
+    ],
     "sourceBooks": [
       "Explorer's Guide to Wildemount"
     ],
@@ -284,7 +294,9 @@
       "constitution"
     ],
     "effectReliabilityCategory": "saving_throw",
-    "spellLists": [],
+    "spellLists": [
+      "Wizard"
+    ],
     "sourceBooks": [
       "Explorer's Guide to Wildemount"
     ],
@@ -309,7 +321,9 @@
       "wisdom"
     ],
     "effectReliabilityCategory": "saving_throw",
-    "spellLists": [],
+    "spellLists": [
+      "Wizard"
+    ],
     "sourceBooks": [
       "Explorer's Guide to Wildemount"
     ],
@@ -334,7 +348,9 @@
       "strength"
     ],
     "effectReliabilityCategory": "saving_throw",
-    "spellLists": [],
+    "spellLists": [
+      "Wizard"
+    ],
     "sourceBooks": [
       "Explorer's Guide to Wildemount"
     ],
@@ -359,7 +375,9 @@
       "constitution"
     ],
     "effectReliabilityCategory": "saving_throw",
-    "spellLists": [],
+    "spellLists": [
+      "Wizard"
+    ],
     "sourceBooks": [
       "Explorer's Guide to Wildemount"
     ],

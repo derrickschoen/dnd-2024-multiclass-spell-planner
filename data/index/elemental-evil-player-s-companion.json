@@ -17,7 +17,11 @@
     ],
     "saveAbilities": [],
     "effectReliabilityCategory": "attack_roll",
-    "spellLists": [],
+    "spellLists": [
+      "Druid",
+      "Warlock",
+      "Artificer"
+    ],
     "sourceBooks": [
       "Xanathar's Guide to Everything",
       "Elemental Evil Player's Companion"
@@ -43,7 +47,12 @@
       "dexterity"
     ],
     "effectReliabilityCategory": "saving_throw",
-    "spellLists": [],
+    "spellLists": [
+      "Bard",
+      "Druid",
+      "Sorcerer",
+      "Wizard"
+    ],
     "sourceBooks": [
       "Xanathar's Guide to Everything",
       "Elemental Evil Player's Companion"
@@ -69,7 +78,11 @@
       "dexterity"
     ],
     "effectReliabilityCategory": "saving_throw",
-    "spellLists": [],
+    "spellLists": [
+      "Druid",
+      "Sorcerer",
+      "Wizard"
+    ],
     "sourceBooks": [
       "Xanathar's Guide to Everything",
       "Elemental Evil Player's Companion"

@@ -15,7 +15,13 @@
     "attackModes": [],
     "saveAbilities": [],
     "effectReliabilityCategory": "fixed_effect",
-    "spellLists": [],
+    "spellLists": [
+      "Artificer",
+      "Druid",
+      "Ranger",
+      "Sorcerer",
+      "Wizard"
+    ],
     "sourceBooks": [
       "Spelljammer: Adventures in Space - Astral Adventurer's Guide"
     ],
@@ -38,7 +44,10 @@
     "attackModes": [],
     "saveAbilities": [],
     "effectReliabilityCategory": "fixed_effect",
-    "spellLists": [],
+    "spellLists": [
+      "Artificer",
+      "Wizard"
+    ],
     "sourceBooks": [
       "Spelljammer: Adventures in Space - Astral Adventurer's Guide"
     ],

@@ -1,6 +1,6 @@
 import { test, describe } from 'node:test';
 import assert from 'node:assert/strict';
-import { parseIndex, classify, canonicalSourceBook, parseSpellLevel, parseSpellPage } from './scrape-spells.mjs';
+import { parseIndex, classify, canonicalSourceBook, parseSpellLevel, parseSpellPage, parseSpellLists } from './scrape-spells.mjs';
 
 /**
  * These fixtures encode the REAL header layouts, captured from both sites on
@@ -197,5 +197,25 @@ describe('parseSpellPage extracts only a real level header from run-on content',
         </div>`;
         assert.equal(parseSpellPage(cantripProse, indexRow).level, -1);
         assert.equal(parseSpellPage(numberedProse, indexRow).level, -1);
+    });
+});
+
+describe('parseSpellLists recovers 2014 class lists from detail pages', () => {
+    test('extracts a multi-class list', () => {
+        // The 2014 index has no class column, so this is the ONLY source for
+        // legacy spells. Mold Earth is on three lists; a hand-patch that guessed
+        // "Wizard" alone was wrong.
+        assert.deepEqual(
+            parseSpellLists('...dismiss such an effect as an action. Spell Lists. Druid , Sorcerer , Wizard  '),
+            ['Druid', 'Sorcerer', 'Wizard']
+        );
+    });
+
+    test('extracts a single-class list', () => {
+        assert.deepEqual(parseSpellLists('text here. Spell Lists. Druid  '), ['Druid']);
+    });
+
+    test('returns empty when the page states no list', () => {
+        assert.deepEqual(parseSpellLists('You create a spectral hand.'), []);
     });
 });

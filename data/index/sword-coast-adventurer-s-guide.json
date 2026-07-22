@@ -15,7 +15,9 @@
     "attackModes": [],
     "saveAbilities": [],
     "effectReliabilityCategory": "modifier_scaled",
-    "spellLists": [],
+    "spellLists": [
+      "Artificer"
+    ],
     "sourceBooks": [
       "Tasha's Cauldron of Everything",
       "Sword Coast Adventurer's Guide"

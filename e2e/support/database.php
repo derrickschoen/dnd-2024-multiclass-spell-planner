@@ -2,6 +2,7 @@
 
 declare(strict_types=1);
 
+use App\Domain\Reports\BuildReportBuilder;
 use Illuminate\Contracts\Console\Kernel;
 use Illuminate\Support\Facades\DB;
 
@@ -88,6 +89,7 @@ $result = match ($action) {
             ->sole(['level.level']),
         'level',
     ),
+    'build-report' => app(BuildReportBuilder::class)->build($characterId),
     default => throw new InvalidArgumentException("Unknown database action: {$action}"),
 };
 

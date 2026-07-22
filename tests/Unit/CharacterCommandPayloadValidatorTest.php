@@ -79,6 +79,10 @@ it('accepts each command enum branch', function (array $payload): void {
     'species source' => [[
         'type' => 'add_source', 'source_type' => 'species', 'source_definition_id' => 1, 'config' => [],
     ]],
+    'class source' => [[
+        'type' => 'add_source', 'source_type' => 'class', 'source_definition_id' => 1,
+        'config' => ['level' => 1, 'wizard_spellbook_acquisitions' => []],
+    ]],
     'warning delete' => [[
         'type' => 'acknowledge_warning', 'mode' => 'delete', 'warning_fingerprint' => 'fingerprint',
         'integrity' => str_repeat('a', 64),
@@ -177,8 +181,8 @@ it('rejects malformed add and remove source payload shapes directly', function (
         'type' => 'remove_source', 'source_instance_id' => 1, 'reason' => 'reason', 'unexpected' => true,
     ], 'Unknown command field: unexpected.'],
     'unknown source type' => [[
-        'type' => 'add_source', 'source_type' => 'class', 'source_definition_id' => 1, 'config' => [],
-    ], 'Source type must be feat, species, or background.'],
+        'type' => 'add_source', 'source_type' => 'subclass', 'source_definition_id' => 1, 'config' => [],
+    ], 'Source type must be class, feat, species, or background.'],
     'missing config' => [[
         'type' => 'add_source', 'source_type' => 'feat', 'source_definition_id' => 1,
     ], 'Source config must be an object.'],
@@ -188,6 +192,21 @@ it('rejects malformed add and remove source payload shapes directly', function (
     'list config' => [[
         'type' => 'add_source', 'source_type' => 'feat', 'source_definition_id' => 1, 'config' => [1],
     ], 'Source config must be an object.'],
+    'class config missing level' => [[
+        'type' => 'add_source', 'source_type' => 'class', 'source_definition_id' => 1, 'config' => [],
+    ], 'level must be an integer.'],
+    'class config level above maximum' => [[
+        'type' => 'add_source', 'source_type' => 'class', 'source_definition_id' => 1,
+        'config' => ['level' => 21],
+    ], 'Class source level must be between 1 and 20.'],
+    'class config acquisitions must be a list' => [[
+        'type' => 'add_source', 'source_type' => 'class', 'source_definition_id' => 1,
+        'config' => ['level' => 1, 'wizard_spellbook_acquisitions' => ['spell' => '2024:shield']],
+    ], 'Wizard spellbook acquisitions must be a list.'],
+    'class config unknown field' => [[
+        'type' => 'add_source', 'source_type' => 'class', 'source_definition_id' => 1,
+        'config' => ['level' => 1, 'spellcasting_ability' => 'charisma'],
+    ], 'Unknown class source config field: spellcasting_ability.'],
 ]);
 
 it('rejects command-specific malformed fields before domain execution', function (array $payload, string $message): void {

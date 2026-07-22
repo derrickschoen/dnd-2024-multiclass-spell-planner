@@ -15,7 +15,10 @@
     "attackModes": [],
     "saveAbilities": [],
     "effectReliabilityCategory": "fixed_effect",
-    "spellLists": [],
+    "spellLists": [
+      "Warlock",
+      "Wizard"
+    ],
     "sourceBooks": [
       "Lost Laboratory of Kwalish"
     ],
@@ -38,7 +41,9 @@
     "attackModes": [],
     "saveAbilities": [],
     "effectReliabilityCategory": "fixed_effect",
-    "spellLists": [],
+    "spellLists": [
+      "Wizard"
+    ],
     "sourceBooks": [
       "Lost Laboratory of Kwalish"
     ],
@@ -61,7 +66,10 @@
     "attackModes": [],
     "saveAbilities": [],
     "effectReliabilityCategory": "fixed_effect",
-    "spellLists": [],
+    "spellLists": [
+      "Warlock",
+      "Wizard"
+    ],
     "sourceBooks": [
       "Lost Laboratory of Kwalish"
     ],

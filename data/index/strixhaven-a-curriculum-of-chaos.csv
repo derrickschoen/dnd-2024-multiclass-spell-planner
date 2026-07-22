@@ -1,6 +1,6 @@
 identityKey,versionKey,name,edition,level,school,castingTime,range,components,duration,concentration,ritual,attackModes,saveAbilities,effectReliabilityCategory,spellLists,sourceBooks,sourcePage,sourceSlug
-silvery-barbs,2014:silvery-barbs,Silvery Barbs,2014,1,Enchantment,1 Reaction,60 feet,V,Instantaneous,false,false,,,fixed_effect,,Strixhaven: A Curriculum of Chaos,,silvery-barbs
-borrowed-knowledge,2014:borrowed-knowledge,Borrowed Knowledge,2014,2,Divination,1 Action,Self,"V, S, M",1 hour,false,false,,,fixed_effect,,Strixhaven: A Curriculum of Chaos,,borrowed-knowledge
-kinetic-jaunt,2014:kinetic-jaunt,Kinetic Jaunt,2014,2,Transmutation,1 Bonus Action,Self,S,"Concentration, up to 1 minute",true,false,,,fixed_effect,,Strixhaven: A Curriculum of Chaos,,kinetic-jaunt
-vortex-warp,2014:vortex-warp,Vortex Warp,2014,2,Conjuration,1 Action,90 feet,"V, S",Instantaneous,false,false,,constitution,saving_throw,,Strixhaven: A Curriculum of Chaos,,vortex-warp
-wither-and-bloom,2014:wither-and-bloom,Wither and Bloom,2014,2,Necromancy,1 Action,60 feet,"V, S, M",Instantaneous,false,false,,constitution,saving_throw,,Strixhaven: A Curriculum of Chaos,,wither-and-bloom
+silvery-barbs,2014:silvery-barbs,Silvery Barbs,2014,1,Enchantment,1 Reaction,60 feet,V,Instantaneous,false,false,,,fixed_effect,Bard;Sorcerer;Wizard,Strixhaven: A Curriculum of Chaos,,silvery-barbs
+borrowed-knowledge,2014:borrowed-knowledge,Borrowed Knowledge,2014,2,Divination,1 Action,Self,"V, S, M",1 hour,false,false,,,fixed_effect,Bard;Cleric;Warlock;Wizard,Strixhaven: A Curriculum of Chaos,,borrowed-knowledge
+kinetic-jaunt,2014:kinetic-jaunt,Kinetic Jaunt,2014,2,Transmutation,1 Bonus Action,Self,S,"Concentration, up to 1 minute",true,false,,,fixed_effect,Artificer;Bard;Sorcerer;Wizard,Strixhaven: A Curriculum of Chaos,,kinetic-jaunt
+vortex-warp,2014:vortex-warp,Vortex Warp,2014,2,Conjuration,1 Action,90 feet,"V, S",Instantaneous,false,false,,constitution,saving_throw,Artificer;Sorcerer;Wizard,Strixhaven: A Curriculum of Chaos,,vortex-warp
+wither-and-bloom,2014:wither-and-bloom,Wither and Bloom,2014,2,Necromancy,1 Action,60 feet,"V, S, M",Instantaneous,false,false,,constitution,saving_throw,Druid;Sorcerer;Wizard,Strixhaven: A Curriculum of Chaos,,wither-and-bloom

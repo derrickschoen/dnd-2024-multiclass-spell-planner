@@ -54,14 +54,24 @@ it('serves the seeded character list and editable workspace', function () {
 
 it('builds the complete character list card contract in deterministic order', function () {
     $characterId = workspaceCharacterId();
+    $muttId = (int) DB::table('characters')->where('notes', 'like', "seed:mutt\n%")->value('id');
 
-    expect(app(CharacterListBuilder::class)->build())->toBe([[
-        'id' => $characterId,
-        'name' => 'A6 Sixfold Spellcaster',
-        'level' => 6,
-        'classes' => ['Bard 1', 'Cleric 1', 'Druid 1', 'Paladin 1', 'Sorcerer 1', 'Wizard 1'],
-        'warning_count' => 1,
-    ]]);
+    expect(app(CharacterListBuilder::class)->build())->toBe([
+        [
+            'id' => $characterId,
+            'name' => 'A6 Sixfold Spellcaster',
+            'level' => 6,
+            'classes' => ['Bard 1', 'Cleric 1', 'Druid 1', 'Paladin 1', 'Sorcerer 1', 'Wizard 1'],
+            'warning_count' => 1,
+        ],
+        [
+            'id' => $muttId,
+            'name' => 'Mutt',
+            'level' => 6,
+            'classes' => ['Bard 1', 'Cleric 1', 'Druid 1', 'Paladin 1', 'Sorcerer 1', 'Wizard 1'],
+            'warning_count' => 3,
+        ],
+    ]);
 });
 
 it('builds the complete workspace editing contract for the seeded character', function () {
@@ -1118,6 +1128,73 @@ it('rejects every invalid configurable-source boundary with its domain message',
     ])->assertUnprocessable()
         ->assertJsonPath('message', 'Choose a spell list with a defined spellcasting ability.');
     expect((int) DB::table('characters')->where('id', $characterId)->value('revision'))->toBe(0);
+});
+
+it('adds a class source through the command with its level, DSL slots, and spellbook atomically', function () {
+    $characterId = (int) DB::table('characters')->insertGetId([
+        'name' => 'Class Source Command', 'created_at' => now(), 'updated_at' => now(),
+    ]);
+    $sorcererId = (int) DB::table('class_definitions')->where('name', 'Sorcerer')->value('id');
+    $before = app(CharacterState::class)->capture($characterId);
+
+    $added = mutateCharacter($this, $characterId, 0, [
+        'type' => 'add_source', 'source_type' => 'class',
+        'source_definition_id' => $sorcererId, 'config' => ['level' => 1],
+    ])->assertOk()->assertJsonPath('revision', 1);
+    $sorcererSource = DB::table('character_source_instances')
+        ->where('character_id', $characterId)->where('display_name', 'Sorcerer 1')->sole();
+    expect(DB::table('character_class_levels')->where('character_id', $characterId)->sole())
+        ->toMatchArray([
+            'class_definition_id' => $sorcererId, 'level' => 1, 'is_starting_class' => 1,
+        ])->and(json_decode((string) data_get($sorcererSource, 'config'), true, 512, JSON_THROW_ON_ERROR))
+        ->toBe(['spellcasting_ability' => 'charisma'])
+        ->and(data_get($sorcererSource, 'acquired_at_character_level'))->toBe(1)
+        ->and(DB::table('spell_selection_slots')
+            ->where('source_instance_id', data_get($sorcererSource, 'id'))->count())->toBe(6)
+        ->and(DB::table('change_log')->where('character_id', $characterId)
+            ->pluck('action_type')->unique()->all())->toBe(['add_source']);
+
+    $afterSorcerer = app(CharacterState::class)->capture($characterId);
+    mutateCharacter($this, $characterId, 1, [
+        'type' => 'add_source', 'source_type' => 'class',
+        'source_definition_id' => $sorcererId, 'config' => ['level' => 1],
+    ])->assertUnprocessable()->assertJsonPath('message', 'Sorcerer is not repeatable.');
+    expect(app(CharacterState::class)->capture($characterId))->toBe($afterSorcerer)
+        ->and(DB::table('characters')->where('id', $characterId)->value('revision'))->toBe(1);
+
+    $wizardId = (int) DB::table('class_definitions')->where('name', 'Wizard')->value('id');
+    mutateCharacter($this, $characterId, 1, [
+        'type' => 'add_source', 'source_type' => 'class',
+        'source_definition_id' => $wizardId,
+        'config' => ['level' => 1, 'wizard_spellbook_acquisitions' => [[]]],
+    ])->assertUnprocessable()->assertJsonPath(
+        'message',
+        "Spellbook rule 'wizard-spellbook' acquisition 0 could not resolve its spell.",
+    );
+    expect(app(CharacterState::class)->capture($characterId))->toBe($afterSorcerer)
+        ->and(DB::table('characters')->where('id', $characterId)->value('revision'))->toBe(1)
+        ->and(DB::table('character_source_instances')
+            ->where('character_id', $characterId)->where('display_name', 'Wizard 1')->exists())->toBeFalse();
+
+    $acquisitions = [[
+        'spell_version_key' => '2024:shield', 'acquisition' => 'starting',
+    ]];
+    mutateCharacter($this, $characterId, 1, [
+        'type' => 'add_source', 'source_type' => 'class',
+        'source_definition_id' => $wizardId,
+        'config' => ['level' => 1, 'wizard_spellbook_acquisitions' => $acquisitions],
+    ])->assertOk()->assertJsonPath('revision', 2);
+    $wizardSource = DB::table('character_source_instances')
+        ->where('character_id', $characterId)->where('display_name', 'Wizard 1')->sole();
+    expect(json_decode((string) data_get($wizardSource, 'config'), true, 512, JSON_THROW_ON_ERROR))->toBe([
+        'spellcasting_ability' => 'intelligence',
+        'wizard_spellbook_acquisitions' => $acquisitions,
+    ])->and(data_get($wizardSource, 'acquired_at_character_level'))->toBe(2)
+        ->and(DB::table('wizard_spellbook_entries')->where('character_id', $characterId)->count())->toBe(1);
+
+    mutateCharacter($this, $characterId, 2, $added->json('inverse'))
+        ->assertOk()->assertJsonPath('revision', 3);
+    expect(app(CharacterState::class)->capture($characterId))->toBe($before);
 });
 
 it('adds Magic Initiate through the DSL with independent list and ability config and exact undo redo', function () {

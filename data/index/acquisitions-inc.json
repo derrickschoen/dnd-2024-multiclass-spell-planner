@@ -15,7 +15,12 @@
     "attackModes": [],
     "saveAbilities": [],
     "effectReliabilityCategory": "fixed_effect",
-    "spellLists": [],
+    "spellLists": [
+      "Bard",
+      "Sorcerer",
+      "Warlock",
+      "Wizard"
+    ],
     "sourceBooks": [
       "Acquisitions Inc."
     ],
@@ -40,7 +45,9 @@
     ],
     "saveAbilities": [],
     "effectReliabilityCategory": "attack_roll",
-    "spellLists": [],
+    "spellLists": [
+      "Wizard"
+    ],
     "sourceBooks": [
       "Acquisitions Inc."
     ],
@@ -63,7 +70,10 @@
     "attackModes": [],
     "saveAbilities": [],
     "effectReliabilityCategory": "fixed_effect",
-    "spellLists": [],
+    "spellLists": [
+      "Bard",
+      "Wizard"
+    ],
     "sourceBooks": [
       "Acquisitions Inc."
     ],
@@ -88,7 +98,9 @@
       "wisdom"
     ],
     "effectReliabilityCategory": "saving_throw",
-    "spellLists": [],
+    "spellLists": [
+      "Wizard"
+    ],
     "sourceBooks": [
       "Acquisitions Inc."
     ],
@@ -138,7 +150,12 @@
       "wisdom"
     ],
     "effectReliabilityCategory": "saving_throw",
-    "spellLists": [],
+    "spellLists": [
+      "Cleric",
+      "Sorcerer",
+      "Warlock",
+      "Wizard"
+    ],
     "sourceBooks": [
       "Acquisitions Inc."
     ],

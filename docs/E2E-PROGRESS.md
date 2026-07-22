@@ -310,17 +310,18 @@ Two facts to carry, both honest limitations rather than guesses to bury:
    INFERRED from to-hit values: `+6` implies PB 3 + mod 3 (CHA 17); `+4` implies
    mod +1 (a 13). Consistent with the spec's CHA 17 / INT 13 / WIS 13, but
    inferred. Mark them as such in the seeder so nobody later treats them as read.
-2. **`Mold Earth` exists in our catalog only as 2014**, not 2024. Either the sheet
-   uses legacy content or the scraper missed it on the 2024 site. CHECK THE 2024
-   SITE FIRST -- if it is there, that is a scraper gap and the fix belongs in the
-   scraper, not in an `allow_legacy` workaround.
+2. **`Mold Earth` is confirmed legacy content**, not a scraper assumption. The
+   cached 2024 index has 427 entries, `mold-earth` is absent, and its nearest match
+   is `move-earth`. It is Xanathar's-era content that was not reprinted for 2024,
+   so Mutt legitimately requires `allow_legacy`; that is the feature working, not
+   a workaround.
 
-- [ ] **T9 Seed "Mutt" as a second character** through the REAL `add_source` and
+- [x] **T9 Seed "Mutt" as a second character** through the REAL `add_source` and
       `set_slot` commands, not direct inserts, so the DSL generates slots and every
       selection passes eligibility. This also gives a FULLY POPULATED demo: the
       existing seed leaves 29 of 40 slots blank, which undersells duplicate
       detection across five classes.
-- [ ] **T10 A browser scenario over Mutt** asserting real multi-source duplicates
+- [x] **T10 A browser scenario over Mutt** asserting real multi-source duplicates
       and per-class max preparable level across all six classes.
 
 ## Iteration log
@@ -1390,3 +1391,166 @@ Detect Magic capability/ritual-only/non-selection/non-counting. Both required
 Claude reviews were attempted with bounded waits; each returned no content and
 ended in `Execution error`, which was recorded as a deviation rather than
 approval. No commit or push was made.
+
+### Iteration 15 — UNIT E2E-14 T9/T10 Mutt real-sheet seed complete
+
+Added Mutt as character 2. The only direct write is the root character row,
+because no create-character command exists. Legacy enablement runs through
+`update_character_rules`; all six class-level/source pairs run through the real
+`add_source` command; the grant DSL creates all 34 class slots; and all 34
+selections run through `set_slot`. The persisted operation ledger is exactly 41
+operations: one rules update, six source additions, and 34 slot selections. A
+temporary direct-selection bypass reduced the revision to 40 and T10 failed
+waiting for `revision 41`, proving the command-path assertions are sensitive.
+
+`add_source` now supports a validated `class` branch: level 1–20, total level at
+most 20, non-repeatable class identity, derived starting class/acquisition level
+and spellcasting ability, and Wizard-only spellbook acquisition config. The
+executor transaction includes DSL generation. A malformed `[[]]` acquisition
+was proven to return the exact DSL error, preserve byte-identical character
+state, leave the revision unchanged, and create no Wizard source or class row.
+
+The sheet facts are explicit in the seed notes: max HP 43 and milestone are sheet
+data; CHA 17 / INT 13 / WIS 13 are marked **INFERRED** because the PDF contains no
+ability scores; STR/DEX/CON 10 are marked planner defaults, not sheet data. Every
+leveled-spell attribution is likewise marked inferred. The exact attribution is:
+
+- Sorcerer: Chromatic Orb, Shield.
+- Bard: Bane, Cure Wounds, Dissonant Whispers, Unseen Servant.
+- Cleric: Bane, Create or Destroy Water, Healing Word, Sanctuary.
+- Druid: Goodberry, Healing Word, Jump, Speak with Animals.
+- Paladin: Thunderous Smite, Wrathful Smite.
+- Wizard spellbook: Comprehend Languages, Feather Fall, Find Familiar, Shield,
+  Tenser's Floating Disk, Thunderwave. The prepared four are Feather Fall, Find
+  Familiar, Shield, and Tenser's Floating Disk; Comprehend Languages and
+  Thunderwave remain unprepared book entries.
+
+The task text says 33 spells, but its enumerated lists contain **35 distinct
+names**: 14 cantrips plus 21 leveled spells. The honest resulting counts are:
+
+- 34/34 slot rows are filled and valid, representing 31 distinct spell names;
+  the three extra selections are the intended Bane, Healing Word, and Shield
+  duplicates.
+- Comprehend Languages and Thunderwave are additional Wizard spellbook-only
+  names, so 33 of the 35 supplied names are represented somewhere in Mutt's
+  character state.
+- Ray of Sickness could not fit after both eligible Sorcerer/Wizard preparation
+  capacities were consumed. Sleep could not fit after all eligible
+  Bard/Sorcerer/Wizard capacities were consumed. Neither was forced into an
+  ineligible source. There is no empty choice row: the real duplicate selections
+  legitimately consume the remaining capacity.
+
+`Mold Earth` remains the confirmed 2014 version with legacy enabled. The imported
+Xanathar record now carries the user-confirmed Wizard membership so production
+eligibility accepts it. Local catalog inspection also found Shape Water only as
+2014 with no membership; its user-confirmed Druid attribution was added to the
+same catalog ingress. T10 pins both exact 2014 version IDs, source lists, and
+valid selection states.
+
+Mutt's final report is caster level 6 with shared slots 4/3/3 and no Pact Magic.
+All six classes simultaneously report class level 1 and maximum preparable level
+1. The exact wasteful findings are Bane (Bard + Cleric), Healing Word (Cleric +
+Druid), and Shield (Sorcerer + Wizard), spanning five classes. T10 asserts the
+raw database selections independently of the report and also checks the visible
+warning copy.
+
+Sensitivity checks (all production changes restored and T10 passed after each):
+
+- Changing wasteful classification from two counting routes to three made Bane
+  report `redundant_intentional` instead of `wasteful`, with the explanation
+  changing from `Bane consumes limits in more than one selection.` to `Bane has
+  overlapping access, but fewer than two routes consume limits.` T10 failed at
+  its exact assessment assertion.
+- Raising the full-caster preparation formula by one made Bard, Cleric, Druid,
+  Sorcerer, and Wizard report maximum 2 while Paladin remained 1. T10 failed with
+  the complete six-row expected/received diff.
+- Bypassing `set_slot` for Chill Touch made Mutt revision 40. T10 failed at the
+  visible `revision 41` assertion; restoration returned the 41-operation ledger.
+
+The first full Pest pass exposed two old single-character assumptions. The exact
+character-list contract omitted Mutt, and one Wizard rollback query did not scope
+prepared entries by character, receiving 8 instead of 4. The list contract now
+pins both cards and their warning counts; the rollback query is character-scoped.
+Both focused tests and the subsequent full suite passed.
+
+Final verification output observed:
+
+```text
+Dropping all tables ............................................ 4.02ms DONE
+INFO  Preparing database.
+Creating migration table ....................................... 2.77ms DONE
+INFO  Running migrations.
+0001_01_01_000000_create_users_table ........................... 0.88ms DONE
+0001_01_01_000001_create_cache_table ........................... 0.33ms DONE
+0001_01_01_000002_create_jobs_table ............................ 0.66ms DONE
+2026_07_21_000100_create_catalog_tables ........................ 6.59ms DONE
+2026_07_21_000200_create_character_tables ...................... 3.40ms DONE
+2026_07_21_000300_add_spell_selection_eligibility .............. 1.90ms DONE
+2026_07_21_000400_create_subclass_progressions ................. 0.27ms DONE
+2026_07_21_000500_create_character_operations .................. 0.37ms DONE
+INFO  Seeding database.
+Database\Seeders\ClassProgressionSeeder ......................... 45 ms DONE
+Database\Seeders\ContentDefinitionSeeder ........................ 1 ms DONE
+Database\Seeders\SeedCharacterSeeder ........................... 334 ms DONE
+
+Tests:    440 passed (12885 assertions)
+Duration: 70.25s
+
+> typecheck
+> vue-tsc --noEmit
+
+> build
+> vite build
+vite v8.1.5 building client environment for production...
+[plugin laravel:fonts] Optimized font fallbacks require the optional "fontaine" package. Install it, or set "optimizedFallbacks: false" on your fonts to disable the feature.
+✓ 567 modules transformed.
+public/build/manifest.json                                       1.53 kB │ gzip:  0.34 kB
+public/build/fonts-manifest.json                                 5.74 kB │ gzip:  0.71 kB
+public/build/assets/instrument-sans-400-normal-DRC__1Mx.woff2   16.86 kB
+public/build/assets/instrument-sans-500-normal-Dk9ku72i.woff2   17.23 kB
+public/build/assets/instrument-sans-600-normal-B7fBEWYG.woff2   17.40 kB
+public/build/assets/instrument-sans-400-normal-D1W7dsQl.woff    21.24 kB
+public/build/assets/instrument-sans-500-normal-Z6ESRlEs.woff    21.65 kB
+public/build/assets/instrument-sans-600-normal-B9e8oLYv.woff    21.67 kB
+public/build/assets/fonts-C9MNnjVw.css                           2.35 kB │ gzip:  0.38 kB
+public/build/assets/app-jSxdPPVW.css                            75.44 kB │ gzip: 14.22 kB
+public/build/assets/app-BoawcbZI.js                            225.32 kB │ gzip: 75.10 kB
+✓ built in 653ms
+
+> test:e2e
+> playwright test
+Running 18 tests using 1 worker
+  ✓ S1
+  ✓ S2
+  ✓ S3
+  ✓ S4
+  ✓ S5
+  ✓ S6
+  ✓ S7
+  ✓ S8
+  ✓ S9
+  ✓ S10
+  ✓ S11
+  ✓ S12
+  ✓ S13
+  ✓ S14
+  ✓ S15
+  ✓ S16
+  ✓ S17
+  ✓ T10
+18 passed (59.5s)
+```
+
+The final direct A6 extraction remains caster level 6, slots 4/3/3,
+proficiency +3, all six class maxima 1, Mage Hand wasteful, Entangle none, and
+Detect Magic capability/ritual-only/non-selection/non-counting. T10 reasserts
+those values from a database-level report after Mutt is present.
+
+Independent review required multiple long bounded attempts. The initial plan
+attempts timed out without content and were not treated as approval. The
+implementation review raised malformed acquisition atomicity as a proof gap;
+the rollback test above was added. BuildReport existence and sensitivity
+documentation findings were rejected with local execution evidence. On
+resubmission, the reviewer verified the nested/outer transaction rollback and
+reported no remaining medium/high defect. Targeted Pint, all changed PHP syntax
+checks, JSON parsing, and `git diff --check` passed. No commit or push was made.

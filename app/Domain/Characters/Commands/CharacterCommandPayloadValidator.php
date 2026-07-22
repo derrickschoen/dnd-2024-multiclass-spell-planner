@@ -99,8 +99,8 @@ final class CharacterCommandPayloadValidator
             'type', 'source_type', 'source_definition_id', 'config', 'reason',
         ]);
         $sourceType = $this->requiredString($payload, 'source_type', 10);
-        if (! in_array($sourceType, ['feat', 'species', 'background'], true)) {
-            throw new InvalidArgumentException('Source type must be feat, species, or background.');
+        if (! in_array($sourceType, ['class', 'feat', 'species', 'background'], true)) {
+            throw new InvalidArgumentException('Source type must be class, feat, species, or background.');
         }
         $this->positiveInteger($payload, 'source_definition_id');
         if (! array_key_exists('config', $payload) || ! is_array(data_get($payload, 'config'))) {
@@ -109,6 +109,19 @@ final class CharacterCommandPayloadValidator
         $config = data_get($payload, 'config');
         if ($config !== [] && array_is_list($config)) {
             throw new InvalidArgumentException('Source config must be an object.');
+        }
+        if ($sourceType === 'class') {
+            $this->rejectUnknown($config, ['level', 'wizard_spellbook_acquisitions'], 'class source config');
+            $level = $this->requiredInteger($config, 'level');
+            if ($level < 1 || $level > 20) {
+                throw new InvalidArgumentException('Class source level must be between 1 and 20.');
+            }
+            if (array_key_exists('wizard_spellbook_acquisitions', $config)) {
+                $acquisitions = data_get($config, 'wizard_spellbook_acquisitions');
+                if (! is_array($acquisitions) || ! array_is_list($acquisitions)) {
+                    throw new InvalidArgumentException('Wizard spellbook acquisitions must be a list.');
+                }
+            }
         }
 
         return $payload;

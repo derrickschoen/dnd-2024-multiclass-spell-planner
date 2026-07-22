@@ -276,8 +276,30 @@ export function parseSpellPage(htmlText, indexRow) {
         sourceBooks,
         sourcePage: pageMatch ? Number(pageMatch[1]) : null,
         level,
+        spellLists: parseSpellLists(content.text || ''),
         description,
     };
+}
+
+/**
+ * The 2014 index has NO class-list column (verified in A2: 6 columns vs 2024's 7),
+ * so every legacy spell arrived with an empty list and was therefore ineligible
+ * for every slot. The detail pages DO carry it, as a trailing
+ * "Spell Lists. Druid, Sorcerer, Wizard" line, so pass 2 can recover it from a
+ * page it already fetches.
+ *
+ * @returns list of class names, or [] when the page does not state one.
+ */
+export function parseSpellLists(pageText) {
+    const match = / Spell Lists\.\s*([A-Za-z,\s()]+?)(?:\s{2,}|window|$)/.exec(
+        ' ' + pageText.replace(/\s+/g, ' ')
+    );
+    if (!match) return [];
+
+    return match[1]
+        .split(',')
+        .map((name) => name.trim())
+        .filter((name) => /^[A-Z][A-Za-z ]{2,}$/.test(name));
 }
 
 const toCsv = (rows) => {
@@ -351,7 +373,9 @@ export async function buildDataset({ editions = ['2024', '2014'], limit = 0, off
                     attackModes: detail.attackModes,
                     saveAbilities: detail.saveAbilities,
                     effectReliabilityCategory: detail.effectReliabilityCategory,
-                    spellLists: row.spellLists,
+                    // Prefer the index column (2024 has one); fall back to the
+                    // detail page, which is the ONLY source for 2014 spells.
+                    spellLists: row.spellLists.length ? row.spellLists : detail.spellLists,
                     // All books this version appears in. The importer turns this
                     // into many-to-many publications rather than duplicate versions.
                     sourceBooks,

@@ -15,7 +15,9 @@
     "attackModes": [],
     "saveAbilities": [],
     "effectReliabilityCategory": "fixed_effect",
-    "spellLists": [],
+    "spellLists": [
+      "Artificer"
+    ],
     "sourceBooks": [
       "Tasha's Cauldron of Everything"
     ],
@@ -38,7 +40,9 @@
     "attackModes": [],
     "saveAbilities": [],
     "effectReliabilityCategory": "modifier_scaled",
-    "spellLists": [],
+    "spellLists": [
+      "Artificer"
+    ],
     "sourceBooks": [
       "Tasha's Cauldron of Everything",
       "Sword Coast Adventurer's Guide"
@@ -64,7 +68,9 @@
       "strength"
     ],
     "effectReliabilityCategory": "saving_throw",
-    "spellLists": [],
+    "spellLists": [
+      "Artificer"
+    ],
     "sourceBooks": [
       "Tasha's Cauldron of Everything"
     ],
@@ -114,7 +120,9 @@
       "dexterity"
     ],
     "effectReliabilityCategory": "saving_throw",
-    "spellLists": [],
+    "spellLists": [
+      "Artificer"
+    ],
     "sourceBooks": [
       "Tasha's Cauldron of Everything"
     ],
@@ -139,7 +147,9 @@
       "dexterity"
     ],
     "effectReliabilityCategory": "saving_throw",
-    "spellLists": [],
+    "spellLists": [
+      "Artificer"
+    ],
     "sourceBooks": [
       "Tasha's Cauldron of Everything"
     ],

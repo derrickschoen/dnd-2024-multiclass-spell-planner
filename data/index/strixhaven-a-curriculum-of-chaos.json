@@ -15,7 +15,11 @@
     "attackModes": [],
     "saveAbilities": [],
     "effectReliabilityCategory": "fixed_effect",
-    "spellLists": [],
+    "spellLists": [
+      "Bard",
+      "Sorcerer",
+      "Wizard"
+    ],
     "sourceBooks": [
       "Strixhaven: A Curriculum of Chaos"
     ],
@@ -38,7 +42,12 @@
     "attackModes": [],
     "saveAbilities": [],
     "effectReliabilityCategory": "fixed_effect",
-    "spellLists": [],
+    "spellLists": [
+      "Bard",
+      "Cleric",
+      "Warlock",
+      "Wizard"
+    ],
     "sourceBooks": [
       "Strixhaven: A Curriculum of Chaos"
     ],
@@ -61,7 +70,12 @@
     "attackModes": [],
     "saveAbilities": [],
     "effectReliabilityCategory": "fixed_effect",
-    "spellLists": [],
+    "spellLists": [
+      "Artificer",
+      "Bard",
+      "Sorcerer",
+      "Wizard"
+    ],
     "sourceBooks": [
       "Strixhaven: A Curriculum of Chaos"
     ],
@@ -86,7 +100,11 @@
       "constitution"
     ],
     "effectReliabilityCategory": "saving_throw",
-    "spellLists": [],
+    "spellLists": [
+      "Artificer",
+      "Sorcerer",
+      "Wizard"
+    ],
     "sourceBooks": [
       "Strixhaven: A Curriculum of Chaos"
     ],
@@ -111,7 +129,11 @@
       "constitution"
     ],
     "effectReliabilityCategory": "saving_throw",
-    "spellLists": [],
+    "spellLists": [
+      "Druid",
+      "Sorcerer",
+      "Wizard"
+    ],
     "sourceBooks": [
       "Strixhaven: A Curriculum of Chaos"
     ],

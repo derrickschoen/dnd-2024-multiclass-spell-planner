@@ -15,7 +15,11 @@
     "attackModes": [],
     "saveAbilities": [],
     "effectReliabilityCategory": "fixed_effect",
-    "spellLists": [],
+    "spellLists": [
+      "Bard",
+      "Sorcerer",
+      "Wizard"
+    ],
     "sourceBooks": [
       "Fizban's Treasury of Dragons"
     ],
@@ -40,7 +44,10 @@
       "constitution"
     ],
     "effectReliabilityCategory": "saving_throw",
-    "spellLists": [],
+    "spellLists": [
+      "Sorcerer",
+      "Wizard"
+    ],
     "sourceBooks": [
       "Fizban's Treasury of Dragons"
     ],
@@ -63,7 +70,12 @@
     "attackModes": [],
     "saveAbilities": [],
     "effectReliabilityCategory": "fixed_effect",
-    "spellLists": [],
+    "spellLists": [
+      "Artificer",
+      "Ranger",
+      "Sorcerer",
+      "Wizard"
+    ],
     "sourceBooks": [
       "Fizban's Treasury of Dragons"
     ],
@@ -88,7 +100,12 @@
       "intelligence"
     ],
     "effectReliabilityCategory": "saving_throw",
-    "spellLists": [],
+    "spellLists": [
+      "Bard",
+      "Sorcerer",
+      "Warlock",
+      "Wizard"
+    ],
     "sourceBooks": [
       "Fizban's Treasury of Dragons"
     ],
@@ -111,7 +128,11 @@
     "attackModes": [],
     "saveAbilities": [],
     "effectReliabilityCategory": "fixed_effect",
-    "spellLists": [],
+    "spellLists": [
+      "Druid",
+      "Sorcerer",
+      "Wizard"
+    ],
     "sourceBooks": [
       "Fizban's Treasury of Dragons"
     ],
@@ -136,7 +157,10 @@
       "dexterity"
     ],
     "effectReliabilityCategory": "saving_throw",
-    "spellLists": [],
+    "spellLists": [
+      "Sorcerer",
+      "Wizard"
+    ],
     "sourceBooks": [
       "Fizban's Treasury of Dragons"
     ],
@@ -161,7 +185,11 @@
       "dexterity"
     ],
     "effectReliabilityCategory": "saving_throw",
-    "spellLists": [],
+    "spellLists": [
+      "Druid",
+      "Sorcerer",
+      "Wizard"
+    ],
     "sourceBooks": [
       "Fizban's Treasury of Dragons"
     ],

@@ -30,7 +30,7 @@ function legacyWizardUpgradeFixture(object $test): array
     ];
 }
 
-/** @return array{migration: object, slot: object} */
+/** @return array{migration: object, character_id: int, slot: object} */
 function wizardRollbackFixture(object $test): array
 {
     $test->seed();
@@ -43,6 +43,7 @@ function wizardRollbackFixture(object $test): array
 
     return [
         'migration' => require database_path('migrations/2026_07_21_000300_add_spell_selection_eligibility.php'),
+        'character_id' => (int) $characterId,
         'slot' => $slot,
     ];
 }
@@ -177,6 +178,7 @@ it('uses live rollback eligibility instead of discarding a valid selection with 
 
     $rolledBackVersionIds = DB::table('wizard_prepared_entries as prepared')
         ->join('wizard_spellbook_entries as entry', 'entry.id', '=', 'prepared.wizard_spellbook_entry_id')
+        ->where('prepared.character_id', data_get($fixture, 'character_id'))
         ->pluck('entry.spell_version_id')
         ->map(static fn (mixed $id): int => (int) $id);
     expect($rolledBackVersionIds)->toHaveCount(4)

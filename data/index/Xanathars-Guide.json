@@ -15,7 +15,11 @@
     "attackModes": [],
     "saveAbilities": [],
     "effectReliabilityCategory": "fixed_effect",
-    "spellLists": [],
+    "spellLists": [
+      "Druid",
+      "Sorcerer",
+      "Wizard"
+    ],
     "sourceBooks": [
       "Xanathar's Guide to Everything"
     ],
@@ -40,7 +44,13 @@
       "dexterity"
     ],
     "effectReliabilityCategory": "saving_throw",
-    "spellLists": [],
+    "spellLists": [
+      "Artificer",
+      "Druid",
+      "Sorcerer",
+      "Warlock",
+      "Wizard"
+    ],
     "sourceBooks": [
       "Xanathar's Guide to Everything"
     ],
@@ -65,7 +75,13 @@
       "constitution"
     ],
     "effectReliabilityCategory": "saving_throw",
-    "spellLists": [],
+    "spellLists": [
+      "Druid",
+      "Sorcerer",
+      "Warlock",
+      "Wizard",
+      "Artificer"
+    ],
     "sourceBooks": [
       "Xanathar's Guide to Everything"
     ],
@@ -88,7 +104,11 @@
     "attackModes": [],
     "saveAbilities": [],
     "effectReliabilityCategory": "fixed_effect",
-    "spellLists": [],
+    "spellLists": [
+      "Druid",
+      "Sorcerer",
+      "Wizard"
+    ],
     "sourceBooks": [
       "Xanathar's Guide to Everything"
     ],
@@ -113,7 +133,12 @@
       "constitution"
     ],
     "effectReliabilityCategory": "saving_throw",
-    "spellLists": [],
+    "spellLists": [
+      "Druid",
+      "Sorcerer",
+      "Warlock",
+      "Wizard"
+    ],
     "sourceBooks": [
       "Xanathar's Guide to Everything"
     ],
@@ -138,7 +163,11 @@
     ],
     "saveAbilities": [],
     "effectReliabilityCategory": "attack_roll",
-    "spellLists": [],
+    "spellLists": [
+      "Druid",
+      "Warlock",
+      "Artificer"
+    ],
     "sourceBooks": [
       "Xanathar's Guide to Everything",
       "Elemental Evil Player's Companion"
@@ -162,7 +191,11 @@
     "attackModes": [],
     "saveAbilities": [],
     "effectReliabilityCategory": "fixed_effect",
-    "spellLists": [],
+    "spellLists": [
+      "Druid",
+      "Sorcerer",
+      "Wizard"
+    ],
     "sourceBooks": [
       "Xanathar's Guide to Everything"
     ],
@@ -187,7 +220,9 @@
     ],
     "saveAbilities": [],
     "effectReliabilityCategory": "attack_roll",
-    "spellLists": [],
+    "spellLists": [
+      "Druid"
+    ],
     "sourceBooks": [
       "Xanathar's Guide to Everything"
     ],
@@ -210,7 +245,11 @@
     "attackModes": [],
     "saveAbilities": [],
     "effectReliabilityCategory": "fixed_effect",
-    "spellLists": [],
+    "spellLists": [
+      "Druid",
+      "Sorcerer",
+      "Wizard"
+    ],
     "sourceBooks": [
       "Xanathar's Guide to Everything"
     ],
@@ -235,7 +274,14 @@
       "constitution"
     ],
     "effectReliabilityCategory": "saving_throw",
-    "spellLists": [],
+    "spellLists": [
+      "Bard",
+      "Druid",
+      "Sorcerer",
+      "Warlock",
+      "Wizard",
+      "Artificer"
+    ],
     "sourceBooks": [
       "Xanathar's Guide to Everything"
     ],
@@ -260,7 +306,11 @@
       "wisdom"
     ],
     "effectReliabilityCategory": "saving_throw",
-    "spellLists": [],
+    "spellLists": [
+      "Cleric",
+      "Warlock",
+      "Wizard"
+    ],
     "sourceBooks": [
       "Xanathar's Guide to Everything"
     ],
@@ -285,7 +335,9 @@
       "constitution"
     ],
     "effectReliabilityCategory": "saving_throw",
-    "spellLists": [],
+    "spellLists": [
+      "Cleric"
+    ],
     "sourceBooks": [
       "Xanathar's Guide to Everything"
     ],
@@ -308,7 +360,13 @@
     "attackModes": [],
     "saveAbilities": [],
     "effectReliabilityCategory": "fixed_effect",
-    "spellLists": [],
+    "spellLists": [
+      "Artificer",
+      "Druid",
+      "Ranger",
+      "Sorcerer",
+      "Wizard"
+    ],
     "sourceBooks": [
       "Xanathar's Guide to Everything"
     ],
@@ -331,7 +389,10 @@
     "attackModes": [],
     "saveAbilities": [],
     "effectReliabilityCategory": "fixed_effect",
-    "spellLists": [],
+    "spellLists": [
+      "Druid",
+      "Ranger"
+    ],
     "sourceBooks": [
       "Xanathar's Guide to Everything"
     ],
@@ -356,7 +417,11 @@
       "dexterity"
     ],
     "effectReliabilityCategory": "saving_throw",
-    "spellLists": [],
+    "spellLists": [
+      "Sorcerer",
+      "Wizard",
+      "Artificer"
+    ],
     "sourceBooks": [
       "Xanathar's Guide to Everything"
     ],
@@ -381,7 +446,10 @@
       "wisdom"
     ],
     "effectReliabilityCategory": "saving_throw",
-    "spellLists": [],
+    "spellLists": [
+      "Warlock",
+      "Wizard"
+    ],
     "sourceBooks": [
       "Xanathar's Guide to Everything"
     ],
@@ -404,7 +472,10 @@
     "attackModes": [],
     "saveAbilities": [],
     "effectReliabilityCategory": "fixed_effect",
-    "spellLists": [],
+    "spellLists": [
+      "Cleric",
+      "Paladin"
+    ],
     "sourceBooks": [
       "Xanathar's Guide to Everything"
     ],
@@ -429,7 +500,9 @@
     ],
     "saveAbilities": [],
     "effectReliabilityCategory": "attack_roll",
-    "spellLists": [],
+    "spellLists": [
+      "Sorcerer"
+    ],
     "sourceBooks": [
       "Xanathar's Guide to Everything"
     ],
@@ -454,7 +527,12 @@
       "dexterity"
     ],
     "effectReliabilityCategory": "saving_throw",
-    "spellLists": [],
+    "spellLists": [
+      "Bard",
+      "Druid",
+      "Sorcerer",
+      "Wizard"
+    ],
     "sourceBooks": [
       "Xanathar's Guide to Everything",
       "Elemental Evil Player's Companion"
@@ -482,7 +560,11 @@
       "dexterity"
     ],
     "effectReliabilityCategory": "mixed",
-    "spellLists": [],
+    "spellLists": [
+      "Druid",
+      "Sorcerer",
+      "Wizard"
+    ],
     "sourceBooks": [
       "Xanathar's Guide to Everything"
     ],
@@ -507,7 +589,12 @@
       "dexterity"
     ],
     "effectReliabilityCategory": "saving_throw",
-    "spellLists": [],
+    "spellLists": [
+      "Artificer",
+      "Druid",
+      "Ranger",
+      "Wizard"
+    ],
     "sourceBooks": [
       "Xanathar's Guide to Everything"
     ],
@@ -530,7 +617,9 @@
     "attackModes": [],
     "saveAbilities": [],
     "effectReliabilityCategory": "fixed_effect",
-    "spellLists": [],
+    "spellLists": [
+      "Ranger"
+    ],
     "sourceBooks": [
       "Xanathar's Guide to Everything"
     ],
@@ -555,7 +644,10 @@
       "dexterity"
     ],
     "effectReliabilityCategory": "saving_throw",
-    "spellLists": [],
+    "spellLists": [
+      "Sorcerer",
+      "Wizard"
+    ],
     "sourceBooks": [
       "Xanathar's Guide to Everything"
     ],
@@ -580,7 +672,10 @@
       "dexterity"
     ],
     "effectReliabilityCategory": "saving_throw",
-    "spellLists": [],
+    "spellLists": [
+      "Sorcerer",
+      "Wizard"
+    ],
     "sourceBooks": [
       "Xanathar's Guide to Everything"
     ],
@@ -605,7 +700,11 @@
       "strength"
     ],
     "effectReliabilityCategory": "saving_throw",
-    "spellLists": [],
+    "spellLists": [
+      "Druid",
+      "Sorcerer",
+      "Wizard"
+    ],
     "sourceBooks": [
       "Xanathar's Guide to Everything"
     ],
@@ -630,7 +729,12 @@
       "strength"
     ],
     "effectReliabilityCategory": "saving_throw",
-    "spellLists": [],
+    "spellLists": [
+      "Druid",
+      "Sorcerer",
+      "Warlock",
+      "Wizard"
+    ],
     "sourceBooks": [
       "Xanathar's Guide to Everything"
     ],
@@ -653,7 +757,10 @@
     "attackModes": [],
     "saveAbilities": [],
     "effectReliabilityCategory": "modifier_scaled",
-    "spellLists": [],
+    "spellLists": [
+      "Druid",
+      "Ranger"
+    ],
     "sourceBooks": [
       "Xanathar's Guide to Everything"
     ],
@@ -678,7 +785,10 @@
       "strength"
     ],
     "effectReliabilityCategory": "saving_throw",
-    "spellLists": [],
+    "spellLists": [
+      "Sorcerer",
+      "Wizard"
+    ],
     "sourceBooks": [
       "Xanathar's Guide to Everything"
     ],
@@ -703,7 +813,11 @@
       "wisdom"
     ],
     "effectReliabilityCategory": "saving_throw",
-    "spellLists": [],
+    "spellLists": [
+      "Sorcerer",
+      "Warlock",
+      "Wizard"
+    ],
     "sourceBooks": [
       "Xanathar's Guide to Everything"
     ],
@@ -728,7 +842,12 @@
       "constitution"
     ],
     "effectReliabilityCategory": "saving_throw",
-    "spellLists": [],
+    "spellLists": [
+      "Bard",
+      "Sorcerer",
+      "Wizard",
+      "Artificer"
+    ],
     "sourceBooks": [
       "Xanathar's Guide to Everything"
     ],
@@ -751,7 +870,11 @@
     "attackModes": [],
     "saveAbilities": [],
     "effectReliabilityCategory": "fixed_effect",
-    "spellLists": [],
+    "spellLists": [
+      "Sorcerer",
+      "Warlock",
+      "Wizard"
+    ],
     "sourceBooks": [
       "Xanathar's Guide to Everything"
     ],
@@ -774,7 +897,12 @@
     "attackModes": [],
     "saveAbilities": [],
     "effectReliabilityCategory": "fixed_effect",
-    "spellLists": [],
+    "spellLists": [
+      "Bard",
+      "Druid",
+      "Wizard",
+      "Artificer"
+    ],
     "sourceBooks": [
       "Xanathar's Guide to Everything"
     ],
@@ -799,7 +927,10 @@
       "dexterity"
     ],
     "effectReliabilityCategory": "saving_throw",
-    "spellLists": [],
+    "spellLists": [
+      "Sorcerer",
+      "Wizard"
+    ],
     "sourceBooks": [
       "Xanathar's Guide to Everything"
     ],
@@ -822,7 +953,12 @@
     "attackModes": [],
     "saveAbilities": [],
     "effectReliabilityCategory": "fixed_effect",
-    "spellLists": [],
+    "spellLists": [
+      "Bard",
+      "Druid",
+      "Sorcerer",
+      "Wizard"
+    ],
     "sourceBooks": [
       "Xanathar's Guide to Everything"
     ],
@@ -845,7 +981,12 @@
     "attackModes": [],
     "saveAbilities": [],
     "effectReliabilityCategory": "fixed_effect",
-    "spellLists": [],
+    "spellLists": [
+      "Artificer",
+      "Bard",
+      "Sorcerer",
+      "Wizard"
+    ],
     "sourceBooks": [
       "Xanathar's Guide to Everything"
     ],
@@ -870,7 +1011,12 @@
       "intelligence"
     ],
     "effectReliabilityCategory": "saving_throw",
-    "spellLists": [],
+    "spellLists": [
+      "Bard",
+      "Sorcerer",
+      "Warlock",
+      "Wizard"
+    ],
     "sourceBooks": [
       "Xanathar's Guide to Everything"
     ],
@@ -895,7 +1041,11 @@
       "dexterity"
     ],
     "effectReliabilityCategory": "saving_throw",
-    "spellLists": [],
+    "spellLists": [
+      "Druid",
+      "Sorcerer",
+      "Wizard"
+    ],
     "sourceBooks": [
       "Xanathar's Guide to Everything",
       "Elemental Evil Player's Companion"
@@ -919,7 +1069,13 @@
     "attackModes": [],
     "saveAbilities": [],
     "effectReliabilityCategory": "fixed_effect",
-    "spellLists": [],
+    "spellLists": [
+      "Druid",
+      "Ranger",
+      "Sorcerer",
+      "Wizard",
+      "Artificer"
+    ],
     "sourceBooks": [
       "Xanathar's Guide to Everything"
     ],
@@ -967,7 +1123,10 @@
       "dexterity"
     ],
     "effectReliabilityCategory": "saving_throw",
-    "spellLists": [],
+    "spellLists": [
+      "Sorcerer",
+      "Wizard"
+    ],
     "sourceBooks": [
       "Xanathar's Guide to Everything"
     ],
@@ -990,7 +1149,10 @@
     "attackModes": [],
     "saveAbilities": [],
     "effectReliabilityCategory": "fixed_effect",
-    "spellLists": [],
+    "spellLists": [
+      "Warlock",
+      "Wizard"
+    ],
     "sourceBooks": [
       "Xanathar's Guide to Everything"
     ],
@@ -1040,7 +1202,11 @@
       "dexterity"
     ],
     "effectReliabilityCategory": "saving_throw",
-    "spellLists": [],
+    "spellLists": [
+      "Druid",
+      "Sorcerer",
+      "Wizard"
+    ],
     "sourceBooks": [
       "Xanathar's Guide to Everything"
     ],
@@ -1086,7 +1252,9 @@
     "attackModes": [],
     "saveAbilities": [],
     "effectReliabilityCategory": "fixed_effect",
-    "spellLists": [],
+    "spellLists": [
+      "Wizard"
+    ],
     "sourceBooks": [
       "Xanathar's Guide to Everything"
     ],
@@ -1109,7 +1277,11 @@
     "attackModes": [],
     "saveAbilities": [],
     "effectReliabilityCategory": "fixed_effect",
-    "spellLists": [],
+    "spellLists": [
+      "Druid",
+      "Sorcerer",
+      "Wizard"
+    ],
     "sourceBooks": [
       "Xanathar's Guide to Everything"
     ],
@@ -1134,7 +1306,13 @@
       "wisdom"
     ],
     "effectReliabilityCategory": "saving_throw",
-    "spellLists": [],
+    "spellLists": [
+      "Bard",
+      "Druid",
+      "Sorcerer",
+      "Warlock",
+      "Wizard"
+    ],
     "sourceBooks": [
       "Xanathar's Guide to Everything"
     ],
@@ -1159,7 +1337,12 @@
       "constitution"
     ],
     "effectReliabilityCategory": "saving_throw",
-    "spellLists": [],
+    "spellLists": [
+      "Druid",
+      "Warlock",
+      "Wizard",
+      "Artificer"
+    ],
     "sourceBooks": [
       "Xanathar's Guide to Everything"
     ],
@@ -1182,7 +1365,9 @@
     "attackModes": [],
     "saveAbilities": [],
     "effectReliabilityCategory": "fixed_effect",
-    "spellLists": [],
+    "spellLists": [
+      "Paladin"
+    ],
     "sourceBooks": [
       "Xanathar's Guide to Everything"
     ],
@@ -1205,7 +1390,10 @@
     "attackModes": [],
     "saveAbilities": [],
     "effectReliabilityCategory": "fixed_effect",
-    "spellLists": [],
+    "spellLists": [
+      "Druid",
+      "Ranger"
+    ],
     "sourceBooks": [
       "Xanathar's Guide to Everything"
     ],
@@ -1228,7 +1416,9 @@
     "attackModes": [],
     "saveAbilities": [],
     "effectReliabilityCategory": "fixed_effect",
-    "spellLists": [],
+    "spellLists": [
+      "Warlock"
+    ],
     "sourceBooks": [
       "Xanathar's Guide to Everything"
     ],
@@ -1253,7 +1443,11 @@
       "constitution"
     ],
     "effectReliabilityCategory": "saving_throw",
-    "spellLists": [],
+    "spellLists": [
+      "Sorcerer",
+      "Warlock",
+      "Wizard"
+    ],
     "sourceBooks": [
       "Xanathar's Guide to Everything"
     ],
@@ -1280,7 +1474,10 @@
       "strength"
     ],
     "effectReliabilityCategory": "mixed",
-    "spellLists": [],
+    "spellLists": [
+      "Sorcerer",
+      "Wizard"
+    ],
     "sourceBooks": [
       "Xanathar's Guide to Everything"
     ],
@@ -1305,7 +1502,9 @@
       "charisma"
     ],
     "effectReliabilityCategory": "saving_throw",
-    "spellLists": [],
+    "spellLists": [
+      "Wizard"
+    ],
     "sourceBooks": [
       "Xanathar's Guide to Everything"
     ],
@@ -1330,7 +1529,10 @@
       "dexterity"
     ],
     "effectReliabilityCategory": "saving_throw",
-    "spellLists": [],
+    "spellLists": [
+      "Sorcerer",
+      "Wizard"
+    ],
     "sourceBooks": [
       "Xanathar's Guide to Everything"
     ],
@@ -1355,7 +1557,11 @@
       "strength"
     ],
     "effectReliabilityCategory": "saving_throw",
-    "spellLists": [],
+    "spellLists": [
+      "Druid",
+      "Sorcerer",
+      "Wizard"
+    ],
     "sourceBooks": [
       "Xanathar's Guide to Everything"
     ],
@@ -1378,7 +1584,11 @@
     "attackModes": [],
     "saveAbilities": [],
     "effectReliabilityCategory": "fixed_effect",
-    "spellLists": [],
+    "spellLists": [
+      "Druid",
+      "Sorcerer",
+      "Wizard"
+    ],
     "sourceBooks": [
       "Xanathar's Guide to Everything"
     ],
@@ -1401,7 +1611,10 @@
     "attackModes": [],
     "saveAbilities": [],
     "effectReliabilityCategory": "modifier_scaled",
-    "spellLists": [],
+    "spellLists": [
+      "Warlock",
+      "Wizard"
+    ],
     "sourceBooks": [
       "Xanathar's Guide to Everything"
     ],
@@ -1426,7 +1639,10 @@
       "constitution"
     ],
     "effectReliabilityCategory": "saving_throw",
-    "spellLists": [],
+    "spellLists": [
+      "Cleric",
+      "Wizard"
+    ],
     "sourceBooks": [
       "Xanathar's Guide to Everything"
     ],
@@ -1451,7 +1667,11 @@
       "dexterity"
     ],
     "effectReliabilityCategory": "saving_throw",
-    "spellLists": [],
+    "spellLists": [
+      "Sorcerer",
+      "Warlock",
+      "Wizard"
+    ],
     "sourceBooks": [
       "Xanathar's Guide to Everything"
     ],
@@ -1474,7 +1694,11 @@
     "attackModes": [],
     "saveAbilities": [],
     "effectReliabilityCategory": "fixed_effect",
-    "spellLists": [],
+    "spellLists": [
+      "Sorcerer",
+      "Warlock",
+      "Wizard"
+    ],
     "sourceBooks": [
       "Xanathar's Guide to Everything"
     ],
@@ -1499,7 +1723,10 @@
       "constitution"
     ],
     "effectReliabilityCategory": "saving_throw",
-    "spellLists": [],
+    "spellLists": [
+      "Cleric",
+      "Paladin"
+    ],
     "sourceBooks": [
       "Xanathar's Guide to Everything"
     ],
@@ -1524,7 +1751,10 @@
       "dexterity"
     ],
     "effectReliabilityCategory": "saving_throw",
-    "spellLists": [],
+    "spellLists": [
+      "Sorcerer",
+      "Wizard"
+    ],
     "sourceBooks": [
       "Xanathar's Guide to Everything"
     ],
@@ -1547,7 +1777,10 @@
     "attackModes": [],
     "saveAbilities": [],
     "effectReliabilityCategory": "fixed_effect",
-    "spellLists": [],
+    "spellLists": [
+      "Warlock",
+      "Wizard"
+    ],
     "sourceBooks": [
       "Xanathar's Guide to Everything"
     ],
@@ -1572,7 +1805,9 @@
       "strength"
     ],
     "effectReliabilityCategory": "saving_throw",
-    "spellLists": [],
+    "spellLists": [
+      "Druid"
+    ],
     "sourceBooks": [
       "Xanathar's Guide to Everything"
     ],
@@ -1597,7 +1832,10 @@
       "constitution"
     ],
     "effectReliabilityCategory": "saving_throw",
-    "spellLists": [],
+    "spellLists": [
+      "Warlock",
+      "Wizard"
+    ],
     "sourceBooks": [
       "Xanathar's Guide to Everything"
     ],
@@ -1620,7 +1858,12 @@
     "attackModes": [],
     "saveAbilities": [],
     "effectReliabilityCategory": "fixed_effect",
-    "spellLists": [],
+    "spellLists": [
+      "Bard",
+      "Sorcerer",
+      "Wizard",
+      "Artificer"
+    ],
     "sourceBooks": [
       "Xanathar's Guide to Everything"
     ],
@@ -1645,7 +1888,10 @@
     ],
     "saveAbilities": [],
     "effectReliabilityCategory": "attack_roll",
-    "spellLists": [],
+    "spellLists": [
+      "Ranger",
+      "Wizard"
+    ],
     "sourceBooks": [
       "Xanathar's Guide to Everything"
     ],
@@ -1671,7 +1917,12 @@
       "constitution"
     ],
     "effectReliabilityCategory": "saving_throw",
-    "spellLists": [],
+    "spellLists": [
+      "Bard",
+      "Sorcerer",
+      "Warlock",
+      "Wizard"
+    ],
     "sourceBooks": [
       "Xanathar's Guide to Everything"
     ],
@@ -1694,7 +1945,11 @@
     "attackModes": [],
     "saveAbilities": [],
     "effectReliabilityCategory": "fixed_effect",
-    "spellLists": [],
+    "spellLists": [
+      "Druid",
+      "Wizard",
+      "Artificer"
+    ],
     "sourceBooks": [
       "Xanathar's Guide to Everything"
     ],
@@ -1721,7 +1976,11 @@
       "constitution"
     ],
     "effectReliabilityCategory": "mixed",
-    "spellLists": [],
+    "spellLists": [
+      "Sorcerer",
+      "Warlock",
+      "Wizard"
+    ],
     "sourceBooks": [
       "Xanathar's Guide to Everything"
     ],
@@ -1749,7 +2008,10 @@
       "strength"
     ],
     "effectReliabilityCategory": "mixed",
-    "spellLists": [],
+    "spellLists": [
+      "Druid",
+      "Ranger"
+    ],
     "sourceBooks": [
       "Xanathar's Guide to Everything"
     ],
@@ -1774,7 +2036,9 @@
       "dexterity"
     ],
     "effectReliabilityCategory": "saving_throw",
-    "spellLists": [],
+    "spellLists": [
+      "Druid"
+    ],
     "sourceBooks": [
       "Xanathar's Guide to Everything"
     ],
@@ -1797,7 +2061,9 @@
     "attackModes": [],
     "saveAbilities": [],
     "effectReliabilityCategory": "fixed_effect",
-    "spellLists": [],
+    "spellLists": [
+      "Wizard"
+    ],
     "sourceBooks": [
       "Xanathar's Guide to Everything"
     ],
@@ -1820,7 +2086,9 @@
     "attackModes": [],
     "saveAbilities": [],
     "effectReliabilityCategory": "fixed_effect",
-    "spellLists": [],
+    "spellLists": [
+      "Druid"
+    ],
     "sourceBooks": [
       "Xanathar's Guide to Everything"
     ],
@@ -1843,7 +2111,12 @@
     "attackModes": [],
     "saveAbilities": [],
     "effectReliabilityCategory": "fixed_effect",
-    "spellLists": [],
+    "spellLists": [
+      "Druid",
+      "Sorcerer",
+      "Warlock",
+      "Wizard"
+    ],
     "sourceBooks": [
       "Xanathar's Guide to Everything"
     ],
@@ -1866,7 +2139,12 @@
     "attackModes": [],
     "saveAbilities": [],
     "effectReliabilityCategory": "fixed_effect",
-    "spellLists": [],
+    "spellLists": [
+      "Druid",
+      "Sorcerer",
+      "Warlock",
+      "Wizard"
+    ],
     "sourceBooks": [
       "Xanathar's Guide to Everything"
     ],
@@ -1889,7 +2167,12 @@
     "attackModes": [],
     "saveAbilities": [],
     "effectReliabilityCategory": "fixed_effect",
-    "spellLists": [],
+    "spellLists": [
+      "Druid",
+      "Sorcerer",
+      "Warlock",
+      "Wizard"
+    ],
     "sourceBooks": [
       "Xanathar's Guide to Everything"
     ],
@@ -1912,7 +2195,12 @@
     "attackModes": [],
     "saveAbilities": [],
     "effectReliabilityCategory": "fixed_effect",
-    "spellLists": [],
+    "spellLists": [
+      "Druid",
+      "Sorcerer",
+      "Warlock",
+      "Wizard"
+    ],
     "sourceBooks": [
       "Xanathar's Guide to Everything"
     ],
@@ -1937,7 +2225,11 @@
       "intelligence"
     ],
     "effectReliabilityCategory": "saving_throw",
-    "spellLists": [],
+    "spellLists": [
+      "Sorcerer",
+      "Warlock",
+      "Wizard"
+    ],
     "sourceBooks": [
       "Xanathar's Guide to Everything"
     ],
@@ -1960,7 +2252,9 @@
     "attackModes": [],
     "saveAbilities": [],
     "effectReliabilityCategory": "fixed_effect",
-    "spellLists": [],
+    "spellLists": [
+      "Druid"
+    ],
     "sourceBooks": [
       "Xanathar's Guide to Everything"
     ],
@@ -1985,7 +2279,11 @@
       "wisdom"
     ],
     "effectReliabilityCategory": "saving_throw",
-    "spellLists": [],
+    "spellLists": [
+      "Sorcerer",
+      "Warlock",
+      "Wizard"
+    ],
     "sourceBooks": [
       "Xanathar's Guide to Everything"
     ],
@@ -2008,7 +2306,10 @@
     "attackModes": [],
     "saveAbilities": [],
     "effectReliabilityCategory": "fixed_effect",
-    "spellLists": [],
+    "spellLists": [
+      "Warlock",
+      "Wizard"
+    ],
     "sourceBooks": [
       "Xanathar's Guide to Everything"
     ],
@@ -2033,7 +2334,9 @@
       "constitution"
     ],
     "effectReliabilityCategory": "saving_throw",
-    "spellLists": [],
+    "spellLists": [
+      "Wizard"
+    ],
     "sourceBooks": [
       "Xanathar's Guide to Everything"
     ],
@@ -2058,7 +2361,11 @@
     ],
     "saveAbilities": [],
     "effectReliabilityCategory": "attack_roll",
-    "spellLists": [],
+    "spellLists": [
+      "Sorcerer",
+      "Warlock",
+      "Wizard"
+    ],
     "sourceBooks": [
       "Xanathar's Guide to Everything"
     ],
@@ -2083,7 +2390,11 @@
       "constitution"
     ],
     "effectReliabilityCategory": "saving_throw",
-    "spellLists": [],
+    "spellLists": [
+      "Sorcerer",
+      "Warlock",
+      "Wizard"
+    ],
     "sourceBooks": [
       "Xanathar's Guide to Everything"
     ],
@@ -2108,7 +2419,9 @@
       "charisma"
     ],
     "effectReliabilityCategory": "saving_throw",
-    "spellLists": [],
+    "spellLists": [
+      "Cleric"
+    ],
     "sourceBooks": [
       "Xanathar's Guide to Everything"
     ],
@@ -2134,7 +2447,10 @@
       "strength"
     ],
     "effectReliabilityCategory": "saving_throw",
-    "spellLists": [],
+    "spellLists": [
+      "Druid",
+      "Wizard"
+    ],
     "sourceBooks": [
       "Xanathar's Guide to Everything"
     ],
@@ -2159,7 +2475,10 @@
       "constitution"
     ],
     "effectReliabilityCategory": "saving_throw",
-    "spellLists": [],
+    "spellLists": [
+      "Sorcerer",
+      "Wizard"
+    ],
     "sourceBooks": [
       "Xanathar's Guide to Everything"
     ],
@@ -2185,7 +2504,9 @@
       "intelligence"
     ],
     "effectReliabilityCategory": "saving_throw",
-    "spellLists": [],
+    "spellLists": [
+      "Wizard"
+    ],
     "sourceBooks": [
       "Xanathar's Guide to Everything"
     ],
@@ -2210,7 +2531,10 @@
       "wisdom"
     ],
     "effectReliabilityCategory": "saving_throw",
-    "spellLists": [],
+    "spellLists": [
+      "Warlock",
+      "Wizard"
+    ],
     "sourceBooks": [
       "Xanathar's Guide to Everything"
     ],
@@ -2233,7 +2557,9 @@
     "attackModes": [],
     "saveAbilities": [],
     "effectReliabilityCategory": "fixed_effect",
-    "spellLists": [],
+    "spellLists": [
+      "Wizard"
+    ],
     "sourceBooks": [
       "Xanathar's Guide to Everything"
     ],
@@ -2256,7 +2582,9 @@
     "attackModes": [],
     "saveAbilities": [],
     "effectReliabilityCategory": "fixed_effect",
-    "spellLists": [],
+    "spellLists": [
+      "Wizard"
+    ],
     "sourceBooks": [
       "Xanathar's Guide to Everything"
     ],
@@ -2281,7 +2609,11 @@
       "wisdom"
     ],
     "effectReliabilityCategory": "saving_throw",
-    "spellLists": [],
+    "spellLists": [
+      "Bard",
+      "Sorcerer",
+      "Wizard"
+    ],
     "sourceBooks": [
       "Xanathar's Guide to Everything"
     ],
@@ -2306,7 +2638,12 @@
       "intelligence"
     ],
     "effectReliabilityCategory": "saving_throw",
-    "spellLists": [],
+    "spellLists": [
+      "Bard",
+      "Sorcerer",
+      "Warlock",
+      "Wizard"
+    ],
     "sourceBooks": [
       "Xanathar's Guide to Everything"
     ],
