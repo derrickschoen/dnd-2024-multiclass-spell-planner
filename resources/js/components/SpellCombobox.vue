@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { computed, nextTick, ref, watch } from 'vue';
+import { parseEligibleSpellResponse } from '@/inertia-boundary';
 import type { EligibleSpell } from '@/types';
 
 const props = defineProps<{
@@ -32,7 +33,7 @@ async function search(): Promise<void> {
         const response = await fetch(`/characters/${props.characterId}/slots/${props.slotId}/eligible-spells?q=${encodeURIComponent(query.value)}`, {
             headers: { Accept: 'application/json' },
         });
-        const body = await response.json() as { spells: EligibleSpell[] };
+        const body = parseEligibleSpellResponse(await response.json());
         if (sequence === requestSequence) {
             options.value = body.spells;
             activeIndex.value = 0;

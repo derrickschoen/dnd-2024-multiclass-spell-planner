@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Domain\Spells;
 
+use App\Domain\Characters\SelectionEligibility;
 use Illuminate\Support\Facades\DB;
 use InvalidArgumentException;
 
@@ -16,7 +17,7 @@ final class SpellSelectionEligibility
             ?? data_get($slot, 'fixed_spell_version_id')
             ?? data_get($slot, 'current_spell_version_id');
         if ($spellVersionId === null) {
-            return ['status' => 'unselected', 'reason' => null];
+            return ['status' => SelectionEligibility::Unselected->value, 'reason' => null];
         }
 
         $version = DB::table('spell_versions')->find((int) $spellVersionId);
@@ -79,13 +80,13 @@ final class SpellSelectionEligibility
             throw new InvalidArgumentException("Unsupported selection collection '{$collection}'.");
         }
 
-        return ['status' => 'valid', 'reason' => null];
+        return ['status' => SelectionEligibility::Valid->value, 'reason' => null];
     }
 
     public function refresh(int $slotId): void
     {
         $slot = DB::table('spell_selection_slots')->find($slotId);
-        if ($slot === null) {
+        if (! is_object($slot)) {
             return;
         }
         $result = $this->evaluate($slot);
@@ -103,7 +104,7 @@ final class SpellSelectionEligibility
     /** @return array{status: 'invalid', reason: string} */
     private function invalid(string $reason): array
     {
-        return ['status' => 'invalid', 'reason' => $reason];
+        return ['status' => SelectionEligibility::Invalid->value, 'reason' => $reason];
     }
 
     /** @return list<string> */

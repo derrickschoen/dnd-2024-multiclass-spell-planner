@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Domain\Rules;
 
 use InvalidArgumentException;
+use ValueError;
 
 /**
  * One class's contribution to the multiclass caster level.
@@ -21,21 +22,42 @@ use InvalidArgumentException;
 final readonly class CasterContribution
 {
     public const FULL = 'full';
+
     public const HALF_UP = 'half_up';
+
     public const HALF_DOWN = 'half_down';
+
     public const THIRD_UP = 'third_up';
+
     public const THIRD_DOWN = 'third_down';
+
     public const PACT = 'pact';
+
     public const NONE = 'none';
+
+    public ProgressionType $progression;
+
+    public string $progressionType;
 
     public function __construct(
         public string $className,
         public int $classLevel,
-        public string $progressionType,
+        ProgressionType|string $progressionType,
     ) {
-        if ($classLevel < 0) {
-            throw new InvalidArgumentException("Class level cannot be negative, got {$classLevel}.");
+        try {
+            $this->progression = is_string($progressionType)
+                ? ProgressionType::from($progressionType)
+                : $progressionType;
+        } catch (ValueError $exception) {
+            throw new InvalidArgumentException(
+                "Unknown progression type '{$progressionType}' for {$this->className}.",
+                previous: $exception,
+            );
         }
+        $this->progressionType = $this->progression->value;
+
+        // Let the enum guard the shared invariant as well as owning the math.
+        $this->progression->sharedCasterLevels($classLevel);
     }
 
     /**
@@ -47,21 +69,11 @@ final readonly class CasterContribution
      */
     public function casterLevels(): int
     {
-        return match ($this->progressionType) {
-            self::FULL => $this->classLevel,
-            self::HALF_UP => (int) ceil($this->classLevel / 2),
-            self::HALF_DOWN => intdiv($this->classLevel, 2),
-            self::THIRD_UP => (int) ceil($this->classLevel / 3),
-            self::THIRD_DOWN => intdiv($this->classLevel, 3),
-            self::PACT, self::NONE => 0,
-            default => throw new InvalidArgumentException(
-                "Unknown progression type '{$this->progressionType}' for {$this->className}."
-            ),
-        };
+        return $this->progression->sharedCasterLevels($this->classLevel);
     }
 
     public function isPactCaster(): bool
     {
-        return $this->progressionType === self::PACT;
+        return $this->progression === ProgressionType::Pact;
     }
 }

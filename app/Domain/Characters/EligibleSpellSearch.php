@@ -83,7 +83,7 @@ final readonly class EligibleSpellSearch
             ) === 'valid')
             ->take(50);
 
-        return $candidates->map(static fn (object $version): array => [
+        return array_values($candidates->map(static fn (object $version): array => [
             'id' => (int) data_get($version, 'id'),
             'name' => (string) data_get($version, 'display_name'),
             'level' => (int) data_get($version, 'level'),
@@ -91,7 +91,7 @@ final readonly class EligibleSpellSearch
             'ritual' => (bool) data_get($version, 'ritual'),
             'concentration' => (bool) data_get($version, 'concentration'),
             'edition' => (string) data_get($version, 'rules_edition'),
-        ])->values()->all();
+        ])->all());
     }
 
     /** @return list<string> */

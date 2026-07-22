@@ -96,7 +96,10 @@ final readonly class BuildReportBuilder
         ];
     }
 
-    /** @param array<int, int> $sharedSlots @param array{count: int, level: int}|null $pactMagic */
+    /**
+     * @param  array<int, int>  $sharedSlots
+     * @param  array{count: int, level: int}|null  $pactMagic
+     */
     private function preparationCallout(array $sharedSlots, ?array $pactMagic, int $maxClassSpellLevel): string
     {
         $sharedLevel = array_key_last($sharedSlots);
@@ -229,7 +232,10 @@ final readonly class BuildReportBuilder
         return $slots;
     }
 
-    /** @param list<array<string, mixed>> $routes @return array<string, mixed> */
+    /**
+     * @param  list<array<string, mixed>>  $routes
+     * @return array<string, mixed>
+     */
     private function wizardSplit(int $characterId, array $routes): array
     {
         $preparedVersionIds = array_map(

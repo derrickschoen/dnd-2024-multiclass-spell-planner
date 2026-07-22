@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Domain\Grants;
 
+use App\Domain\Characters\SourceType;
 use App\Domain\Spells\SpellSelectionEligibility;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
@@ -18,7 +19,7 @@ final class GrantRuleSlotGenerator
     public function activeRulesForSource(int $sourceInstanceId): array
     {
         $source = DB::table('character_source_instances')->find($sourceInstanceId);
-        if ($source === null || data_get($source, 'state') !== 'active') {
+        if (! is_object($source) || data_get($source, 'state') !== 'active') {
             return [];
         }
 
@@ -38,7 +39,7 @@ final class GrantRuleSlotGenerator
     {
         DB::transaction(function () use ($sourceInstanceId): void {
             $source = DB::table('character_source_instances')->find($sourceInstanceId);
-            if ($source === null) {
+            if (! is_object($source)) {
                 throw new InvalidArgumentException("Source instance {$sourceInstanceId} does not exist.");
             }
 
@@ -88,33 +89,35 @@ final class GrantRuleSlotGenerator
     /** @return list<array<string, mixed>> */
     private function rulesForSource(object $source): array
     {
-        if (data_get($source, 'source_type') === 'class') {
+        $sourceTypeValue = data_get($source, 'source_type');
+        $sourceType = is_string($sourceTypeValue) ? SourceType::tryFrom($sourceTypeValue) : null;
+        if ($sourceType === SourceType::CharacterClass) {
             return $this->rulesForClassSource($source);
         }
-        if (data_get($source, 'source_type') === 'subclass') {
+        if ($sourceType === SourceType::Subclass) {
             return $this->rulesForSubclassSource($source);
         }
 
-        $table = match (data_get($source, 'source_type')) {
-            'feat' => 'feat_definitions',
-            'species' => 'species_definitions',
-            'background' => 'background_definitions',
-            'subclass' => 'subclass_definitions',
-            default => throw new InvalidArgumentException(
-                "Unsupported grant source type '".data_get($source, 'source_type')."'."
-            ),
-        };
+        if ($sourceType === null) {
+            throw new InvalidArgumentException("Unsupported grant source type '{$sourceTypeValue}'.");
+        }
+        $table = $sourceType->definitionTable();
         $definition = DB::table($table)->find((int) data_get($source, 'source_definition_id'));
-        if ($definition === null) {
+        if (! is_object($definition)) {
             throw new RuntimeException('Definition for source instance '.data_get($source, 'id').' does not exist.');
         }
 
         $rules = $this->decodeJsonArray(data_get($definition, 'grant_rules'));
-        if (! is_array($rules)) {
+        if (! array_is_list($rules)) {
             throw new InvalidArgumentException('Grant rules for source instance '.data_get($source, 'id').' must be a list.');
         }
+        foreach ($rules as $rule) {
+            if (! is_array($rule)) {
+                throw new InvalidArgumentException('Grant rules must be objects.');
+            }
+        }
 
-        return array_values($rules);
+        return $rules;
     }
 
     /** @return list<array<string, mixed>> */
@@ -136,7 +139,7 @@ final class GrantRuleSlotGenerator
             ->get();
         foreach ($progressions as $progression) {
             $rules = $this->decodeJsonArray(data_get($progression, 'grant_rules'));
-            foreach (is_array($rules) ? $rules : [] as $rule) {
+            foreach ($rules as $rule) {
                 if (! is_array($rule)) {
                     throw new InvalidArgumentException('Class progression grant rules must be objects.');
                 }
@@ -158,7 +161,7 @@ final class GrantRuleSlotGenerator
         $byRuleKey = [];
         $definition = DB::table('subclass_definitions')
             ->find((int) data_get($source, 'source_definition_id'));
-        if ($definition === null) {
+        if (! is_object($definition)) {
             throw new RuntimeException(
                 'Definition for subclass source instance '.data_get($source, 'id').' does not exist.'
             );
@@ -302,7 +305,7 @@ final class GrantRuleSlotGenerator
             $definitionId = DB::table($definitionTable)->where('content_key', $definitionKey)->value('id');
         }
         $definition = $definitionId === null ? null : DB::table($definitionTable)->find((int) $definitionId);
-        if ($definition === null) {
+        if (! is_object($definition)) {
             throw new RuntimeException("Grant-source rule '{$rule->ruleKey}' could not resolve its definition.");
         }
 
@@ -393,12 +396,12 @@ final class GrantRuleSlotGenerator
             'source_instance_id' => (int) data_get($source, 'id'),
             'rule_key' => $rule->ruleKey,
             'ordinal' => $ordinal,
-            'bucket' => $rule->bucket,
-            'eligibility_kind' => $rule->kind,
+            'bucket' => $rule->bucket?->value,
+            'eligibility_kind' => $rule->kind->value,
             'label' => data_get($data, 'label'),
             'always_prepared' => $rule->alwaysPrepared,
             'with_slots' => $rule->withSlots,
-            'free_cast' => $rule->freeCast === null ? null : json_encode($rule->freeCast, JSON_THROW_ON_ERROR),
+            'free_cast' => $rule->freeCast === null ? null : json_encode($rule->freeCast->toArray(), JSON_THROW_ON_ERROR),
             'state' => 'active',
             'orphan_reason_code' => null,
             'orphaned_at' => null,

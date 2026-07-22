@@ -129,19 +129,7 @@ final class SpellSlots
      */
     public static function maxPreparableLevelForClass(CasterContribution $contribution): int
     {
-        $level = $contribution->classLevel;
-
-        return match ($contribution->progressionType) {
-            CasterContribution::FULL => min(9, (int) ceil($level / 2)),
-            CasterContribution::HALF_UP,
-            CasterContribution::HALF_DOWN => $level < 2 && $contribution->progressionType === CasterContribution::HALF_DOWN
-                ? 0
-                : min(5, (int) ceil($level / 4)),
-            CasterContribution::THIRD_UP,
-            CasterContribution::THIRD_DOWN => $level < 3 ? 0 : min(4, intdiv($level - 1, 6) + 1),
-            CasterContribution::PACT => self::PACT_TABLE[min(max($level, 1), 20)][1],
-            default => 0,
-        };
+        return $contribution->progression->maxPreparableLevel($contribution->classLevel);
     }
 
     /**

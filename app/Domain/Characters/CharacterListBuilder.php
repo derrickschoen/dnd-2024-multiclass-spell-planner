@@ -14,7 +14,7 @@ final readonly class CharacterListBuilder
     /** @return list<array<string, mixed>> */
     public function build(): array
     {
-        return DB::table('characters')->orderBy('name')->get()->map(function (object $character): array {
+        return array_values(DB::table('characters')->orderBy('name')->get()->map(function (object $character): array {
             $id = (int) data_get($character, 'id');
             $report = $this->reports->build($id);
             $invalid = DB::table('spell_selection_slots')
@@ -23,18 +23,37 @@ final readonly class CharacterListBuilder
                     $query->where('selection_eligibility', 'invalid')
                         ->orWhereIn('state', ['orphaned', 'kept_override']);
                 })->count();
-            $duplicates = collect(data_get($report, 'duplicate_assessments'))
+            $duplicates = collect($this->reportList($report, 'duplicate_assessments'))
                 ->where('category', '!=', 'none')->count();
 
             return [
                 'id' => $id,
                 'name' => (string) data_get($character, 'name'),
                 'level' => (int) data_get($report, 'character.character_level'),
-                'classes' => collect(data_get($report, 'classes'))->map(
+                'classes' => collect($this->reportList($report, 'classes'))->map(
                     static fn (array $class): string => data_get($class, 'name').' '.data_get($class, 'class_level'),
                 )->values()->all(),
                 'warning_count' => $duplicates + $invalid,
             ];
-        })->all();
+        })->all());
+    }
+
+    /**
+     * @param  array<string, mixed>  $report
+     * @return list<array<string, mixed>>
+     */
+    private function reportList(array $report, string $key): array
+    {
+        $value = $report[$key] ?? null;
+        if (! is_array($value) || ! array_is_list($value)) {
+            throw new \UnexpectedValueException("Build report {$key} must be a list.");
+        }
+        foreach ($value as $item) {
+            if (! is_array($item)) {
+                throw new \UnexpectedValueException("Build report {$key} contains a non-object item.");
+            }
+        }
+
+        return $value;
     }
 }

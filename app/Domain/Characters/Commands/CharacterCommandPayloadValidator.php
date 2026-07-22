@@ -33,7 +33,10 @@ final class CharacterCommandPayloadValidator
         };
     }
 
-    /** @param array<string, mixed> $payload */
+    /**
+     * @param  array<string, mixed>  $payload
+     * @return array<string, mixed>
+     */
     private function updateAbility(array $payload): array
     {
         $this->rejectUnknown($payload, ['type', 'ability', 'score', 'reason']);
@@ -43,7 +46,10 @@ final class CharacterCommandPayloadValidator
         return $payload;
     }
 
-    /** @param array<string, mixed> $payload */
+    /**
+     * @param  array<string, mixed>  $payload
+     * @return array<string, mixed>
+     */
     private function setSlot(array $payload): array
     {
         $this->rejectUnknown($payload, [
@@ -71,7 +77,10 @@ final class CharacterCommandPayloadValidator
         return $payload;
     }
 
-    /** @param array<string, mixed> $payload */
+    /**
+     * @param  array<string, mixed>  $payload
+     * @return array<string, mixed>
+     */
     private function updateCharacterRules(array $payload): array
     {
         $this->rejectUnknown($payload, ['type', 'allow_legacy', 'reason']);
@@ -82,7 +91,10 @@ final class CharacterCommandPayloadValidator
         return $payload;
     }
 
-    /** @param array<string, mixed> $payload */
+    /**
+     * @param  array<string, mixed>  $payload
+     * @return array<string, mixed>
+     */
     private function updateSourceConfig(array $payload): array
     {
         $this->rejectUnknown($payload, [
@@ -101,7 +113,10 @@ final class CharacterCommandPayloadValidator
         return $payload;
     }
 
-    /** @param array<string, mixed> $payload */
+    /**
+     * @param  array<string, mixed>  $payload
+     * @return array<string, mixed>
+     */
     private function addSource(array $payload): array
     {
         $this->rejectUnknown($payload, [
@@ -140,7 +155,10 @@ final class CharacterCommandPayloadValidator
         return $payload;
     }
 
-    /** @param array<string, mixed> $payload */
+    /**
+     * @param  array<string, mixed>  $payload
+     * @return array<string, mixed>
+     */
     private function removeSource(array $payload): array
     {
         $this->rejectUnknown($payload, ['type', 'source_instance_id', 'reason']);
@@ -149,7 +167,10 @@ final class CharacterCommandPayloadValidator
         return $payload;
     }
 
-    /** @param array<string, mixed> $payload */
+    /**
+     * @param  array<string, mixed>  $payload
+     * @return array<string, mixed>
+     */
     private function acknowledgeWarning(array $payload): array
     {
         $this->rejectUnknown($payload, [
@@ -172,7 +193,10 @@ final class CharacterCommandPayloadValidator
         return $payload;
     }
 
-    /** @param array<string, mixed> $payload */
+    /**
+     * @param  array<string, mixed>  $payload
+     * @return array<string, mixed>
+     */
     private function updateClass(array $payload): array
     {
         $this->rejectUnknown($payload, [
@@ -193,7 +217,10 @@ final class CharacterCommandPayloadValidator
         return $payload;
     }
 
-    /** @param array<string, mixed> $payload */
+    /**
+     * @param  array<string, mixed>  $payload
+     * @return array<string, mixed>
+     */
     private function restoreSnapshot(array $payload): array
     {
         $this->rejectUnknown($payload, ['type', 'snapshot', 'integrity', 'reason']);

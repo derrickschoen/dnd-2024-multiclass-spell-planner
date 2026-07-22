@@ -1,62 +1,7 @@
 <script setup lang="ts">
-type SlotRow = { level: number; count: number };
-type ClassRow = {
-    name: string;
-    subclass: string | null;
-    class_level: number;
-    spellcasting_ability: string | null;
-    progression_type: string;
-    prepared_count: number;
-    max_preparable_level: number;
-};
-type AccessRoute = {
-    spell_identity_id: number;
-    spell_version_id: number;
-    spell_name: string;
-    spell_level: number;
-    source_name: string;
-    slot_key: string | null;
-    casting_mode: string;
-    spellcasting_ability: string | null;
-    attack_bonus: number | null;
-    save_dc: number | null;
-};
-type WizardEntry = {
-    spellbook_entry_id: number;
-    spell_name: string;
-    level: number;
-    active: boolean;
-    acquisition?: string;
-};
-type DuplicateAssessment = {
-    spell_identity_id: number;
-    spell_name: string;
-    category: 'wasteful' | 'redundant_intentional' | 'conflicting_version' | 'none';
-    sources: string[];
-    slots: string[];
-    explanation: string;
-};
-type Report = {
-    character: {
-        name: string;
-        character_level: number;
-        proficiency_bonus: number;
-        abilities: Record<string, number>;
-    };
-    caster: { caster_level: number; slots: SlotRow[] };
-    classes: ClassRow[];
-    preparation_callout: string;
-    access_routes: AccessRoute[];
-    wizard: {
-        spellbook: WizardEntry[];
-        prepared: WizardEntry[];
-        ritual_only: WizardEntry[];
-        explanation: string;
-    };
-    duplicate_assessments: DuplicateAssessment[];
-};
+import type { BuildReport } from '@/types';
 
-defineProps<{ report: Report }>();
+defineProps<{ report: BuildReport }>();
 
 const titleCase = (value: string) => value.replaceAll('_', ' ').replace(/\b\w/g, (letter) => letter.toUpperCase());
 const signed = (value: number | null) => (value === null ? '—' : `${value >= 0 ? '+' : ''}${value}`);

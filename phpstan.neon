@@ -2,19 +2,15 @@ includes:
     - vendor/larastan/larastan/extension.neon
 
 parameters:
-    # Level 5 is a deliberate starting point, not a ceiling. The domain layer is
-    # pure PHP and should reach higher; the raw-array DB boundary in app/Domain
-    # and the seeders will need work first. Raise this as the domain-types branch
-    # replaces stringly-typed concepts with enums and value objects.
-    level: 5
+    level: 8
+
+    # Level 10 currently reports 454 errors (down from 549). Most remaining
+    # findings are mixed values at the raw query/JSON boundaries; finish the
+    # per-builder row hydration incrementally rather than suppressing them.
 
     paths:
         - app
         - database/seeders
         - config
 
-    # data_get() is used deliberately throughout per this project's conventions:
-    # it reads safely from arrays, stdClass and Eloquent alike, which is what the
-    # raw query results in app/Domain actually are.
     treatPhpDocTypesAsCertain: false
-

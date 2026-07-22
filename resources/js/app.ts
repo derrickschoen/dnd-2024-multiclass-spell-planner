@@ -1,6 +1,7 @@
 import { createApp, h, type DefineComponent } from 'vue';
 import { createInertiaApp } from '@inertiajs/vue3';
 import { createPinia } from 'pinia';
+import { assertInertiaPage } from '@/inertia-boundary';
 import '../css/app.css';
 
 createInertiaApp({
@@ -16,6 +17,7 @@ createInertiaApp({
         return page;
     },
     setup({ el, App, props, plugin }) {
+        assertInertiaPage(props.initialPage);
         createApp({ render: () => h(App, props) })
             .use(plugin)
             .use(createPinia())

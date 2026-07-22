@@ -2,14 +2,7 @@
 import { Head, Link, router } from '@inertiajs/vue3';
 import { ref } from 'vue';
 import AppShell from '@/components/AppShell.vue';
-
-interface CharacterSummary {
-    id: number;
-    name: string;
-    level: number;
-    classes: string[];
-    warning_count: number;
-}
+import type { CharacterSummary } from '@/types';
 
 defineProps<{ characters: CharacterSummary[] }>();
 

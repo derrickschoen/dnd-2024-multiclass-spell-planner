@@ -2,6 +2,7 @@
 
 declare(strict_types=1);
 
+use App\Domain\Grants\GrantRule;
 use App\Domain\Grants\GrantRuleSlotGenerator;
 use App\Domain\Spells\DuplicateWarningDetector;
 use App\Domain\Spells\SpellAccessBuilder;
@@ -367,7 +368,8 @@ it('recursively orphans a removed granted source and restores the identical chil
         'acquisition' => 'granted', 'source_instance_id' => data_get($child, 'id'),
         'created_at' => now(), 'updated_at' => now(),
     ]);
-    expect(collect($generator->activeRulesForSource((int) data_get($child, 'id')))->pluck('kind')->all())
+    expect(collect($generator->activeRulesForSource((int) data_get($child, 'id')))
+        ->map(static fn (GrantRule $rule): string => $rule->kind->value)->all())
         ->toContain('capability');
 
     DB::table('species_definitions')->where('id', $speciesId)->update([

@@ -9,45 +9,27 @@ use JsonException;
 
 final readonly class GrantRule
 {
-    public const FIXED_SPELL = 'fixed_spell';
+    public const FIXED_SPELL = GrantRuleKind::FixedSpell;
 
-    public const CHOICE_FROM_LIST = 'choice_from_list';
+    public const CHOICE_FROM_LIST = GrantRuleKind::ChoiceFromList;
 
-    public const CHOICE_FROM_QUERY = 'choice_from_query';
+    public const CHOICE_FROM_QUERY = GrantRuleKind::ChoiceFromQuery;
 
-    public const GRANT_SOURCE = 'grant_source';
+    public const GRANT_SOURCE = GrantRuleKind::GrantSource;
 
-    public const CAPABILITY = 'capability';
+    public const CAPABILITY = GrantRuleKind::Capability;
 
-    public const SPELLBOOK_ACQUISITION = 'spellbook_acquisition';
-
-    private const KINDS = [
-        self::FIXED_SPELL,
-        self::CHOICE_FROM_LIST,
-        self::CHOICE_FROM_QUERY,
-        self::GRANT_SOURCE,
-        self::CAPABILITY,
-        self::SPELLBOOK_ACQUISITION,
-    ];
-
-    private const BUCKETS = [
-        'cantrip_known', 'prepared', 'known', 'spellbook', 'automatic',
-    ];
-
-    private const RECOVERIES = ['long_rest', 'short_rest', 'dawn', 'at_will'];
-
-    private const POOL_SCOPES = ['per_spell', 'shared'];
+    public const SPELLBOOK_ACQUISITION = GrantRuleKind::SpellbookAcquisition;
 
     /** @param array<string, mixed> $data */
     private function __construct(
-        public string $kind,
+        public GrantRuleKind $kind,
         public string $ruleKey,
         public ?int $count,
-        public ?string $bucket,
+        public ?SlotBucket $bucket,
         public bool $alwaysPrepared,
         public bool $withSlots,
-        /** @var array{uses: int, recovery: string, pool_scope: string}|null */
-        public ?array $freeCast,
+        public ?FreeCast $freeCast,
         public ?int $activeFromClassLevel,
         /** @var array{key: string, equals: string}|null */
         public ?array $activeIfConfig,
@@ -58,9 +40,10 @@ final readonly class GrantRule
     /** @param array<string, mixed> $input */
     public static function fromArray(array $input): self
     {
-        $kind = data_get($input, 'kind');
-        if (! is_string($kind) || ! in_array($kind, self::KINDS, true)) {
-            $shown = is_scalar($kind) ? (string) $kind : get_debug_type($kind);
+        $rawKind = data_get($input, 'kind');
+        $kind = is_string($rawKind) ? GrantRuleKind::tryFrom($rawKind) : null;
+        if ($kind === null) {
+            $shown = is_scalar($rawKind) ? (string) $rawKind : get_debug_type($rawKind);
             throw new InvalidArgumentException("Unknown grant rule kind '{$shown}'.");
         }
 
@@ -83,13 +66,15 @@ final readonly class GrantRule
         }
 
         $slotKind = in_array($kind, [self::FIXED_SPELL, self::CHOICE_FROM_LIST, self::CHOICE_FROM_QUERY], true);
-        $bucket = data_get($input, 'bucket');
-        if ($slotKind || $kind === self::SPELLBOOK_ACQUISITION) {
-            $bucket = self::nonEmptyString($input, 'bucket');
-            if (! in_array($bucket, self::BUCKETS, true)) {
-                throw new InvalidArgumentException("Grant rule '{$ruleKey}' has invalid bucket '{$bucket}'.");
+        $rawBucket = data_get($input, 'bucket');
+        $bucket = null;
+        if ($kind->requiresBucket()) {
+            $rawBucket = self::nonEmptyString($input, 'bucket');
+            $bucket = SlotBucket::tryFrom($rawBucket);
+            if ($bucket === null) {
+                throw new InvalidArgumentException("Grant rule '{$ruleKey}' has invalid bucket '{$rawBucket}'.");
             }
-        } elseif ($bucket !== null) {
+        } elseif ($rawBucket !== null) {
             throw new InvalidArgumentException("Grant rule '{$ruleKey}' must not define a bucket.");
         }
 
@@ -109,7 +94,7 @@ final readonly class GrantRule
         self::validateKindFields($kind, $ruleKey, $input);
 
         $normalized = $input;
-        $normalized['kind'] = $kind;
+        $normalized['kind'] = $kind->value;
         $normalized['rule_key'] = $ruleKey;
         if ($count !== null) {
             $normalized['count'] = $count;
@@ -117,11 +102,11 @@ final readonly class GrantRule
             unset($normalized['count']);
         }
         if ($bucket !== null) {
-            $normalized['bucket'] = $bucket;
+            $normalized['bucket'] = $bucket->value;
         }
         $normalized['always_prepared'] = $alwaysPrepared;
         $normalized['with_slots'] = $withSlots;
-        $normalized['free_cast'] = $freeCast;
+        $normalized['free_cast'] = $freeCast?->toArray();
         if ($activeFromClassLevel !== null) {
             $normalized['active_from_class_level'] = $activeFromClassLevel;
         }
@@ -140,7 +125,7 @@ final readonly class GrantRule
             $kind,
             $ruleKey,
             $count,
-            is_string($bucket) ? $bucket : null,
+            $bucket,
             $alwaysPrepared,
             $withSlots,
             $freeCast,
@@ -178,7 +163,7 @@ final readonly class GrantRule
     }
 
     /** @param array<string, mixed> $input */
-    private static function validateKindFields(string $kind, string $ruleKey, array $input): void
+    private static function validateKindFields(GrantRuleKind $kind, string $ruleKey, array $input): void
     {
         if ($kind === self::FIXED_SPELL) {
             $id = data_get($input, 'spell_version_id');
@@ -309,7 +294,7 @@ final readonly class GrantRule
     }
 
     /** @param array<string, mixed> $input */
-    private static function freeCast(array $input, string $ruleKey): ?array
+    private static function freeCast(array $input, string $ruleKey): ?FreeCast
     {
         $value = data_get($input, 'free_cast');
         if ($value === null) {
@@ -325,19 +310,24 @@ final readonly class GrantRule
         if (! is_int($uses) || $uses < 1) {
             throw new InvalidArgumentException("Grant rule '{$ruleKey}' free_cast.uses must be a positive integer.");
         }
-        if (! is_string($recovery) || ! in_array($recovery, self::RECOVERIES, true)) {
+        $recoveryType = is_string($recovery) ? FreeCastRecovery::tryFrom($recovery) : null;
+        if ($recoveryType === null) {
             $shown = is_scalar($recovery) ? (string) $recovery : get_debug_type($recovery);
             throw new InvalidArgumentException("Grant rule '{$ruleKey}' has invalid free_cast.recovery '{$shown}'.");
         }
-        if (! is_string($poolScope) || ! in_array($poolScope, self::POOL_SCOPES, true)) {
+        $poolScopeType = is_string($poolScope) ? FreeCastPoolScope::tryFrom($poolScope) : null;
+        if ($poolScopeType === null) {
             $shown = is_scalar($poolScope) ? (string) $poolScope : get_debug_type($poolScope);
             throw new InvalidArgumentException("Grant rule '{$ruleKey}' has invalid free_cast.pool_scope '{$shown}'.");
         }
 
-        return ['uses' => $uses, 'recovery' => $recovery, 'pool_scope' => $poolScope];
+        return new FreeCast($uses, $recoveryType, $poolScopeType);
     }
 
-    /** @return array{key: string, equals: string}|null */
+    /**
+     * @param  array<string, mixed>  $input
+     * @return array{key: string, equals: string}|null
+     */
     private static function activeIfConfig(array $input, string $ruleKey): ?array
     {
         $value = data_get($input, 'active_if_config');

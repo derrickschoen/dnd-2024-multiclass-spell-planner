@@ -6,13 +6,14 @@ import BuildReportPanel from '@/components/BuildReportPanel.vue';
 import DiceRoller from '@/components/DiceRoller.vue';
 import SpellCombobox from '@/components/SpellCombobox.vue';
 import { useCharacterStore } from '@/stores/character';
-import type { CharacterClass, CharacterCommand, EligibleSpell, SourceType, Workspace, WorkspaceSlot } from '@/types';
+import { parseCommandResponse, parseWorkspaceResponse, responseMessage } from '@/inertia-boundary';
+import type { Ability, CharacterClass, CharacterCommand, EligibleSpell, SourceType, Workspace, WorkspaceSlot } from '@/types';
 
 const props = defineProps<{ workspace: Workspace }>();
 const store = useCharacterStore();
 store.initialize(props.workspace);
 
-const abilityNames = ['strength', 'dexterity', 'constitution', 'intelligence', 'wisdom', 'charisma'];
+const abilityNames = ['strength', 'dexterity', 'constitution', 'intelligence', 'wisdom', 'charisma'] as const satisfies readonly Ability[];
 const selectionFilter = ref('all');
 const traitFilter = ref('all');
 const sourceFilter = ref('all');
@@ -103,7 +104,7 @@ function sortMarker(column: keyof WorkspaceSlot): string {
     return sortKey.value === column ? (sortDirection.value === 1 ? ' ↑' : ' ↓') : '';
 }
 
-function updateAbility(ability: string, event: Event): void {
+function updateAbility(ability: Ability, event: Event): void {
     const score = Number((event.target as HTMLInputElement).value);
     if (score === report.value.character.abilities[ability]) return;
     void store.execute({ type: 'update_ability', ability, score });
@@ -219,8 +220,9 @@ async function savePoint(): Promise<void> {
             headers: { 'Content-Type': 'application/json', Accept: 'application/json', 'X-CSRF-TOKEN': document.querySelector<HTMLMetaElement>('meta[name="csrf-token"]')?.content ?? '' },
             body: JSON.stringify({ label: savePointLabel.value.trim() }),
         });
-        const body = await response.json() as { workspace: Workspace; message?: string };
-        if (!response.ok) throw new Error(body.message ?? 'Save point failed.');
+        const raw: unknown = await response.json();
+        if (!response.ok) throw new Error(responseMessage(raw, 'Save point failed.'));
+        const body = parseWorkspaceResponse(raw);
         if (store.workspace) store.workspace.save_points = body.workspace.save_points;
         savePointLabel.value = '';
     } finally {
@@ -231,8 +233,8 @@ async function savePoint(): Promise<void> {
 async function restoreSavePoint(id: number, label: string): Promise<void> {
     if (!window.confirm(`Restore “${label}”? Current unsaved history will be replaced, but this restore can be undone.`)) return;
     const response = await fetch(`/characters/${report.value.character.id}/save-points/${id}/command`, { headers: { Accept: 'application/json' } });
-    const body = await response.json() as { command: CharacterCommand };
-    if (response.ok) await store.execute(body.command);
+    const raw: unknown = await response.json();
+    if (response.ok) await store.execute(parseCommandResponse(raw).command);
 }
 
 function keyboardShortcuts(event: KeyboardEvent): void {

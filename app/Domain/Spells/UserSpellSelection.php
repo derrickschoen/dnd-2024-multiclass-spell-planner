@@ -1,0 +1,22 @@
+<?php
+
+declare(strict_types=1);
+
+namespace App\Domain\Spells;
+
+use InvalidArgumentException;
+
+final readonly class UserSpellSelection extends SpellSlotAssignment
+{
+    public function __construct(public int $spellVersionId)
+    {
+        if ($spellVersionId < 1) {
+            throw new InvalidArgumentException('A selected spell version ID must be positive.');
+        }
+    }
+
+    public function spellVersionId(): int
+    {
+        return $this->spellVersionId;
+    }
+}

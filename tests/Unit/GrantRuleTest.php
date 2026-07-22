@@ -3,6 +3,7 @@
 declare(strict_types=1);
 
 use App\Domain\Grants\GrantRule;
+use App\Domain\Grants\SlotBucket;
 
 it('rejects an unknown grant-rule kind', function () {
     expect(fn () => GrantRule::fromArray([
@@ -52,7 +53,7 @@ it('normalizes a valid fixed spell rule', function () {
     expect($rule->kind)->toBe(GrantRule::FIXED_SPELL)
         ->and($rule->ruleKey)->toBe('always-mage-hand')
         ->and($rule->count)->toBe(1)
-        ->and($rule->bucket)->toBe('automatic')
+        ->and($rule->bucket)->toBe(SlotBucket::Automatic)
         ->and($rule->alwaysPrepared)->toBeTrue()
         ->and($rule->withSlots)->toBeFalse();
 });
@@ -148,7 +149,7 @@ it('normalizes documented defaults for every kind', function (array $input, arra
 
     expect($rule->toArray())->toBe($expected)
         ->and($rule->count)->toBe(data_get($expected, 'count'))
-        ->and($rule->bucket)->toBe(data_get($expected, 'bucket'))
+        ->and($rule->bucket?->value)->toBe(data_get($expected, 'bucket'))
         ->and($rule->alwaysPrepared)->toBeFalse()
         ->and($rule->withSlots)->toBeTrue()
         ->and($rule->freeCast)->toBeNull();
@@ -380,7 +381,7 @@ it('trims normalized identifiers and preserves the complete free-cast contract',
     expect($rule->ruleKey)->toBe('fixed')
         ->and($rule->distinctConfigBy)->toBe('chosen_list')
         ->and($rule->activeFromClassLevel)->toBe(2)
-        ->and($rule->freeCast)->toBe([
+        ->and($rule->freeCast?->toArray())->toBe([
             'uses' => 2, 'recovery' => 'short_rest', 'pool_scope' => 'shared',
         ]);
 });

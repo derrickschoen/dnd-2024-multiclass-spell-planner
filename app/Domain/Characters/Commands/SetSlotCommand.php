@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace App\Domain\Characters\Commands;
 
+use App\Domain\Characters\SelectionEligibility;
+use App\Domain\Characters\SlotState;
 use App\Domain\Spells\SpellSelectionEligibility;
 use Illuminate\Support\Facades\DB;
 use InvalidArgumentException;
@@ -64,15 +66,16 @@ final class SetSlotCommand implements CharacterCommand
     {
         $spellVersionId = (int) data_get($this->payload, 'spell_version_id');
         $result = $this->eligibility->evaluate($slot, $spellVersionId);
-        if (data_get($result, 'status') !== 'valid') {
+        if (data_get($result, 'status') !== SelectionEligibility::Valid->value) {
             throw new InvalidArgumentException((string) data_get($result, 'reason'));
         }
 
         return [
             'current_spell_version_id' => $spellVersionId,
-            'selection_eligibility' => 'valid',
+            'selection_eligibility' => SelectionEligibility::Valid->value,
             'selection_invalid_reason' => null,
-            'state' => data_get($slot, 'state') === 'kept_override' ? 'active' : data_get($slot, 'state'),
+            'state' => data_get($slot, 'state') === SlotState::KeptOverride->value
+                ? SlotState::Active->value : data_get($slot, 'state'),
             'override_note' => null,
         ];
     }
@@ -84,9 +87,9 @@ final class SetSlotCommand implements CharacterCommand
 
         return [
             'current_spell_version_id' => null,
-            'selection_eligibility' => 'unselected',
+            'selection_eligibility' => SelectionEligibility::Unselected->value,
             'selection_invalid_reason' => null,
-            'state' => $orphaned ? 'discarded' : 'active',
+            'state' => $orphaned ? SlotState::Discarded->value : SlotState::Active->value,
             'override_note' => null,
         ];
     }
@@ -102,7 +105,7 @@ final class SetSlotCommand implements CharacterCommand
             throw new InvalidArgumentException('An override note is required.');
         }
 
-        return ['state' => 'kept_override', 'override_note' => $note];
+        return ['state' => SlotState::KeptOverride->value, 'override_note' => $note];
     }
 
     /** @return array<string, mixed> */
@@ -124,17 +127,21 @@ final class SetSlotCommand implements CharacterCommand
             'current_spell_version_id', 'selection_eligibility', 'selection_invalid_reason',
             'state', 'override_note',
         ]));
-        if (in_array(data_get($updates, 'state'), ['active', 'kept_override'], true)) {
-            if (data_get($slot, 'state') === 'orphaned') {
-                $updates['state'] = 'orphaned';
-                $updates['selection_eligibility'] = $spellVersionId === null ? 'unselected' : 'invalid';
+        if (in_array(data_get($updates, 'state'), [SlotState::Active->value, SlotState::KeptOverride->value], true)) {
+            if (data_get($slot, 'state') === SlotState::Orphaned->value) {
+                $updates['state'] = SlotState::Orphaned->value;
+                $updates['selection_eligibility'] = $spellVersionId === null
+                    ? SelectionEligibility::Unselected->value : SelectionEligibility::Invalid->value;
                 $updates['selection_invalid_reason'] = $spellVersionId === null
                     ? null
                     : $this->orphanedSelectionReason($slot);
 
                 return $updates;
             }
-            $restoredSlot = clone $slot;
+            $restoredSlot = new \stdClass;
+            foreach (get_object_vars($slot) as $property => $value) {
+                $restoredSlot->{$property} = $value;
+            }
             $restoredSlot->current_spell_version_id = $spellVersionId;
             $result = $this->eligibility->evaluate($restoredSlot);
             $updates['selection_eligibility'] = data_get($result, 'status');
