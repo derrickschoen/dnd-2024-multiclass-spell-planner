@@ -3,6 +3,7 @@ import {
     auditLog,
     character,
     classLevel,
+    mutationFootprint,
     persistedCharacterState,
     removeMagicInitiateWizardSource,
     resetDatabase,
@@ -27,6 +28,17 @@ interface MutationBody {
     revision: number;
     workspace: {
         report: {
+            caster: {
+                caster_level: number;
+                slots: Array<{ level: number; count: number }>;
+                pact_magic: { count: number; level: number } | null;
+            };
+            classes: Array<{
+                name: string;
+                class_level: number;
+                max_preparable_level: number;
+            }>;
+            preparation_callout: string;
             duplicate_assessments: Array<{
                 spell_name: string;
                 category: string;
@@ -167,6 +179,7 @@ test('S4: removing and restoring Magic Initiate: Wizard preserves its orphaned s
 
     expect(orphaned).toHaveLength(3);
     expect(orphaned.map(preservedSlotIdentity)).toEqual(before.map(preservedSlotIdentity));
+    expect(orphaned.map(withoutSlotLifecycle)).toEqual(before.map(withoutSlotLifecycle));
     expect(orphaned.every((slot) => slot.state === 'orphaned')).toBe(true);
     expect(orphaned.every((slot) => slot.orphan_reason_code === 'parent_rule_removed')).toBe(true);
     expect(orphaned.every((slot) => slot.orphaned_at !== null)).toBe(true);
@@ -184,6 +197,7 @@ test('S4: removing and restoring Magic Initiate: Wizard preserves its orphaned s
 
     expect(restored).toHaveLength(3);
     expect(restored.map(preservedSlotIdentity)).toEqual(before.map(preservedSlotIdentity));
+    expect(restored.map(withoutSlotLifecycle)).toEqual(before.map(withoutSlotLifecycle));
     expect(restored.every((slot) => slot.state === 'active')).toBe(true);
     expect(restored.every((slot) => slot.orphan_reason_code === null && slot.orphaned_at === null)).toBe(true);
     expect(slots().filter((slot) => slot.source_instance_id !== sourceId)).toEqual(otherSlotsBefore);
@@ -268,12 +282,22 @@ test('S6: Wizard spellbook shows prepared, ritual-only, and unprepared non-ritua
 
     expect(routes).toHaveLength(2);
     expect(capability).toEqual(expect.objectContaining({
+        spell_name: 'Detect Magic',
+        source_name: 'Wizard 1',
         origin: 'capability',
         casting_mode: 'ritual_only',
         is_selection: false,
         counts_against_limit: false,
     }));
-    expect(routes.filter((route) => route.is_selection)).toHaveLength(1);
+    expect(routes.filter((route) => route.is_selection)).toEqual([
+        expect.objectContaining({
+            spell_name: 'Detect Magic',
+            source_name: 'Magic Initiate: Wizard',
+            origin: 'slot',
+            casting_mode: 'slots_and_free_cast',
+            counts_against_limit: true,
+        }),
+    ]);
     expect(assessment).toEqual(expect.objectContaining({ category: 'none', selection_count: 1 }));
     await expect(duplicateCell(page, initiateSlot.id)).toHaveText(/None/);
     await expect(duplicateWarning(page, 'Detect Magic')).toHaveCount(0);
@@ -329,6 +353,214 @@ test('S7: a save point restores the complete persisted character state after des
 
     expect(persistedCharacterState()).toEqual(savePointSnapshot(label));
     expect(persistedCharacterState()).toEqual(before);
+});
+
+test('S8: adding Warlock keeps Pact Magic separate from shared slots and explains cross-pool casting', async ({ page }) => {
+    const liveReport = reportSection(page, 'Live report');
+    const preparation = reportSection(page, 'Class preparation ceilings');
+    const sharedSlotBadges = liveReport.locator('.status-badge.status-neutral');
+
+    await expect(sharedSlotBadges).toHaveText(['L1: 4', 'L2: 3', 'L3: 3']);
+    await expect(liveReport.getByText(/^Pact Magic:/)).toHaveCount(0);
+
+    const response = await addClass(page, 'Warlock');
+
+    expect(response.workspace.report.caster).toEqual({
+        caster_level: 6,
+        slots: [
+            { level: 1, count: 4 },
+            { level: 2, count: 3 },
+            { level: 3, count: 3 },
+        ],
+        pact_magic: { count: 1, level: 1 },
+    });
+    expect(response.workspace.report.classes.find((entry) => entry.name === 'Warlock')).toEqual(
+        expect.objectContaining({ class_level: 1, max_preparable_level: 1 }),
+    );
+    expect(response.workspace.report.preparation_callout).toContain(
+        'shared Spellcasting slots through 3rd level and Pact Magic slots at 1st level',
+    );
+    expect(response.workspace.report.preparation_callout).toContain(
+        'Either pool can cast an eligible prepared spell.',
+    );
+    expect(response.workspace.report.preparation_callout).toContain(
+        'a slot from either pool does not unlock higher-level choices for another class',
+    );
+
+    await expect(sharedSlotBadges).toHaveText(['L1: 4', 'L2: 3', 'L3: 3']);
+    await expect(sharedSlotBadges).toHaveCount(3);
+    await expect(liveReport.getByText('Pact Magic: 1 × level 1', { exact: true })).toBeVisible();
+    const warlockCeiling = preparation.getByText('Warlock 1').locator('..');
+    await expect(warlockCeiling).toContainText('max L1');
+    await expect(preparation).toContainText('Either pool can cast an eligible prepared spell.');
+    expect(classLevel('Warlock')).toBe(1);
+});
+
+test('S9: level-down orphans surplus selected slots and level-up reactivates the same rows', async ({ page }) => {
+    await setClassLevel(page, 'Wizard', 3);
+    const wizardSourceId = source('Wizard 3').id;
+    const upgradedPrepared = slotFixtures().filter((slot) => slot.source_instance_id === wizardSourceId
+        && slot.rule_key === 'wizard-prepared');
+    const surplus = upgradedPrepared.filter((slot) => slot.ordinal > 4);
+
+    expect(upgradedPrepared).toHaveLength(6);
+    expect(surplus).toHaveLength(2);
+    expect(surplus.map((slot) => slot.current_spell_version_id)).toEqual([null, null]);
+
+    await selectSpell(page, surplus[0]!.id, 'Detect Magic');
+    await selectSpell(page, surplus[1]!.id, 'Feather Fall');
+    const selectedSurplus = slots().filter((slot) => surplus.some((candidate) => candidate.id === slot.id));
+    expect(selectedSurplus.map((slot) => slot.current_spell_version_id)).toEqual([
+        spellVersionId('2024:detect-magic'),
+        spellVersionId('2024:feather-fall'),
+    ]);
+    const identities = selectedSurplus.map(preservedSlotIdentity);
+    const semantics = selectedSurplus.map(withoutSlotLifecycle);
+
+    await setClassLevel(page, 'Wizard', 1);
+    const orphaned = slots().filter((slot) => surplus.some((candidate) => candidate.id === slot.id));
+    expect(orphaned).toHaveLength(2);
+    expect(orphaned.map(preservedSlotIdentity)).toEqual(identities);
+    expect(orphaned.map(withoutSlotLifecycle)).toEqual(semantics);
+    expect(orphaned.map((slot) => slot.state)).toEqual(['orphaned', 'orphaned']);
+    expect(orphaned.map((slot) => slot.orphan_reason_code)).toEqual([
+        'rule_no_longer_active',
+        'rule_no_longer_active',
+    ]);
+    for (const slot of orphaned) {
+        await expect(slotRow(page, slot.id).locator('td').nth(10)).toHaveText(/Orphaned/);
+        await expect(slotRow(page, slot.id).locator('xpath=following-sibling::tr[1]')).toContainText(
+            'Selection needs attention.',
+        );
+    }
+
+    await setClassLevel(page, 'Wizard', 3);
+    const reactivated = slots().filter((slot) => surplus.some((candidate) => candidate.id === slot.id));
+    expect(reactivated).toHaveLength(2);
+    expect(reactivated.map(preservedSlotIdentity)).toEqual(identities);
+    expect(reactivated.map(withoutSlotLifecycle)).toEqual(semantics);
+    expect(reactivated.map((slot) => slot.state)).toEqual(['active', 'active']);
+    expect(reactivated.map((slot) => slot.orphan_reason_code)).toEqual([null, null]);
+    for (const slot of reactivated) {
+        await expect(slotRow(page, slot.id).locator('td').nth(10)).toHaveText(/Valid/);
+    }
+});
+
+test('S10: a stale browser context receives 409 and cannot change any database state', async ({ page, browser }) => {
+    const staleContext = await browser.newContext({
+        baseURL: 'https://dnd-spell-planner.ddev.site',
+        ignoreHTTPSErrors: true,
+    });
+    const stalePage = await staleContext.newPage();
+    try {
+        await stalePage.goto('/characters/1');
+        await expect(stalePage.getByText(/revision 0$/)).toBeVisible();
+        await setAbility(page, 'INT', 20);
+        const afterAcceptedWrite = mutationFootprint();
+        expect(character().revision).toBe(1);
+        expect(character().intelligence).toBe(20);
+        expect(character().wisdom).toBe(13);
+
+        const staleWisdom = abilityInput(stalePage, 'WIS');
+        const rejectedResponse = stalePage.waitForResponse(isMutationResponse);
+        await staleWisdom.fill('18');
+        await staleWisdom.press('Tab');
+        const response = await rejectedResponse;
+        const request = response.request().postDataJSON() as {
+            expected_revision: number;
+            command: { type: string; ability: string; score: number };
+        };
+        const body = await response.json() as { message: string; current_revision: number };
+
+        expect(request).toEqual(expect.objectContaining({
+            expected_revision: 0,
+            command: { type: 'update_ability', ability: 'wisdom', score: 18 },
+        }));
+        expect(response.status()).toBe(409);
+        expect(body.current_revision).toBe(1);
+        expect(body.message).toBe('This character changed in another tab. Reload before trying again.');
+        await expect(stalePage.getByRole('alert')).toContainText('Could not save:');
+        await expect(stalePage.getByRole('link', { name: 'Reload this character' })).toBeVisible();
+
+        expect(mutationFootprint()).toEqual(afterAcceptedWrite);
+        expect(character().revision).toBe(1);
+        expect(character().intelligence).toBe(20);
+        expect(character().wisdom).toBe(13);
+    } finally {
+        await staleContext.close();
+    }
+});
+
+test('S11: the slot grid is keyboard reachable, visibly focused, labelled, and warnings are not colour-only', async ({ page }) => {
+    const grid = page.locator('section').filter({ has: page.getByRole('heading', { name: 'Spell choice slots' }) });
+    const gridControlSelector = 'button:not([disabled]):not([role="option"]), input:not([disabled]), select:not([disabled]), textarea:not([disabled]), a[href]';
+    // Derived from the DATABASE, not from the DOM under test. Counting the rendered
+    // controls and then asserting the keyboard walk visits that same count is
+    // self-referential: if comboboxes silently stopped rendering for some rows,
+    // both numbers would shrink together and a loose `> 40` guard would still pass.
+    // One combobox per slot, plus the grid's own chrome (3 sort buttons, 4 filters).
+    const GRID_CHROME_CONTROLS = 7;
+    const expectedGridControls = slotFixtures().length + GRID_CHROME_CONTROLS;
+    const renderedGridControls = await grid.locator(gridControlSelector).count();
+    const labelled = await labelledFormControls(page);
+
+    expect(renderedGridControls).toBe(expectedGridControls);
+    // labelledFormControls is page-wide (ability inputs, class controls, undo and
+    // save-point buttons all sit outside the grid), so it is a superset of the grid.
+    // The load-bearing assertion is that NOTHING on the page is unlabelled.
+    expect(labelled.total).toBeGreaterThanOrEqual(expectedGridControls);
+    expect(labelled.unlabelled).toEqual([]);
+
+    const initialKeyboardAudit = await keyboardAuditGrid(page, grid, gridControlSelector);
+    expect(initialKeyboardAudit.visited).toEqual(
+        Array.from({ length: expectedGridControls }, (_, index) => index),
+    );
+    expect(initialKeyboardAudit.focusFailures).toEqual([]);
+
+    const duplicate = duplicateWarning(page, 'Mage Hand');
+    await expect(duplicate).toContainText('Mage Hand consumes limits in more than one selection.');
+    await expect(duplicate.locator('[aria-hidden="true"]')).toHaveText('⚠');
+    await expect(duplicateCell(page, requireSlot(
+        slotFixtures().find((slot) => slot.spell_name === 'Mage Hand' && slot.rule_key === 'wizard-cantrips'),
+        'the Wizard Mage Hand slot',
+    ).id)).toContainText('Wasteful');
+    expect(await warningsWithoutTextCue(page)).toEqual([]);
+
+    const wizardEntry = classEntry(page, 'Wizard');
+    let removeDialog = '';
+    page.once('dialog', async (dialog) => {
+        removeDialog = dialog.message();
+        await dialog.accept();
+    });
+    const removeResponse = page.waitForResponse(isMutationResponse);
+    await wizardEntry.getByRole('button', { name: 'Remove' }).focus();
+    await page.keyboard.press('Enter');
+    expect((await removeResponse).status()).toBe(200);
+    expect(removeDialog).toContain('Remove Wizard and orphan its spell choices?');
+
+    const orphaned = slots().filter((slot) => slot.source_instance_id === source('Wizard 1').id);
+    expect(orphaned.length).toBeGreaterThan(0);
+    expect(orphaned.every((slot) => slot.state === 'orphaned')).toBe(true);
+    for (const slot of orphaned) {
+        const row = slotRow(page, slot.id);
+        await expect(row.locator('td').nth(10)).toContainText('⚠ Orphaned');
+        const warningRow = row.locator('xpath=following-sibling::tr[1]');
+        await expect(warningRow).toContainText('Selection needs attention.');
+        await expect(warningRow).toContainText('parent_rule_removed');
+    }
+    const invalidReport = reportSection(page, 'Invalid or orphaned selections');
+    await expect(invalidReport.getByText('parent_rule_removed').first()).toBeVisible();
+    const orphanedLabelAudit = await labelledFormControls(page);
+    expect(orphanedLabelAudit.total).toBeGreaterThan(labelled.total);
+    expect(orphanedLabelAudit.unlabelled).toEqual([]);
+    const orphanedGridControls = await grid.locator(gridControlSelector).count();
+    expect(orphanedGridControls).toBeGreaterThan(expectedGridControls);
+    const orphanedKeyboardAudit = await keyboardAuditGrid(page, grid, gridControlSelector);
+    expect(orphanedKeyboardAudit.visited).toEqual(
+        Array.from({ length: orphanedGridControls }, (_, index) => index),
+    );
+    expect(orphanedKeyboardAudit.focusFailures).toEqual([]);
+    expect(await warningsWithoutTextCue(page)).toEqual([]);
 });
 
 function requireSlot<T extends SlotFixture | ReturnType<typeof slots>[number]>(
@@ -394,9 +626,8 @@ function isMutationResponse(response: { request(): { method(): string }; url(): 
     return response.request().method() === 'POST' && response.url().endsWith('/characters/1/mutations');
 }
 
-async function setAbility(page: Page, abbreviation: 'INT', score: number): Promise<void> {
-    const abilitySection = page.locator('section').filter({ has: page.getByRole('heading', { name: 'Ability scores' }) });
-    const input = abilitySection.locator('label').filter({ hasText: abbreviation }).locator('input');
+async function setAbility(page: Page, abbreviation: 'INT' | 'WIS', score: number): Promise<void> {
+    const input = abilityInput(page, abbreviation);
     const mutationResponse = page.waitForResponse(isMutationResponse);
     await input.fill(String(score));
     await input.press('Tab');
@@ -408,10 +639,8 @@ async function setAbility(page: Page, abbreviation: 'INT', score: number): Promi
     await expect(page.getByText('Autosaved', { exact: true })).toBeVisible();
 }
 
-async function setClassLevel(page: Page, className: string, level: number): Promise<void> {
-    const classes = page.locator('section').filter({ has: page.getByRole('heading', { name: 'Classes' }) });
-    const entry = classes.getByText(className, { exact: true }).locator('..');
-    const input = entry.getByLabel('Level');
+async function setClassLevel(page: Page, className: string, level: number): Promise<MutationBody> {
+    const input = classEntry(page, className).getByLabel('Level');
     const mutationResponse = page.waitForResponse(isMutationResponse);
     await input.fill(String(level));
     await input.press('Tab');
@@ -421,6 +650,37 @@ async function setClassLevel(page: Page, className: string, level: number): Prom
     await expect(page.getByText(new RegExp(`revision ${body.revision}$`))).toBeVisible();
     await expect(input).toHaveValue(String(level));
     await expect(page.getByText('Autosaved', { exact: true })).toBeVisible();
+
+    return body as MutationBody;
+}
+
+async function addClass(page: Page, className: string): Promise<MutationBody> {
+    const classes = reportSection(page, 'Classes');
+    await classes.getByLabel('Class to add').selectOption({ label: className });
+    const mutationResponse = page.waitForResponse(isMutationResponse);
+    await classes.getByRole('button', { name: 'Add class' }).click();
+    const response = await mutationResponse;
+    expect(response.status()).toBe(200);
+    const body = await response.json() as MutationBody;
+    await expect(page.getByText(new RegExp(`revision ${body.revision}$`))).toBeVisible();
+    await expect(classEntry(page, className)).toBeVisible();
+    await expect(page.getByText('Autosaved', { exact: true })).toBeVisible();
+
+    return body;
+}
+
+function abilityInput(page: Page, abbreviation: 'INT' | 'WIS'): Locator {
+    const abilitySection = reportSection(page, 'Ability scores');
+
+    return abilitySection.locator('label').filter({ hasText: abbreviation }).locator('input');
+}
+
+function classEntry(page: Page, className: string): Locator {
+    return reportSection(page, 'Classes').getByText(className, { exact: true }).locator('..');
+}
+
+function reportSection(page: Page, heading: string): Locator {
+    return page.locator('section').filter({ has: page.getByRole('heading', { name: heading, exact: true }) });
 }
 
 async function castingRows(page: Page): Promise<CastingRow[]> {
@@ -465,10 +725,123 @@ function preservedSlotIdentity(slot: ReturnType<typeof slots>[number]): Pick<
     };
 }
 
+function withoutSlotLifecycle(slot: ReturnType<typeof slots>[number]): Record<string, number | string | null> {
+    const {
+        state: _state,
+        orphan_reason_code: _orphanReasonCode,
+        orphaned_at: _orphanedAt,
+        prior_config: _priorConfig,
+        updated_at: _updatedAt,
+        ...semantics
+    } = slot;
+
+    return semantics;
+}
+
 function wizardSpellbookPanel(page: Page): Locator {
     return page.locator('section').filter({ has: page.getByRole('heading', { name: 'Wizard spellbook access' }) });
 }
 
 function wizardList(panel: Locator, heading: string): Locator {
     return panel.getByRole('heading', { name: heading }).locator('..').getByRole('listitem');
+}
+
+async function labelledFormControls(page: Page): Promise<{
+    total: number;
+    unlabelled: Array<{ tag: string; type: string; id: string }>;
+}> {
+    return page.locator('body').evaluate((body) => {
+        const controls = [...body.querySelectorAll<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>(
+            'input:not([type="hidden"]), select, textarea',
+        )];
+        const unlabelled = controls.filter((control) => {
+            const ariaLabel = control.getAttribute('aria-label')?.trim();
+            const labelledBy = control.getAttribute('aria-labelledby')?.split(/\s+/).some((id) => {
+                const label = document.getElementById(id);
+
+                return Boolean(label?.textContent?.trim());
+            });
+            const nativeLabel = [...(control.labels ?? [])].some((label) => Boolean(label.textContent?.trim()));
+
+            return !ariaLabel && !labelledBy && !nativeLabel;
+        }).map((control) => ({
+            tag: control.tagName.toLowerCase(),
+            type: control instanceof HTMLInputElement ? control.type : '',
+            id: control.id,
+        }));
+
+        return { total: controls.length, unlabelled };
+    });
+}
+
+async function gridFocusState(page: Page, selector: string): Promise<{
+    index: number;
+    role: string | null;
+    focusVisible: boolean;
+    visibleOutline: boolean;
+    description: string;
+    outline: string;
+}> {
+    return page.locator('section').filter({ has: page.getByRole('heading', { name: 'Spell choice slots' }) })
+        .evaluate((section, controlSelector) => {
+            const controls = [...section.querySelectorAll<HTMLElement>(controlSelector)];
+            const active = document.activeElement as HTMLElement | null;
+            const style = active ? getComputedStyle(active) : null;
+            const outline = style
+                ? `${style.outlineStyle} ${style.outlineWidth} ${style.outlineColor}`
+                : 'no active element';
+            const transparent = style?.outlineColor === 'transparent'
+                || style?.outlineColor === 'rgba(0, 0, 0, 0)';
+
+            return {
+                index: active ? controls.indexOf(active) : -1,
+                role: active?.getAttribute('role') ?? null,
+                focusVisible: active?.matches(':focus-visible') ?? false,
+                visibleOutline: Boolean(style && style.outlineStyle !== 'none'
+                    && Number.parseFloat(style.outlineWidth) > 0 && !transparent),
+                description: active
+                    ? `${active.tagName.toLowerCase()} ${active.getAttribute('aria-label') ?? active.textContent?.trim() ?? ''}`
+                    : 'no active element',
+                outline,
+            };
+        }, selector);
+}
+
+async function keyboardAuditGrid(page: Page, grid: Locator, selector: string): Promise<{
+    visited: number[];
+    focusFailures: Array<{ index: number; description: string; outline: string }>;
+}> {
+    const expectedControls = await grid.locator(selector).count();
+    const visited = new Set<number>();
+    const focusFailures: Array<{ index: number; description: string; outline: string }> = [];
+    await page.evaluate(() => (document.activeElement as HTMLElement | null)?.blur());
+    for (let press = 0; press < 240 && visited.size < expectedControls; press += 1) {
+        await page.keyboard.press('Tab');
+        const state = await gridFocusState(page, selector);
+        if (state.index >= 0) {
+            visited.add(state.index);
+            if (!state.focusVisible || !state.visibleOutline) focusFailures.push(state);
+        }
+        if (state.role === 'combobox') await page.keyboard.press('Escape');
+    }
+
+    return {
+        visited: [...visited].sort((left, right) => left - right),
+        focusFailures,
+    };
+}
+
+async function warningsWithoutTextCue(page: Page): Promise<string[]> {
+    return page.locator('.status-warning').evaluateAll((warnings) => warnings
+        .filter((warning) => {
+            const text = [...warning.childNodes]
+                .filter((node) => !(node instanceof HTMLElement && node.getAttribute('aria-hidden') === 'true'))
+                .map((node) => node.textContent ?? '')
+                .join('')
+                .trim();
+            const accessibleIcon = warning.querySelector('[aria-label], [title], img[alt]:not([alt=""])');
+
+            return text === '' && accessibleIcon === null;
+        })
+        .map((warning) => warning.outerHTML));
 }

@@ -61,13 +61,13 @@ Ordered roughly by value. Mark done as they land.
       assert the on-screen explanatory text for each.
 - [x] **S7 Save point round trip** — save, make several destructive edits, restore,
       assert full equality with the saved snapshot.
-- [ ] **S8 Add a Warlock level** — pact pool appears separately and is never summed
+- [x] **S8 Add a Warlock level** — pact pool appears separately and is never summed
       into the shared slot table; the preparation callout accounts for it.
-- [ ] **S9 Level down** — reduce a class level, assert surplus slots orphan rather
+- [x] **S9 Level down** — reduce a class level, assert surplus slots orphan rather
       than vanish, then level back up and assert the same rows reactivate.
-- [ ] **S10 Stale tab / revision conflict** — two contexts, one edits, the other
+- [x] **S10 Stale tab / revision conflict** — two contexts, one edits, the other
       posts with a stale `expected_revision` and must be rejected with 409.
-- [ ] **S11 Accessibility** — keyboard-only traversal of the grid, visible focus,
+- [x] **S11 Accessibility** — keyboard-only traversal of the grid, visible focus,
       no colour-only warning signalling (every warning has text or an icon).
 
 ## Iteration log
@@ -182,3 +182,117 @@ source. S4's fixture driver therefore removes/restores the Human definition's ex
 grant-rule JSON in the database and invokes the real production parent generator;
 the browser and database assertions exercise the resulting application state. Per
 the UNIT instruction, this iteration remains uncommitted.
+
+### Iteration 3 — UNIT E2E-3 batch 2 review plus S8, S9, S10, S11
+
+Adversarial review of commit `705c4ea` found one significant weakness:
+
+- Medium, `e2e/complex-workspace.spec.ts:181`: S4's preservation projection kept
+  only id, source id, slot key, rule key, ordinal, and selection. It would miss
+  corruption of the target rows' bucket, eligibility constraints, counting/lock
+  flags, labels, or other selection semantics. S4 now compares every slot column
+  except the lifecycle fields that must change while orphaned (`state`, orphan
+  metadata, prior config, and `updated_at`). The same semantic comparison runs
+  after reactivation at line 200.
+
+No significant S6 or S7 weakness remained: their positive cardinality and exact
+list assertions prevent empty locators from passing; S6's capability flags and
+S7's independent SQL state projection both failed under production mutations.
+S6 received defensive route-identity hardening at lines 284-300 so both the
+Wizard capability route and Magic Initiate selection route are pinned by source,
+origin, casting mode, and counting behavior.
+
+Implemented scenarios:
+
+- S8 adds Warlock through the browser, pins the shared pool at 4/3/3 and caster
+  level 6, pins Pact Magic separately at one level-1 slot, checks the Warlock
+  preparation ceiling, and asserts the UI/report explains that either pool can
+  cast an eligible prepared spell without merging preparation limits.
+- S9 raises Wizard 1 to 3, selects Detect Magic and Feather Fall in the two new
+  prepared rows, lowers to 1, and proves both exact rows remain orphaned. Raising
+  back to 3 proves the same ids, slot keys, spell ids, and all semantic columns
+  reactivate.
+- S10 loads revision 0 in two independent Chromium contexts. The first changes
+  INT; the stale context attempts WIS 18 through the real UI store with
+  `expected_revision: 0`. The response is 409/current revision 1, and an exact
+  before/after SQL projection proves the character, captured state, audit log,
+  operations, and save points are unchanged by the rejected write.
+- S11 Tabs through every enabled slot-grid control before and after orphan
+  controls appear, proves each receives `:focus-visible` with a non-empty
+  computed outline, and checks every form control has a native or ARIA label.
+  Duplicate and orphan warnings are asserted by text/icon, plus every
+  `.status-warning` is scanned for a non-colour cue in both states.
+
+Sensitivity checks (all temporary production changes were restored):
+
+- S4 failed at `removal.source.state` with expected `"tombstoned"`, received
+  `"active"`, when granted-child reconciliation was disabled.
+- S6 failed at the capability route object with received `is_selection: true`
+  and `counts_against_limit: true` when those production flags were inverted.
+- S7 failed with a full database diff when snapshot restoration was skipped;
+  the diff included INT 20, Wizard 2, both changed spell ids, timestamps, and the
+  extra Wizard prepared row.
+- S8 failed at the exact caster object when Pact Magic reporting was disabled:
+  expected `{count: 1, level: 1}`, received `null`.
+- S9 failed at the first post-level-down cardinality assertion when reconciliation
+  deleted surplus rows: expected length 2, received length 0.
+- S10 failed at the response status when the revision guard was bypassed:
+  expected 409, received 200.
+- S11 failed with 47 `visibleOutline: false` entries when focus outlines were
+  forcibly suppressed in the built production CSS. Removing only the custom
+  outline did not break the behavior because Chromium retained its native focus
+  ring. A separate colour-only mutation left the duplicate badge amber but empty;
+  S11 failed with expected substring `"Wasteful"`, received `""`.
+
+Independent review raised broad-comparison and environment-brittleness concerns.
+They were rejected because exact shared slots, all preserved slot semantics, the
+full mutation footprint, deterministic revision 0, Chromium focus styling, and
+every-warning scanning are explicit scenario contracts. A later suggestion to
+test focus placement after resolving an orphan was rejected as outside this
+iteration's traversal/focus/label/signalling scope; the reviewer agreed the
+requested S11 checks were covered. Self-review added the second traversal and
+label audit after contextual orphan controls appear.
+
+Final verification observed:
+
+```text
+INFO  Preparing database.
+INFO  Running migrations.
+INFO  Seeding database.
+
+Tests:    159 passed (1355 assertions)
+Duration: 16.74s
+
+> typecheck
+> vue-tsc --noEmit
+
+> build
+> vite build
+vite v8.1.5 building client environment for production...
+[plugin laravel:fonts] Optimized font fallbacks require the optional "fontaine" package. Install it, or set "optimizedFallbacks: false" on your fonts to disable the feature.
+✓ 567 modules transformed.
+✓ built in 514ms
+
+> test:e2e
+> playwright test
+
+Running 11 tests using 1 worker
+  ✓   1 [chromium] › e2e/complex-workspace.spec.ts:66:1 › S1: editing one slot leaves every other database row byte-identical (2.0s)
+  ✓   2 [chromium] › e2e/complex-workspace.spec.ts:85:1 › S2: duplicate category and explanation transition wasteful → none → wasteful (2.6s)
+  ✓   3 [chromium] › e2e/complex-workspace.spec.ts:128:1 › S3: undo is persisted by the server and redo is discarded by a hard reload (3.4s)
+  ✓   4 [chromium] › e2e/complex-workspace.spec.ts:165:1 › S4: removing and restoring Magic Initiate: Wizard preserves its orphaned slot identities and selections (3.1s)
+  ✓   5 [chromium] › e2e/complex-workspace.spec.ts:212:1 › S5: INT changes propagate to every INT route in both directions without moving WIS or CHA (1.3s)
+  ✓   6 [chromium] › e2e/complex-workspace.spec.ts:244:1 › S6: Wizard spellbook shows prepared, ritual-only, and unprepared non-ritual states (1.3s)
+  ✓   7 [chromium] › e2e/complex-workspace.spec.ts:306:1 › S7: a save point restores the complete persisted character state after destructive edits (4.0s)
+  ✓   8 [chromium] › e2e/complex-workspace.spec.ts:358:1 › S8: adding Warlock keeps Pact Magic separate from shared slots and explains cross-pool casting (1.1s)
+  ✓   9 [chromium] › e2e/complex-workspace.spec.ts:399:1 › S9: level-down orphans surplus selected slots and level-up reactivates the same rows (2.8s)
+  ✓  10 [chromium] › e2e/complex-workspace.spec.ts:449:1 › S10: a stale browser context receives 409 and cannot change any database state (2.5s)
+  ✓  11 [chromium] › e2e/complex-workspace.spec.ts:494:1 › S11: the slot grid is keyboard reachable, visibly focused, labelled, and warnings are not colour-only (11.5s)
+
+  11 passed (36.2s)
+```
+
+Deviation: S4 still cannot trigger origin-feat removal through the browser, as
+recorded in Iteration 2. S8, S9, S10, and S11 are all triggered through browser
+contexts; none required a test-only HTTP route or direct database mutation.
+Per the UNIT instruction, this iteration remains uncommitted.

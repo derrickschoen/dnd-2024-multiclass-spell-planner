@@ -48,6 +48,7 @@ $result = match ($action) {
         ->map(static fn (object $row): array => (array) $row)
         ->all(),
     'persisted-character-state' => persistedCharacterState($characterId),
+    'mutation-footprint' => mutationFootprint($characterId),
     'save-point-snapshot' => json_decode(
         (string) data_get(
             DB::table('character_save_points')
@@ -112,6 +113,33 @@ function persistedCharacterState(int $characterId): array
     }
 
     return $state;
+}
+
+/** @return array<string, mixed> */
+function mutationFootprint(int $characterId): array
+{
+    return [
+        'character' => (array) DB::table('characters')->where('id', $characterId)->sole(),
+        'state' => persistedCharacterState($characterId),
+        'change_log' => DB::table('change_log')
+            ->where('character_id', $characterId)
+            ->orderBy('id')
+            ->get()
+            ->map(static fn (object $row): array => (array) $row)
+            ->all(),
+        'operations' => DB::table('character_operations')
+            ->where('character_id', $characterId)
+            ->orderBy('id')
+            ->get()
+            ->map(static fn (object $row): array => (array) $row)
+            ->all(),
+        'save_points' => DB::table('character_save_points')
+            ->where('character_id', $characterId)
+            ->orderBy('id')
+            ->get()
+            ->map(static fn (object $row): array => (array) $row)
+            ->all(),
+    ];
 }
 
 /** @return array{previous_grant_rules: string, source: array<string, mixed>} */

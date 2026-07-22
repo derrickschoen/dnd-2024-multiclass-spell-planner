@@ -69,6 +69,10 @@ export function persistedCharacterState(): PersistedCharacterState {
     return phpDatabase<PersistedCharacterState>('persisted-character-state');
 }
 
+export function mutationFootprint(): PersistedCharacterState {
+    return phpDatabase<PersistedCharacterState>('mutation-footprint');
+}
+
 export function savePointSnapshot(label: string): PersistedCharacterState {
     return phpDatabase<PersistedCharacterState>('save-point-snapshot', label);
 }
