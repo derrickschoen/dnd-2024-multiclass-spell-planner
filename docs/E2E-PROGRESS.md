@@ -1841,3 +1841,37 @@ Caveat: the design ran read-only without Docker access, so schema claims were
 verified against migrations rather than a live database. It stated that rather
 than presenting them as checked. Its own independent critique attempts failed
 twice and it explicitly did not treat silence as approval.
+
+## Fan-out procedure — give each worktree its own database
+
+Learned the hard way this session. Worktrees isolate the filesystem but NOT the
+database, so parallel producers had to be forbidden from running `migrate:fresh`,
+seeders and the browser suite. Consequences:
+
+- producers were restricted to Pest, which uses `:memory:`
+- one producer reported 6 failing tests that were purely environmental
+  (`MissingAppKeyException`, because its worktree had no `.env`), costing triage
+  time to establish they were not real
+- the supervisor re-verified everything serially anyway, throttling a four-way
+  fan-out to roughly one writer
+
+**Do this when creating a worktree:**
+
+```bash
+git worktree add .worktrees/<name> feat/<name>
+cp .env .worktrees/<name>/.env
+ln -sfn "$(pwd)/vendor"       .worktrees/<name>/vendor
+ln -sfn "$(pwd)/node_modules" .worktrees/<name>/node_modules
+
+# The project is SQLite, so per-worktree isolation is one line:
+sed -i 's|^DB_DATABASE=.*|DB_DATABASE=/var/www/html/.worktrees/<name>/database/<name>.sqlite|' \
+  .worktrees/<name>/.env
+```
+
+Then the producer can run `migrate:fresh --seed` and the full Pest suite against
+its own database without touching a sibling's.
+
+**Still serial:** browser E2E. Playwright drives one served URL
+(`dnd-spell-planner.ddev.site`) backed by the main checkout, so a second ddev site
+per worktree would be needed to parallelise it. Until then the supervisor runs the
+browser suite serially per branch before opening its PR.
