@@ -157,7 +157,7 @@ guard, enumerate EVERY path that should enforce it and prove each one does.
       an id from the client: slots, sources, save points, acknowledgements,
       spellbook entries, loadouts. Which verify the row belongs to the character
       in the URL, and which rely on a composite FK to fail messily instead?
-- [ ] **G3 Eligibility revalidation triggers.** S13 proved a Magic Initiate list
+- [~] **G3 Eligibility revalidation triggers.** allow_legacy toggle now has BROWSER coverage (S20); domain paths covered in GuardCoverageTest. S13 proved a Magic Initiate list
       change re-validates selections. What about a class LEVEL change, a SUBCLASS
       change, toggling `allow_legacy` off while a legacy spell is selected, or a
       catalog re-import that tombstones a selected version? Each should mark
@@ -256,6 +256,8 @@ feature, repeatedly, for five iterations.
       spell does).
 - [x] **S18 Wizard prepares outside the book** — prepare a Wizard-list spell absent
 - [x] **S19 Clear a valid selection** — adds the missing browser affordance to
+- [x] **S20 Legacy toggle-off revalidation** — a live 2014 selection is preserved but
+      invalidated when legacy rules are disabled, and healed when re-enabled (browser G3).
       un-prepare a spell; clears durably and undo restores the identical slot.
       from the spellbook, prove it is castable, persists, and clears durably.
 - [x] **S17 remove a feat through the browser** — retires the S4 fixture-trigger
@@ -2044,3 +2046,47 @@ gate. Scoped to one row, character 1, empty selection; reset in finally.
 
 Verified by rerunning, not by report: Playwright 25 passed, Pest 475 passed
 (13,278 assertions), only the spec and Workspace.vue modified.
+
+### Iteration 14 — S20, the browser cascade of a domain-only-tested guard (G3)
+
+Picked backlog G3 (eligibility revalidation triggers) and ran the Phase 0
+assumption pass first. What it found: the DOMAIN already revalidates a live 2014
+selection to invalid when allow_legacy is toggled off — proven by reading
+`UpdateCharacterRulesCommand::apply` (it refreshes every slot) and a PASSING Pest
+test at `GuardCoverageTest.php:529`. What had no coverage was the BROWSER cascade
+of that same behaviour, which is this project's recurring failure mode:
+domain-proven, UI-unproven, the identical guard one door down.
+
+**S20 (new):** enable legacy → select 2014 Chill Touch into a Wizard cantrip slot
+→ assert valid with the EXACT access-route object (attack +4, DC 12, at_will) →
+toggle legacy OFF → assert the selection is PRESERVED (same version id) but now
+invalid with the exact reason, its route gone, the attention row visible with
+Replace/Keep/Clear → fresh-page hard reload proving persistence → toggle ON to
+heal (route returns, attention row gone) → undo → redo → undo back to the invalid
+state; all in try/finally with resetDatabase().
+
+**Sensitivity: proven, and the reviewer caught a subtlety I then confirmed.**
+The revert: delete the slot-refresh loop in `UpdateCharacterRulesCommand::apply`.
+Applied it; S20 failed in 4.1s at line 1271 (`selection_eligibility` came back
+`valid`/`null` instead of `invalid`).
+
+The subtlety: S20 asserts BOTH that the access route disappears AND that the
+persisted slot eligibility is invalid. The fresh reviewer noted — and the revert
+confirmed — that the **route-gone assertion alone would NOT catch this revert**,
+because `SpellAccessBuilder` re-evaluates eligibility live at report-build time,
+so the route vanishes with legacy off regardless of whether the persisted row was
+refreshed. Only the persisted-eligibility assertion is load-bearing for this
+guard. A test that checked just the route would have looked sensitive while being
+blind to the exact regression it names. Asserting the persisted row is what makes
+it real.
+
+**Route math independently verified** (by the reviewer, querying the live
+build-report, and by my full-suite run passing): INT 13 → +1; character level 6 →
+proficiency +3 → attack +4, DC 12; a level-0 spell is at_will. The whole-object
+route assertion is deliberately strict — it pins the DC/attack math, and fails
+loudly (not flakily) on a real schema change.
+
+Verified by rerunning, not by report: Playwright 26 passed, Pest 475 passed
+(13,278 assertions), only the spec modified. G3's remaining paths (class-level
+change, subclass change, catalog re-import) are Pest-covered at
+GuardCoverageTest; their browser cascades are the natural next S-scenarios.

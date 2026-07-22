@@ -1191,6 +1191,237 @@ test('S19: a valid Wizard preparation clears durably and undo restores the same 
     }
 });
 
+test('S20: disabling legacy rules invalidates a live selection and enabling them heals it', async ({ page, context }) => {
+    const invalidReason = 'Enable legacy rules before selecting a 2014 spell version.';
+    const target = requireSlot(
+        slotFixtures().find((slot) => slot.rule_key === 'wizard-cantrips' && slot.ordinal === 2),
+        'the second Wizard cantrip slot',
+    );
+    const legacySpellVersionId = spellVersionId('2014:chill-touch');
+    const legacyToggle = page.getByRole('checkbox', { name: /Allow legacy 2014 spell versions/ });
+    expect(character().intelligence).toBe(13);
+    const expectedRoute = {
+        spell_identity_id: expect.any(Number),
+        identity_name: 'Chill Touch',
+        spell_name: 'Chill Touch',
+        spell_content_key: '2014:chill-touch',
+        rules_edition: '2014',
+        spell_level: 0,
+        ability_modifier: 1,
+        attack_bonus: 4,
+        save_dc: 12,
+        origin: 'slot',
+        casting_mode: 'at_will',
+        spell_version_id: legacySpellVersionId,
+        source_instance_id: target.source_instance_id,
+        source_name: 'Wizard 1',
+        slot_id: target.id,
+        slot_key: target.slot_key,
+        selection_key: target.slot_key,
+        bucket: 'cantrip_known',
+        selection_collection: null,
+        is_selection: true,
+        counts_against_limit: true,
+        free_cast: null,
+        spellcasting_ability: 'intelligence',
+    };
+    const targetSlot = (description: string) => requireSlot(
+        slots().find((slot) => slot.id === target.id),
+        description,
+    );
+
+    expect(target.current_spell_version_id).toBeNull();
+    await expect(legacyToggle).not.toBeChecked();
+
+    try {
+        const enableResponsePromise = page.waitForResponse(isMutationResponse);
+        await legacyToggle.check();
+        const enableResponse = await enableResponsePromise;
+        expect(enableResponse.status()).toBe(200);
+        expect(enableResponse.request().postDataJSON()).toEqual(expect.objectContaining({
+            command: { type: 'update_character_rules', allow_legacy: true },
+        }));
+        const enableBody = await enableResponse.json() as CommandMutationBody;
+        await expect(page.getByText(new RegExp(`revision ${enableBody.revision}$`))).toBeVisible();
+        await expect(legacyToggle).toBeChecked();
+        expect(character().allow_legacy).toBe(1);
+
+        const selectionBody = await selectSpellVersion(page, target.id, 'Chill Touch', '2014');
+        expect(targetSlot('the selected legacy Wizard cantrip slot')).toEqual(expect.objectContaining({
+            id: target.id,
+            current_spell_version_id: legacySpellVersionId,
+            state: 'active',
+            selection_eligibility: 'valid',
+            selection_invalid_reason: null,
+        }));
+        expect(selectionBody.workspace.report.access_routes.filter((route) => route.slot_id === target.id))
+            .toEqual([expectedRoute]);
+
+        const disableResponsePromise = page.waitForResponse(isMutationResponse);
+        await legacyToggle.uncheck();
+        const disableResponse = await disableResponsePromise;
+        expect(disableResponse.status()).toBe(200);
+        expect(disableResponse.request().postDataJSON()).toEqual(expect.objectContaining({
+            command: { type: 'update_character_rules', allow_legacy: false },
+        }));
+        const disableBody = await disableResponse.json() as CommandMutationBody;
+        await expect(page.getByText(new RegExp(`revision ${disableBody.revision}$`))).toBeVisible();
+        await expect(legacyToggle).not.toBeChecked();
+        expect(character().allow_legacy).toBe(0);
+        expect(targetSlot('the preserved invalid legacy Wizard cantrip slot')).toEqual(expect.objectContaining({
+            id: target.id,
+            current_spell_version_id: legacySpellVersionId,
+            state: 'active',
+            selection_eligibility: 'invalid',
+            selection_invalid_reason: invalidReason,
+        }));
+        expect(disableBody.workspace.report.access_routes.filter((route) => route.slot_id === target.id))
+            .toEqual([]);
+        expect(disableBody.workspace.report.invalid_selections.filter((slot) => slot.id === target.id)).toEqual([
+            expect.objectContaining({
+                id: target.id,
+                spell_name: 'Chill Touch',
+                eligibility: 'invalid',
+                invalid_reason: invalidReason,
+            }),
+        ]);
+        const attentionRow = slotRow(page, target.id).locator('xpath=following-sibling::tr[1]')
+            .filter({ hasText: 'Selection needs attention.' });
+        await expect(attentionRow.locator('p')).toHaveText(`⚠ Selection needs attention. ${invalidReason}`);
+        await expect(attentionRow.getByRole('button', { name: 'Replace', exact: true })).toHaveText('Replace');
+        await expect(attentionRow.getByRole('button', { name: 'Keep as override', exact: true }))
+            .toHaveText('Keep as override');
+        await expect(attentionRow.getByRole('button', { name: 'Clear', exact: true })).toHaveText('Clear');
+
+        const freshPage = await context.newPage();
+        try {
+            await freshPage.goto('/characters/1');
+            await expect(freshPage.getByRole('heading', {
+                name: 'A6 Sixfold Spellcaster',
+                level: 1,
+            })).toBeVisible();
+            // Bypass the browser cache after the page has loaded once so every
+            // persisted assertion below comes from a new workspace response.
+            await hardReloadIgnoringCache(freshPage, context);
+            await expect(freshPage.getByRole('heading', {
+                name: 'A6 Sixfold Spellcaster',
+                level: 1,
+            })).toBeVisible();
+            await expect(freshPage.getByRole('checkbox', {
+                name: /Allow legacy 2014 spell versions/,
+            })).not.toBeChecked();
+            await expect(freshPage.getByRole('combobox', {
+                name: `Spell selection for slot ${target.id}`,
+            })).toHaveValue('Chill Touch');
+            await expect(slotRow(freshPage, target.id).locator('td').nth(10)).toHaveText('⚠ Invalid');
+            await expect(slotRow(freshPage, target.id).locator('xpath=following-sibling::tr[1]').locator('p'))
+                .toHaveText(`⚠ Selection needs attention. ${invalidReason}`);
+            expect(targetSlot('the freshly read invalid legacy Wizard cantrip slot')).toEqual(expect.objectContaining({
+                id: target.id,
+                current_spell_version_id: legacySpellVersionId,
+                selection_eligibility: 'invalid',
+                selection_invalid_reason: invalidReason,
+            }));
+            expect(buildReport<MutationBody['workspace']['report']>().access_routes
+                .filter((route) => route.slot_id === target.id)).toEqual([]);
+        } finally {
+            await freshPage.close();
+        }
+
+        const healResponsePromise = page.waitForResponse(isMutationResponse);
+        await legacyToggle.check();
+        const healResponse = await healResponsePromise;
+        expect(healResponse.status()).toBe(200);
+        const healBody = await healResponse.json() as CommandMutationBody;
+        await expect(page.getByText(new RegExp(`revision ${healBody.revision}$`))).toBeVisible();
+        expect(character().allow_legacy).toBe(1);
+        expect(targetSlot('the healed legacy Wizard cantrip slot')).toEqual(expect.objectContaining({
+            id: target.id,
+            current_spell_version_id: legacySpellVersionId,
+            state: 'active',
+            selection_eligibility: 'valid',
+            selection_invalid_reason: null,
+            orphan_reason_code: null,
+            orphaned_by_change_group_id: null,
+            orphaned_at: null,
+        }));
+        expect(healBody.workspace.report.access_routes.filter((route) => route.slot_id === target.id))
+            .toEqual([expectedRoute]);
+        expect(healBody.workspace.report.invalid_selections.filter((slot) => slot.id === target.id)).toEqual([]);
+        expect(healBody.workspace.report.duplicate_assessments
+            .filter((assessment) => assessment.spell_name === 'Chill Touch')).toEqual([
+            expect.objectContaining({ category: 'none', selection_count: 1 }),
+        ]);
+        await expect(slotRow(page, target.id).locator('xpath=following-sibling::tr[1]')
+            .filter({ hasText: 'Selection needs attention.' })).toHaveCount(0);
+        await expect(slotRow(page, target.id).locator('td').nth(9)).toHaveText('— None');
+        await expect(slotRow(page, target.id).locator('td').nth(10)).toHaveText('✓ Valid');
+
+        const undo = page.getByRole('button', { name: /Undo/ });
+        const redo = page.getByRole('button', { name: /Redo/ });
+        const firstUndoResponsePromise = page.waitForResponse(isMutationResponse);
+        await undo.click();
+        const firstUndoResponse = await firstUndoResponsePromise;
+        expect(firstUndoResponse.status()).toBe(200);
+        const firstUndoBody = await firstUndoResponse.json() as CommandMutationBody;
+        await expect(page.getByText(new RegExp(`revision ${firstUndoBody.revision}$`))).toBeVisible();
+        expect(character().allow_legacy).toBe(0);
+        expect(targetSlot('the invalid legacy slot after the first undo')).toEqual(expect.objectContaining({
+            id: target.id,
+            current_spell_version_id: legacySpellVersionId,
+            selection_eligibility: 'invalid',
+            selection_invalid_reason: invalidReason,
+        }));
+        expect(firstUndoBody.workspace.report.access_routes.filter((route) => route.slot_id === target.id))
+            .toEqual([]);
+
+        const redoResponsePromise = page.waitForResponse(isMutationResponse);
+        await redo.click();
+        const redoResponse = await redoResponsePromise;
+        expect(redoResponse.status()).toBe(200);
+        const redoBody = await redoResponse.json() as CommandMutationBody;
+        await expect(page.getByText(new RegExp(`revision ${redoBody.revision}$`))).toBeVisible();
+        await expect(legacyToggle).toBeChecked();
+        expect(character().allow_legacy).toBe(1);
+        expect(targetSlot('the healed legacy slot after redo')).toEqual(expect.objectContaining({
+            id: target.id,
+            current_spell_version_id: legacySpellVersionId,
+            state: 'active',
+            selection_eligibility: 'valid',
+            selection_invalid_reason: null,
+        }));
+        expect(redoBody.workspace.report.access_routes.filter((route) => route.slot_id === target.id))
+            .toEqual([expectedRoute]);
+
+        const secondUndoResponsePromise = page.waitForResponse(isMutationResponse);
+        await undo.click();
+        const secondUndoResponse = await secondUndoResponsePromise;
+        expect(secondUndoResponse.status()).toBe(200);
+        const secondUndoBody = await secondUndoResponse.json() as CommandMutationBody;
+        await expect(page.getByText(new RegExp(`revision ${secondUndoBody.revision}$`))).toBeVisible();
+        expect(character().allow_legacy).toBe(0);
+        expect(targetSlot('the final invalid legacy slot after two undo operations')).toEqual(expect.objectContaining({
+            id: target.id,
+            current_spell_version_id: legacySpellVersionId,
+            state: 'active',
+            selection_eligibility: 'invalid',
+            selection_invalid_reason: invalidReason,
+        }));
+        expect(secondUndoBody.workspace.report.access_routes.filter((route) => route.slot_id === target.id))
+            .toEqual([]);
+        expect(secondUndoBody.workspace.report.invalid_selections.filter((slot) => slot.id === target.id)).toEqual([
+            expect.objectContaining({
+                id: target.id,
+                spell_name: 'Chill Touch',
+                eligibility: 'invalid',
+                invalid_reason: invalidReason,
+            }),
+        ]);
+    } finally {
+        resetDatabase();
+    }
+});
+
 test('T10: Mutt matches the authoritative sheet attribution with zero duplicates', async ({ page }) => {
     const muttId = 2;
     await page.goto(`/characters/${muttId}`);
