@@ -6,10 +6,12 @@
         "build": "vite build",
         "dev": "vite",
         "typecheck": "vue-tsc --noEmit",
+        "test:e2e": "playwright test",
         "scrape": "node scripts/scrape-spells.mjs",
         "test:scripts": "node --test 'scripts/*.test.mjs'"
     },
     "devDependencies": {
+        "@playwright/test": "^1.61.1",
         "@tailwindcss/vite": "^4.0.0",
         "@vitejs/plugin-vue": "^6.0.8",
         "@vue/tsconfig": "^0.9.1",

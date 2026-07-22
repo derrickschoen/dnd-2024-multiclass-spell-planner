@@ -29,3 +29,11 @@ Thumbs.db
 # Scraped prose — fetched locally, never redistributed
 /data/local/
 /scripts/.cache/
+
+# Claude Code session scratch (lock files, scheduled task state)
+/.claude/
+
+# Playwright
+/test-results/
+/playwright-report/
+/blob-report/
