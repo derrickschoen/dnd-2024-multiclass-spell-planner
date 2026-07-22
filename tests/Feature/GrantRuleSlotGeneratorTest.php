@@ -96,6 +96,37 @@ function grantSource(int $characterId, string $sourceType, int $definitionId, ar
     ]);
 }
 
+/** @param list<array<string, mixed>> $rules @param array<string, mixed> $config */
+function grantClassSource(int $characterId, string $name, array $rules, array $config = []): int
+{
+    $classId = DB::table('class_definitions')->insertGetId([
+        'content_key' => '2024:class:'.Str::slug($name),
+        'name' => $name,
+        'rules_edition' => '2024',
+        'spellcasting_ability' => data_get($config, 'spellcasting_ability'),
+        'progression_type' => 'full',
+        'created_at' => now(),
+        'updated_at' => now(),
+    ]);
+    DB::table('character_class_levels')->insert([
+        'character_id' => $characterId,
+        'class_definition_id' => $classId,
+        'level' => 1,
+        'created_at' => now(),
+        'updated_at' => now(),
+    ]);
+    DB::table('class_progressions')->insert([
+        'class_definition_id' => $classId,
+        'class_level' => 1,
+        'prepared_count' => 1,
+        'grant_rules' => json_encode($rules, JSON_THROW_ON_ERROR),
+        'created_at' => now(),
+        'updated_at' => now(),
+    ]);
+
+    return grantSource($characterId, 'class', $classId, $config);
+}
+
 it('materializes a fixed spell as one locked slot without a current selection', function () {
     $spellId = grantSpell('2024:mage-hand', 'Mage Hand');
     $featId = grantDefinition('feat_definitions', '2024:feat:gift', 'Arcane Gift', [[
@@ -365,7 +396,6 @@ it('recursively orphans a removed granted source and restores the identical chil
     ]);
     DB::table('wizard_spellbook_entries')->insert([
         'character_id' => $characterId, 'spell_version_id' => $ritualId,
-        'acquisition' => 'granted', 'source_instance_id' => data_get($child, 'id'),
         'created_at' => now(), 'updated_at' => now(),
     ]);
     expect(collect($generator->activeRulesForSource((int) data_get($child, 'id')))
@@ -563,7 +593,7 @@ it('enforces distinct repeatable source configuration by chosen list', function 
     expect(DB::table('spell_selection_slots')->where('source_instance_id', $druid)->count())->toBe(2);
 });
 
-it('records six starting wizard spells and a later copy with provenance', function () {
+it('records lightweight spellbook markers and rejects removed bookkeeping metadata', function () {
     $characterId = grantCharacter();
     $spellKeys = [
         '2024:detect-magic', '2024:feather-fall', '2024:mage-armor',
@@ -581,7 +611,6 @@ it('records six starting wizard spells and a later copy with provenance', functi
     ]]);
     $starting = array_map(fn (string $key): array => [
         'spell_version_key' => $key,
-        'acquisition' => 'starting',
     ], array_slice($spellKeys, 0, 6));
     $sourceId = grantSource($characterId, 'feat', $featId, [
         'wizard_spellbook_acquisitions' => $starting,
@@ -593,7 +622,7 @@ it('records six starting wizard spells and a later copy with provenance', functi
     expect($beforeIds)->toHaveCount(6)
         ->and(DB::table('spell_selection_slots')->count())->toBe(0);
 
-    $withCopy = [...$starting, [
+    $withBookkeeping = [...$starting, [
         'spell_version_key' => '2024:find-familiar',
         'acquisition' => 'copied',
         'copy_cost_gp' => 50,
@@ -601,32 +630,39 @@ it('records six starting wizard spells and a later copy with provenance', functi
         'notes' => 'Copied from Merla’s spellbook.',
     ]];
     DB::table('character_source_instances')->where('id', $sourceId)->update([
-        'config' => json_encode(['wizard_spellbook_acquisitions' => $withCopy], JSON_THROW_ON_ERROR),
+        'config' => json_encode(['wizard_spellbook_acquisitions' => $withBookkeeping], JSON_THROW_ON_ERROR),
+    ]);
+    expect(fn () => $generator->generateForSource($sourceId))->toThrow(
+        InvalidArgumentException::class,
+        "Spellbook rule 'wizard-spellbook' acquisition 6 contains unsupported bookkeeping fields: acquisition, copy_cost_gp, copy_time_hours, notes.",
+    );
+
+    DB::table('character_source_instances')->where('id', $sourceId)->update([
+        'config' => json_encode(['wizard_spellbook_acquisitions' => [
+            ...$starting,
+            ['spell_version_key' => '2024:find-familiar'],
+        ]], JSON_THROW_ON_ERROR),
     ]);
     $generator->generateForSource($sourceId);
 
     $entries = DB::table('wizard_spellbook_entries')->orderBy('id')->get();
-    $copy = $entries->last();
     expect($entries)->toHaveCount(7)
         ->and($entries->take(6)->pluck('id')->all())->toBe($beforeIds)
-        ->and(data_get($copy, 'acquisition'))->toBe('copied')
-        ->and((int) data_get($copy, 'copy_cost_gp'))->toBe(50)
-        ->and((int) data_get($copy, 'copy_time_hours'))->toBe(2)
-        ->and((int) data_get($copy, 'source_instance_id'))->toBe($sourceId)
-        ->and(data_get($copy, 'notes'))->toBe('Copied from Merla’s spellbook.');
+        ->and(Schema::hasColumns('wizard_spellbook_entries', [
+            'acquisition', 'copy_cost_gp', 'copy_time_hours', 'source_instance_id', 'notes',
+        ]))->toBeFalse();
 });
 
 it('keeps capabilities out of slots and computes wizard ritual access from the live spellbook', function () {
     $characterId = grantCharacter();
     $preparedRitualId = grantSpell('2024:prepared-ritual', 'Prepared Ritual', 1, ['Wizard'], ['ritual']);
-    $unpreparedRitualId = grantSpell('2024:unprepared-ritual', 'Unprepared Ritual', 1, ['Wizard'], ['ritual']);
+    $unpreparedRitualId = grantSpell('2024:unprepared-ritual', 'Unprepared Ritual', 1, ['Wizard', 'Cleric'], ['ritual']);
     $ordinaryId = grantSpell('2024:ordinary-spell', 'Ordinary Spell', 1, ['Wizard']);
     $notInBookId = grantSpell('2024:not-in-book', 'Not In Book', 1, ['Wizard']);
-    $wizardFeatureId = grantDefinition('feat_definitions', '2024:feat:wizard-features', 'Wizard Features', [
+    $wizardRules = [
         [
             'kind' => 'choice_from_list', 'rule_key' => 'wizard-prepared', 'count' => 1,
             'bucket' => 'prepared', 'list' => 'Wizard', 'level_min' => 0, 'level_max' => 9,
-            'selection_collection' => 'wizard_spellbook',
         ],
         [
             'kind' => 'spellbook_acquisition', 'rule_key' => 'wizard-spellbook',
@@ -638,33 +674,48 @@ it('keeps capabilities out of slots and computes wizard ritual access from the l
             'capability_key' => 'wizard-ritual-adept', 'collection' => 'wizard_spellbook',
             'tags' => ['ritual'], 'access_mode' => 'ritual_only',
         ],
-    ]);
-    $sourceId = grantSource($characterId, 'feat', $wizardFeatureId, [
+    ];
+    $sourceId = grantClassSource($characterId, 'Wizard', $wizardRules, [
         'spellcasting_ability' => 'intelligence',
         'wizard_spellbook_acquisitions' => array_map(
-            static fn (int $spellId): array => ['spell_version_id' => $spellId, 'acquisition' => 'starting'],
+            static fn (int $spellId): array => ['spell_version_id' => $spellId],
             [$preparedRitualId, $unpreparedRitualId, $ordinaryId],
         ),
     ]);
     app(GrantRuleSlotGenerator::class)->generateForSource($sourceId);
     $preparedSlot = DB::table('spell_selection_slots')->sole();
-    expect(data_get($preparedSlot, 'selection_collection'))->toBe('wizard_spellbook')
+    expect(data_get($preparedSlot, 'selection_collection'))->toBeNull()
         ->and(DB::table('wizard_spellbook_entries')->count())->toBe(3)
         ->and(Schema::hasTable('wizard_prepared_entries'))->toBeFalse();
-    expect(fn () => app(SpellSelectionService::class)->select((int) data_get($preparedSlot, 'id'), $notInBookId))
-        ->toThrow(InvalidArgumentException::class, 'not in the character\'s wizard spellbook');
+    app(SpellSelectionService::class)->select((int) data_get($preparedSlot, 'id'), $notInBookId);
+    expect((int) DB::table('spell_selection_slots')->where('id', data_get($preparedSlot, 'id'))
+        ->value('current_spell_version_id'))->toBe($notInBookId);
     app(SpellSelectionService::class)->select((int) data_get($preparedSlot, 'id'), $preparedRitualId);
 
+    $clericSourceId = grantClassSource($characterId, 'Cleric', [[
+        'kind' => 'choice_from_list', 'rule_key' => 'cleric-prepared', 'count' => 1,
+        'bucket' => 'prepared', 'list' => 'Cleric', 'level_min' => 1, 'level_max' => 1,
+    ]], ['spellcasting_ability' => 'wisdom']);
+    app(GrantRuleSlotGenerator::class)->generateForSource($clericSourceId);
+    $clericSlot = DB::table('spell_selection_slots')->where('source_instance_id', $clericSourceId)->sole();
+    app(SpellSelectionService::class)->select((int) data_get($clericSlot, 'id'), $unpreparedRitualId);
+
     $routes = app(SpellAccessBuilder::class)->buildForCharacter($characterId);
-    expect($routes)->toHaveCount(2)
-        ->and(collect($routes)->pluck('spell_name')->all())->toBe(['Prepared Ritual', 'Unprepared Ritual']);
+    expect($routes)->toHaveCount(3)
+        ->and(collect($routes)->pluck('spell_name')->all())->toBe([
+            'Prepared Ritual', 'Unprepared Ritual', 'Unprepared Ritual',
+        ]);
     $prepared = collect($routes)->firstWhere('spell_version_id', $preparedRitualId);
-    $ritualOnly = collect($routes)->firstWhere('spell_version_id', $unpreparedRitualId);
+    $ritualOnly = collect($routes)->first(
+        static fn (array $route): bool => data_get($route, 'spell_version_id') === $unpreparedRitualId
+            && data_get($route, 'casting_mode') === 'ritual_only',
+    );
     expect(data_get($prepared, 'casting_mode'))->toBe('with_slots')
         ->and(data_get($prepared, 'origin'))->toBe('slot')
         ->and(data_get($prepared, 'selection_key'))->toBe(data_get($preparedSlot, 'slot_key'))
         ->and(data_get($ritualOnly, 'casting_mode'))->toBe('ritual_only')
         ->and(data_get($ritualOnly, 'origin'))->toBe('capability')
+        ->and(data_get($ritualOnly, 'spellcasting_ability'))->toBe('intelligence')
         ->and(data_get($ritualOnly, 'is_selection'))->toBeFalse()
         ->and(data_get($ritualOnly, 'counts_against_limit'))->toBeFalse();
 });
@@ -686,7 +737,6 @@ it('never treats a ritual-only capability route as a wasteful duplicate selectio
     $sourceId = grantSource($characterId, 'feat', $definitionId, ['spellcasting_ability' => 'intelligence']);
     DB::table('wizard_spellbook_entries')->insert([
         'character_id' => $characterId, 'spell_version_id' => $ritualId,
-        'acquisition' => 'starting', 'source_instance_id' => $sourceId,
         'created_at' => now(), 'updated_at' => now(),
     ]);
     app(GrantRuleSlotGenerator::class)->generateForSource($sourceId);

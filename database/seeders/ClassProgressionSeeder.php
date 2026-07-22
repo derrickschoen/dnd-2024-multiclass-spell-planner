@@ -4,7 +4,10 @@ declare(strict_types=1);
 
 namespace Database\Seeders;
 
+use App\Domain\Grants\GrantRuleKind;
+use App\Domain\Grants\SlotBucket;
 use App\Domain\Rules\CasterContribution;
+use App\Domain\Rules\CastingMode;
 use App\Domain\Rules\SpellSlots;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\DB;
@@ -173,9 +176,6 @@ final class ClassProgressionSeeder extends Seeder
                 'level_max' => SpellSlots::maxPreparableLevelForClass($contribution),
                 'with_slots' => true,
             ];
-            if ($name === 'Wizard') {
-                $rules[array_key_last($rules)]['selection_collection'] = 'wizard_spellbook';
-            }
         }
         if ($name === 'Cleric') {
             $rules[] = [
@@ -230,19 +230,19 @@ final class ClassProgressionSeeder extends Seeder
         }
         if ($name === 'Wizard') {
             $rules[] = [
-                'kind' => 'spellbook_acquisition',
+                'kind' => GrantRuleKind::SpellbookAcquisition->value,
                 'rule_key' => 'wizard-spellbook',
-                'bucket' => 'spellbook',
+                'bucket' => SlotBucket::Spellbook->value,
                 'list' => 'Wizard',
                 'acquisitions_config' => 'wizard_spellbook_acquisitions',
             ];
             $rules[] = [
-                'kind' => 'capability',
+                'kind' => GrantRuleKind::Capability->value,
                 'rule_key' => 'ritual-adept',
                 'capability_key' => 'wizard-ritual-adept',
                 'collection' => 'wizard_spellbook',
                 'tags' => ['ritual'],
-                'access_mode' => 'ritual_only',
+                'access_mode' => CastingMode::RitualOnly->value,
             ];
         }
 

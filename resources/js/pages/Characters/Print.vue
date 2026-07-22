@@ -31,6 +31,11 @@ type WizardEntry = {
     active?: boolean;
 };
 
+type WizardPreparedEntry = {
+    spell_version_id: number;
+    spell_name: string;
+};
+
 type PrintableSpellList = {
     variant: 'reference' | 'full';
     text_status: 'not_requested' | 'unavailable' | 'partial' | 'available';
@@ -57,7 +62,7 @@ type PrintableSpellList = {
     }>;
     wizard: {
         spellbook: WizardEntry[];
-        prepared: WizardEntry[];
+        prepared: WizardPreparedEntry[];
         ritual_only: WizardEntry[];
         explanation: string;
     };
@@ -122,7 +127,7 @@ const printPage = () => window.print();
                 <p class="mt-2 text-sm leading-snug">{{ spellList.wizard.explanation }}</p>
                 <div class="wizard-states mt-3 grid grid-cols-3 gap-4 text-sm">
                     <article>
-                        <h3 class="font-bold">Spellbook · {{ spellList.wizard.spellbook.length }}</h3>
+                        <h3 class="font-bold">In my book · {{ spellList.wizard.spellbook.length }}</h3>
                         <ul class="mt-1 list-disc pl-5">
                             <li v-for="entry in spellList.wizard.spellbook" :key="entry.spellbook_entry_id">
                                 {{ entry.spell_name }}<template v-if="entry.active === false"> (unavailable — removed from catalog)</template>
@@ -131,7 +136,7 @@ const printPage = () => window.print();
                     </article>
                     <article>
                         <h3 class="font-bold">Prepared · {{ spellList.wizard.prepared.length }}</h3>
-                        <ul class="mt-1 list-disc pl-5"><li v-for="entry in spellList.wizard.prepared" :key="entry.spellbook_entry_id">{{ entry.spell_name }}</li></ul>
+                        <ul class="mt-1 list-disc pl-5"><li v-for="entry in spellList.wizard.prepared" :key="entry.spell_version_id">{{ entry.spell_name }}</li></ul>
                     </article>
                     <article>
                         <h3 class="font-bold">Ritual-only · {{ spellList.wizard.ritual_only.length }}</h3>

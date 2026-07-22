@@ -70,13 +70,7 @@ final class SpellSelectionEligibility
         }
 
         $collection = data_get($slot, 'selection_collection');
-        if ($collection === 'wizard_spellbook' && ! DB::table('wizard_spellbook_entries')
-            ->where('character_id', data_get($slot, 'character_id'))
-            ->where('spell_version_id', $spellVersionId)
-            ->exists()) {
-            return $this->invalid("Selected spell is not in the character's wizard spellbook.");
-        }
-        if ($collection !== null && $collection !== 'wizard_spellbook') {
+        if ($collection !== null) {
             throw new InvalidArgumentException("Unsupported selection collection '{$collection}'.");
         }
 

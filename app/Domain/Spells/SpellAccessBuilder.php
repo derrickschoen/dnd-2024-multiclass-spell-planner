@@ -4,8 +4,10 @@ declare(strict_types=1);
 
 namespace App\Domain\Spells;
 
+use App\Domain\Characters\SourceType;
 use App\Domain\Grants\GrantRule;
 use App\Domain\Grants\GrantRuleSlotGenerator;
+use App\Domain\Grants\SlotBucket;
 use App\Domain\Rules\Ability;
 use App\Domain\Rules\AbilityScores;
 use App\Domain\Rules\CastingMode;
@@ -120,15 +122,17 @@ final readonly class SpellAccessBuilder
     {
         $preparedVersionIds = DB::table('spell_selection_slots as slot')
             ->join('character_source_instances as source', 'source.id', '=', 'slot.source_instance_id')
+            ->join('class_definitions as class', 'class.id', '=', 'source.source_definition_id')
             ->where('slot.character_id', data_get($character, 'id'))
+            ->where('source.source_type', SourceType::CharacterClass->value)
+            ->where('class.name', 'Wizard')
             ->where(function ($query): void {
                 $query->where('slot.state', 'kept_override')
                     ->orWhere(function ($ordinary): void {
                         $ordinary->where('slot.state', 'active')->where('source.state', 'active');
                     });
             })
-            ->where('slot.bucket', 'prepared')
-            ->where('slot.selection_collection', 'wizard_spellbook')
+            ->where('slot.bucket', SlotBucket::Prepared->value)
             ->whereNotNull('slot.current_spell_version_id')
             ->select('slot.*')
             ->get()

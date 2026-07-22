@@ -47,6 +47,8 @@ it('hydrates exactly one spell-slot assignment state', function (): void {
 it('exposes the problem vocabulary as backed enums', function (): void {
     expect(Ability::Wisdom->value)->toBe('wisdom')
         ->and(GrantRuleKind::Capability->mintsSlots())->toBeFalse()
+        ->and(GrantRuleKind::SpellbookAcquisition->mintsSlots())->toBeFalse()
+        ->and(GrantRuleKind::SpellbookAcquisition->requiresBucket())->toBeTrue()
         ->and(GrantRuleKind::ChoiceFromList->mintsSlots())->toBeTrue()
         ->and(SlotBucket::Spellbook->value)->toBe('spellbook')
         ->and(SlotState::KeptOverride->isUsable())->toBeTrue();

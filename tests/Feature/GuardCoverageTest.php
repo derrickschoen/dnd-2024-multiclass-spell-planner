@@ -186,7 +186,7 @@ it('G1 refuses a new inactive spellbook acquisition but retains an existing entr
         'acquisitions_config' => 'book',
     ]]);
     $sourceId = guardSource($characterId, 'feat', $featId, [
-        'book' => [['spell_version_id' => $spellId, 'acquisition' => 'starting']],
+        'book' => [['spell_version_id' => $spellId]],
     ]);
     $generator = app(GrantRuleSlotGenerator::class);
 
@@ -250,8 +250,6 @@ it('G1 excludes an inactive unprepared ritual spellbook entry from capability ac
     DB::table('wizard_spellbook_entries')->insert([
         'character_id' => $characterId,
         'spell_version_id' => $spellId,
-        'acquisition' => 'starting',
-        'source_instance_id' => $sourceId,
         'created_at' => now(),
         'updated_at' => now(),
     ]);
@@ -284,8 +282,6 @@ it('G3 catalog removal tombstones a selected version, preserves and invalidates 
     DB::table('wizard_spellbook_entries')->insert([
         'character_id' => $characterId,
         'spell_version_id' => $spellId,
-        'acquisition' => 'copied',
-        'source_instance_id' => $sourceId,
         'created_at' => now(),
         'updated_at' => now(),
     ]);
@@ -579,10 +575,8 @@ it('G2 eligible spell lookup rejects a slot owned by another character before qu
         ->assertNotFound();
 });
 
-it('G2 wizard preparation membership is scoped to the slot character', function (): void {
+it('G2 rejects the removed spellbook selection constraint in grant rules', function (): void {
     $characterId = guardCharacter('Preparing Wizard');
-    $otherCharacterId = guardCharacter('Other Wizard');
-    $spellId = guardSpell('2024:other-wizard-book', 'Other Wizard Book Spell', 1, ['Wizard']);
     $featId = guardFeat('2024:feat:prepared-ownership', 'Prepared Ownership', [[
         'kind' => 'choice_from_list',
         'rule_key' => 'prepared-ownership',
@@ -594,20 +588,12 @@ it('G2 wizard preparation membership is scoped to the slot character', function 
         'selection_collection' => 'wizard_spellbook',
     ]]);
     $sourceId = guardSource($characterId, 'feat', $featId);
-    $otherSourceId = guardSource($otherCharacterId, 'feat', $featId);
-    app(GrantRuleSlotGenerator::class)->generateForSource($sourceId);
-    DB::table('wizard_spellbook_entries')->insert([
-        'character_id' => $otherCharacterId,
-        'spell_version_id' => $spellId,
-        'acquisition' => 'starting',
-        'source_instance_id' => $otherSourceId,
-        'created_at' => now(),
-        'updated_at' => now(),
-    ]);
-    $slotId = (int) DB::table('spell_selection_slots')->where('character_id', $characterId)->value('id');
 
-    expect(fn () => app(SpellSelectionService::class)->select($slotId, $spellId))
-        ->toThrow(InvalidArgumentException::class, "Selected spell is not in the character's wizard spellbook.");
+    expect(fn () => app(GrantRuleSlotGenerator::class)->generateForSource($sourceId))
+        ->toThrow(
+            InvalidArgumentException::class,
+            "Grant rule 'prepared-ownership' may not constrain a selection collection.",
+        );
 });
 
 it('G3 slot inverse restore revalidates against rules changed after the inverse was issued', function (): void {

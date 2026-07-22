@@ -1364,7 +1364,7 @@ it('adds a class source through the command with its level, DSL slots, and spell
             ->where('character_id', $characterId)->where('display_name', 'Wizard 1')->exists())->toBeFalse();
 
     $acquisitions = [[
-        'spell_version_key' => '2024:shield', 'acquisition' => 'starting',
+        'spell_version_key' => '2024:shield',
     ]];
     mutateCharacter($this, $characterId, 1, [
         'type' => 'add_source', 'source_type' => 'class',

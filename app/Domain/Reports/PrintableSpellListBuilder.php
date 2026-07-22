@@ -4,6 +4,9 @@ declare(strict_types=1);
 
 namespace App\Domain\Reports;
 
+use App\Domain\Characters\SourceType;
+use App\Domain\Grants\SlotBucket;
+use App\Domain\Rules\CastingMode;
 use App\Domain\Spells\SpellAccessBuilder;
 use Illuminate\Support\Facades\DB;
 
@@ -118,7 +121,7 @@ final readonly class PrintableSpellListBuilder
     {
         $sections = [];
         $classes = $this->reportList($report, 'classes');
-        foreach (['Cleric', 'Druid'] as $className) {
+        foreach (['Cleric', 'Druid', 'Wizard'] as $className) {
             $class = collect($classes)->firstWhere('name', $className);
             if (! is_array($class) || (int) data_get($class, 'max_preparable_level') < 1) {
                 continue;
@@ -126,7 +129,7 @@ final readonly class PrintableSpellListBuilder
             $source = DB::table('character_source_instances as source')
                 ->join('class_definitions as class', 'class.id', '=', 'source.source_definition_id')
                 ->where('source.character_id', $characterId)
-                ->where('source.source_type', 'class')
+                ->where('source.source_type', SourceType::CharacterClass->value)
                 ->where('source.state', 'active')
                 ->where('class.name', $className)
                 ->first(['source.id', 'source.display_name']);
@@ -136,7 +139,7 @@ final readonly class PrintableSpellListBuilder
 
             $preparedIdentityIds = collect($routes)
                 ->where('source_instance_id', (int) data_get($source, 'id'))
-                ->where('bucket', 'prepared')
+                ->where('bucket', SlotBucket::Prepared->value)
                 ->pluck('spell_identity_id')
                 ->map(static fn (mixed $id): int => (int) $id)
                 ->unique()
@@ -166,7 +169,7 @@ final readonly class PrintableSpellListBuilder
                     return [
                         'spell_version_id' => (int) data_get($version, 'id'),
                         'spell_identity_id' => (int) data_get($version, 'spell_identity_id'),
-                        'casting_mode' => 'available_on_long_rest',
+                        'casting_mode' => CastingMode::AvailableOnLongRest->value,
                         'spellcasting_ability' => $ability,
                         'attack_bonus' => $modifier === null ? null : $proficiency + $modifier,
                         'save_dc' => $modifier === null ? null : 8 + $proficiency + $modifier,
