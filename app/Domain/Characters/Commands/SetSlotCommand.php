@@ -50,7 +50,7 @@ final class SetSlotCommand implements CharacterCommand
             'select' => $this->selectionUpdates($slot),
             'clear' => $this->clearUpdates($slot),
             'keep_override' => $this->overrideUpdates($slot),
-            'restore' => $this->restoreUpdates(),
+            'restore' => $this->restoreUpdates($slot),
             default => throw new InvalidArgumentException('Unknown slot mutation mode.'),
         };
         DB::table('spell_selection_slots')->where('id', $slotId)->update(array_merge(
@@ -106,7 +106,7 @@ final class SetSlotCommand implements CharacterCommand
     }
 
     /** @return array<string, mixed> */
-    private function restoreUpdates(): array
+    private function restoreUpdates(object $slot): array
     {
         $state = data_get($this->payload, 'state');
         if (! is_array($state)) {
@@ -120,10 +120,37 @@ final class SetSlotCommand implements CharacterCommand
             throw new InvalidArgumentException("Slot restore references inactive spell version {$spellVersionId}.");
         }
 
-        return array_intersect_key($state, array_flip([
+        $updates = array_intersect_key($state, array_flip([
             'current_spell_version_id', 'selection_eligibility', 'selection_invalid_reason',
             'state', 'override_note',
         ]));
+        if (in_array(data_get($updates, 'state'), ['active', 'kept_override'], true)) {
+            if (data_get($slot, 'state') === 'orphaned') {
+                $updates['state'] = 'orphaned';
+                $updates['selection_eligibility'] = $spellVersionId === null ? 'unselected' : 'invalid';
+                $updates['selection_invalid_reason'] = $spellVersionId === null
+                    ? null
+                    : $this->orphanedSelectionReason($slot);
+
+                return $updates;
+            }
+            $restoredSlot = clone $slot;
+            $restoredSlot->current_spell_version_id = $spellVersionId;
+            $result = $this->eligibility->evaluate($restoredSlot);
+            $updates['selection_eligibility'] = data_get($result, 'status');
+            $updates['selection_invalid_reason'] = data_get($result, 'reason');
+        }
+
+        return $updates;
+    }
+
+    private function orphanedSelectionReason(object $slot): string
+    {
+        return data_get($slot, 'selection_invalid_reason')
+            ?? match (data_get($slot, 'orphan_reason_code')) {
+                'rule_no_longer_active' => 'Selection preserved because its grant rule is no longer active.',
+                default => 'Selection preserved because its source is no longer active.',
+            };
     }
 
     public function inverse(): array

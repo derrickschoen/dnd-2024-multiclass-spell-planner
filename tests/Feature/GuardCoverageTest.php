@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 use App\Domain\Catalog\CatalogImporter;
 use App\Domain\Characters\CharacterCommandExecutor;
+use App\Domain\Characters\Commands\CharacterCommandIntegrity;
 use App\Domain\Grants\GrantRuleSlotGenerator;
 use App\Domain\Reports\BuildReportBuilder;
 use App\Domain\Spells\SpellAccessBuilder;
@@ -11,6 +12,7 @@ use App\Domain\Spells\SpellSelectionService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
+
 uses(RefreshDatabase::class);
 
 function guardCharacter(string $name = 'Guard Character', bool $allowLegacy = false): int
@@ -577,6 +579,115 @@ it('G2 eligible spell lookup rejects a slot owned by another character before qu
         ->assertNotFound();
 });
 
+it('G2 wizard preparation membership is scoped to the slot character', function (): void {
+    $characterId = guardCharacter('Preparing Wizard');
+    $otherCharacterId = guardCharacter('Other Wizard');
+    $spellId = guardSpell('2024:other-wizard-book', 'Other Wizard Book Spell', 1, ['Wizard']);
+    $featId = guardFeat('2024:feat:prepared-ownership', 'Prepared Ownership', [[
+        'kind' => 'choice_from_list',
+        'rule_key' => 'prepared-ownership',
+        'count' => 1,
+        'bucket' => 'prepared',
+        'list' => 'Wizard',
+        'level_min' => 1,
+        'level_max' => 1,
+        'selection_collection' => 'wizard_spellbook',
+    ]]);
+    $sourceId = guardSource($characterId, 'feat', $featId);
+    $otherSourceId = guardSource($otherCharacterId, 'feat', $featId);
+    app(GrantRuleSlotGenerator::class)->generateForSource($sourceId);
+    DB::table('wizard_spellbook_entries')->insert([
+        'character_id' => $otherCharacterId,
+        'spell_version_id' => $spellId,
+        'acquisition' => 'starting',
+        'source_instance_id' => $otherSourceId,
+        'created_at' => now(),
+        'updated_at' => now(),
+    ]);
+    $slotId = (int) DB::table('spell_selection_slots')->where('character_id', $characterId)->value('id');
+
+    expect(fn () => app(SpellSelectionService::class)->select($slotId, $spellId))
+        ->toThrow(InvalidArgumentException::class, "Selected spell is not in the character's wizard spellbook.");
+});
+
+it('G3 slot inverse restore revalidates against rules changed after the inverse was issued', function (): void {
+    $characterId = guardCharacter(allowLegacy: true);
+    $spellId = guardSpell('2014:stale-inverse', 'Stale Inverse', 0, ['Guard']);
+    $featId = guardFeat('2024:feat:stale-inverse', 'Stale Inverse Choice', [[
+        'kind' => 'choice_from_list',
+        'rule_key' => 'stale-inverse',
+        'count' => 1,
+        'bucket' => 'cantrip_known',
+        'list' => 'Guard',
+        'level_min' => 0,
+        'level_max' => 0,
+    ]]);
+    $sourceId = guardSource($characterId, 'feat', $featId);
+    app(GrantRuleSlotGenerator::class)->generateForSource($sourceId);
+    $slotId = (int) DB::table('spell_selection_slots')->value('id');
+    app(SpellSelectionService::class)->select($slotId, $spellId);
+
+    $cleared = guardExecute($characterId, 0, [
+        'type' => 'set_slot',
+        'slot_id' => $slotId,
+        'mode' => 'clear',
+    ]);
+    guardExecute($characterId, 1, [
+        'type' => 'update_character_rules',
+        'allow_legacy' => false,
+    ]);
+    guardExecute($characterId, 2, data_get($cleared, 'inverse'));
+
+    $restored = DB::table('spell_selection_slots')->where('id', $slotId)->sole();
+    expect((int) data_get($restored, 'current_spell_version_id'))->toBe($spellId)
+        ->and(data_get($restored, 'selection_eligibility'))->toBe('invalid')
+        ->and(data_get($restored, 'selection_invalid_reason'))
+        ->toBe('Enable legacy rules before selecting a 2014 spell version.')
+        ->and(app(SpellAccessBuilder::class)->buildForCharacter($characterId))->toBe([]);
+});
+
+it('G3 slot inverse restore cannot resurrect a kept override after its source is removed', function (): void {
+    $characterId = guardCharacter();
+    $spellId = guardSpell('2024:removed-override-inverse', 'Removed Override Inverse', 0, ['Guard']);
+    $featId = guardFeat('2024:feat:removed-override-inverse', 'Removed Override Inverse Feat', [[
+        'kind' => 'choice_from_list',
+        'rule_key' => 'removed-override-inverse',
+        'count' => 1,
+        'bucket' => 'cantrip_known',
+        'list' => 'Guard',
+        'level_min' => 0,
+        'level_max' => 0,
+    ]]);
+    $sourceId = guardSource($characterId, 'feat', $featId);
+    $generator = app(GrantRuleSlotGenerator::class);
+    $generator->generateForSource($sourceId);
+    $slotId = (int) DB::table('spell_selection_slots')->value('id');
+    app(SpellSelectionService::class)->select($slotId, $spellId);
+    guardExecute($characterId, 0, [
+        'type' => 'set_slot',
+        'slot_id' => $slotId,
+        'mode' => 'keep_override',
+        'note' => 'Intentional before source removal.',
+    ]);
+    $cleared = guardExecute($characterId, 1, [
+        'type' => 'set_slot',
+        'slot_id' => $slotId,
+        'mode' => 'clear',
+    ]);
+
+    DB::table('character_source_instances')->where('id', $sourceId)->update(['state' => 'tombstoned']);
+    $generator->generateForSource($sourceId);
+    guardExecute($characterId, 2, data_get($cleared, 'inverse'));
+
+    $restored = DB::table('spell_selection_slots')->where('id', $slotId)->sole();
+    expect((int) data_get($restored, 'current_spell_version_id'))->toBe($spellId)
+        ->and(data_get($restored, 'state'))->toBe('orphaned')
+        ->and(data_get($restored, 'selection_eligibility'))->toBe('invalid')
+        ->and(data_get($restored, 'selection_invalid_reason'))
+        ->toBe('Selection preserved because its source is no longer active.')
+        ->and(app(SpellAccessBuilder::class)->buildForCharacter($characterId))->toBe([]);
+});
+
 it('G2 operation UUID replay cannot cross the character boundary', function (): void {
     $ownerId = guardCharacter('Operation Owner');
     $otherId = guardCharacter('Other Operation Character');
@@ -596,6 +707,31 @@ it('G2 operation UUID replay cannot cross the character boundary', function (): 
 
     expect((array) DB::table('characters')->where('id', $otherId)->sole())->toBe($before)
         ->and(DB::table('character_operations')->where('operation_uuid', $operationUuid)->count())->toBe(1);
+});
+
+it('G2 warning delete lookup cannot consume another character’s matching fingerprint', function (): void {
+    $characterId = guardCharacter('Acknowledgement Deleter');
+    $otherCharacterId = guardCharacter('Acknowledgement Owner');
+    $fingerprint = 'conflicting_versions:shared-fingerprint';
+    DB::table('warning_acknowledgements')->insert([
+        'character_id' => $otherCharacterId,
+        'warning_fingerprint' => $fingerprint,
+        'note' => 'Other character acknowledgement.',
+        'created_at' => now(),
+        'updated_at' => now(),
+    ]);
+    $command = app(CharacterCommandIntegrity::class)->attach($characterId, [
+        'type' => 'acknowledge_warning',
+        'mode' => 'delete',
+        'warning_fingerprint' => $fingerprint,
+    ]);
+
+    expect(fn () => guardExecute($characterId, 0, $command))
+        ->toThrow(InvalidArgumentException::class, 'Warning acknowledgement does not belong to this character.');
+    expect(DB::table('warning_acknowledgements')
+        ->where('character_id', $otherCharacterId)
+        ->where('warning_fingerprint', $fingerprint)
+        ->exists())->toBeTrue();
 });
 
 it('G1 direct selection service rejects an inactive candidate', function (): void {
