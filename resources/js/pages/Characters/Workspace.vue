@@ -144,6 +144,16 @@ function updateSourceList(sourceId: number, event: Event): void {
     });
 }
 
+function updateClassOrder(sourceId: number, event: Event): void {
+    const chosenOption = (event.target as HTMLSelectElement).value;
+    if (!chosenOption) return;
+    void store.execute({
+        type: 'update_source_config',
+        source_instance_id: sourceId,
+        chosen_option: chosenOption,
+    });
+}
+
 watch(newSourceType, () => { newSourceDefinitionId.value = null; });
 
 async function addSource(): Promise<void> {
@@ -294,6 +304,13 @@ onBeforeUnmount(() => window.removeEventListener('keydown', keyboardShortcuts));
                     </form>
                     <p class="mt-2 text-xs text-stone-500">Adding a species or background also materialises any nested granted feat and spell choices from its catalog rules.</p>
                     <div class="mt-3 space-y-2">
+                        <label v-for="source in current.order_sources" :key="source.id" class="grid items-center gap-2 rounded-md border border-stone-200 p-3 text-sm sm:grid-cols-[1fr_12rem] dark:border-stone-800">
+                            <span>
+                                <strong>{{ source.order_name }} · {{ source.display_name }}</strong>
+                                <span class="mt-1 block text-xs text-stone-500">{{ source.bonus_option }} adds one {{ source.class_name }} cantrip slot; the other option adds no cantrip slot. Switching preserves any existing selection as an orphan.</span>
+                            </span>
+                            <span class="text-xs">{{ source.order_name }} option<select class="field mt-1 w-full" :aria-label="`${source.order_name} option for ${source.display_name}`" :value="source.chosen_option ?? ''" :disabled="store.saving" @change="updateClassOrder(source.id, $event)"><option value="" disabled>Choose {{ source.order_name }}…</option><option v-for="option in source.options" :key="option" :value="option">{{ option }}</option></select></span>
+                        </label>
                         <label v-for="source in current.configurable_sources" :key="source.id" class="grid items-center gap-2 rounded-md border border-stone-200 p-3 text-sm sm:grid-cols-[1fr_12rem] dark:border-stone-800">
                             <span><strong>{{ source.display_name }}</strong><span class="mt-1 block text-xs text-stone-500">Chosen list is configuration; changing it preserves this source's slot identities.</span></span>
                             <span class="text-xs">Chosen spell list<select class="field mt-1 w-full" :aria-label="`Chosen spell list for source ${source.id}`" :value="source.chosen_list" :disabled="store.saving" @change="updateSourceList(source.id, $event)"><option v-for="list in current.spell_lists" :key="list" :value="list">{{ list }}</option></select></span>

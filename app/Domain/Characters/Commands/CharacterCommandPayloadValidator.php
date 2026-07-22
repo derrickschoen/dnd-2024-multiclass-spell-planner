@@ -85,9 +85,18 @@ final class CharacterCommandPayloadValidator
     /** @param array<string, mixed> $payload */
     private function updateSourceConfig(array $payload): array
     {
-        $this->rejectUnknown($payload, ['type', 'source_instance_id', 'chosen_list', 'reason']);
+        $this->rejectUnknown($payload, [
+            'type', 'source_instance_id', 'chosen_list', 'chosen_option', 'reason',
+        ]);
         $this->positiveInteger($payload, 'source_instance_id');
-        $this->nonEmptyString($payload, 'chosen_list', 80);
+        $hasChosenList = array_key_exists('chosen_list', $payload);
+        $hasChosenOption = array_key_exists('chosen_option', $payload);
+        if ($hasChosenList === $hasChosenOption) {
+            throw new InvalidArgumentException(
+                'Source configuration must provide exactly one of chosen_list or chosen_option.',
+            );
+        }
+        $this->nonEmptyString($payload, $hasChosenList ? 'chosen_list' : 'chosen_option', 80);
 
         return $payload;
     }
