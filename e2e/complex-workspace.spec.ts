@@ -908,14 +908,14 @@ test('S17: removing a feat in the browser orphans selections and undo restores i
 test('T10: Mutt matches the authoritative sheet attribution with zero duplicates', async ({ page }) => {
     const muttId = 2;
     await page.goto(`/characters/${muttId}`);
-    await expect(page.getByRole('heading', { name: 'Mutt', level: 1 })).toBeVisible();
+    await expect(page.getByRole('heading', { name: 'Mutt (SRD)', level: 1 })).toBeVisible();
     await expect(page.getByText(/revision 42$/)).toBeVisible();
     await expect(page.getByRole('checkbox', { name: /Allow legacy 2014 spell versions/ })).toBeChecked();
 
     const mutt = character(muttId);
     expect(mutt).toEqual(expect.objectContaining({
         id: muttId,
-        name: 'Mutt',
+        name: 'Mutt (SRD)',
         revision: 42,
         allow_legacy: 1,
         intelligence: 13,
@@ -1095,7 +1095,7 @@ test('T10: Mutt matches the authoritative sheet attribution with zero duplicates
 test('E2E-17: Mutt prints reference and full variants with exact long-rest swap lists and relevant casting math', async ({ page }) => {
     const muttId = 2;
     await page.goto(`/characters/${muttId}/print`);
-    await expect(page.getByRole('heading', { name: 'Mutt', level: 1 })).toBeVisible();
+    await expect(page.getByRole('heading', { name: 'Mutt (SRD)', level: 1 })).toBeVisible();
     await expect(page.getByText('Spell reference sheet', { exact: true })).toBeVisible();
 
     const variant = page.getByLabel('Print variant');

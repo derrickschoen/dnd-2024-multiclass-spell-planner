@@ -86,7 +86,7 @@ it('builds the complete character list card contract in deterministic order', fu
         ],
         [
             'id' => $muttId,
-            'name' => 'Mutt',
+            'name' => 'Mutt (SRD)',
             'level' => 6,
             'classes' => ['Bard 1', 'Cleric 1', 'Druid 1', 'Paladin 1', 'Sorcerer 1', 'Wizard 1'],
             'warning_count' => 0,

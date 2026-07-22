@@ -88,7 +88,7 @@ it('seeds the requested six-class character and generates both Magic Initiates t
 
     $mutt = DB::table('characters')->where('notes', 'like', "seed:mutt\n%")->sole();
     $muttId = (int) data_get($mutt, 'id');
-    expect(data_get($mutt, 'name'))->toBe('Mutt')
+    expect(data_get($mutt, 'name'))->toBe('Mutt (SRD)')
         ->and((bool) data_get($mutt, 'allow_legacy'))->toBeTrue()
         ->and(data_get($mutt, 'revision'))->toBe(42)
         ->and(data_get($mutt, 'notes'))->toContain(

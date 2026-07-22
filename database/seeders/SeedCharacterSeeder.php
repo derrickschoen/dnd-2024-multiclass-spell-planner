@@ -163,6 +163,13 @@ final class SeedCharacterSeeder extends Seeder
 
     private function seedMutt(): void
     {
+        // A CI-safe variant of the user's real "Mutt" sheet. Six spells outside
+        // SRD 5.2.1 were substituted with same-class, same-level SRD equivalents
+        // (Thunderclap->Starry Wisp, Mold Earth->Elementalism, Shape Water->Poison
+        // Spray, Absorb Elements->Faerie Fire, Thunderous Smite->Searing Smite,
+        // Wrathful Smite->Divine Favor) so it seeds from the redistributable
+        // catalog alone. It is NOT a faithful copy of that sheet; the name says so.
+        //
         // The PDF has no ability-score block. These three spellcasting scores are
         // INFERRED from its +6/+4 spell attacks (PB 3 plus modifiers +3/+1).
         $inferredSpellcastingAbilities = [
@@ -171,7 +178,7 @@ final class SeedCharacterSeeder extends Seeder
             'charisma' => 17,
         ];
         $characterId = DB::table('characters')->insertGetId([
-            'name' => 'Mutt',
+            'name' => 'Mutt (SRD)',
             'strength' => 10,
             'dexterity' => 10,
             'constitution' => 10,
