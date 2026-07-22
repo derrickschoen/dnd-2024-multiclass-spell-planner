@@ -112,6 +112,13 @@ final class SetSlotCommand implements CharacterCommand
         if (! is_array($state)) {
             throw new InvalidArgumentException('Slot restore state is missing.');
         }
+        $spellVersionId = data_get($state, 'current_spell_version_id');
+        if ($spellVersionId !== null && ! DB::table('spell_versions')
+            ->where('id', $spellVersionId)
+            ->where('is_active', true)
+            ->exists()) {
+            throw new InvalidArgumentException("Slot restore references inactive spell version {$spellVersionId}.");
+        }
 
         return array_intersect_key($state, array_flip([
             'current_spell_version_id', 'selection_eligibility', 'selection_invalid_reason',

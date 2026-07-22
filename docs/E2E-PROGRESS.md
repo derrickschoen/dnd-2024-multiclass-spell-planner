@@ -736,3 +736,154 @@ The post-implementation review was retried with plan-mode permissions and a
 without changing the worktree. Self-review verified every internal restore issuer,
 signature path and rollback/undo compatibility. No verification-contract
 deviation occurred. No commit or push was made.
+
+### Iteration 7 — UNIT E2E-7 independent review of 08b1685
+
+The independent review found and fixed one significant sibling of the snapshot
+tombstone issue:
+
+- **High — a signed slot inverse could restore a tombstoned spell version.**
+  `SetSlotCommand::restoreUpdates()` trusted its HMAC-signed historical state and
+  wrote `current_spell_version_id` without checking whether the catalog version
+  remained active. This is reachable without forgery: clear a selected spell,
+  allow a later catalog import to tombstone the now-unreferenced version, then
+  undo using the legitimate inverse issued before the import. The focused test
+  failed before the fix with `Expected response status code [422] but received
+  200`. The command now rejects the inactive version before its first write, and
+  the test compares all 39 application tables to prove rollback-free rejection.
+
+No other significant payload or restore gap remained. The validator runs before
+command construction, requires exact JSON scalar types, makes class removal
+explicit with `level: null`, and matches every payload shape emitted by the Vue
+workspace. Mode-specific irrelevant fields remain harmless because the explicit
+mode determines semantics; all fields that can affect a mode are required and
+type-checked. Existing feature tests and all 15 browser scenarios cover the legal
+UI flows, including class removal, source-list changes, acknowledgement, save-point
+restore, and slot select/clear/override.
+
+HMAC recommendation: **KEEP**. The implementation recursively sorts object keys
+while preserving list order, uses HMAC-SHA-256 (so length extension does not
+apply), binds the target character id, and compares with `hash_equals()`. A
+missing APP_KEY throws explicitly and mutation transactions fail closed. Laravel
+already requires and manages APP_KEY, so this does not introduce a second secret;
+save-point commands are signed on demand and browser undo stacks are session-only.
+The layer therefore provides useful provenance for raw lifecycle/snapshot restore
+commands at modest cost, even though it is not authentication. Previously issued
+signed inverses are replayable with a fresh operation UUID and current revision;
+that is a documented capability/replay limitation, not a freshness guarantee.
+It cannot defend against an owner who can edit both SQLite and APP_KEY, and is not
+claimed to do so.
+
+All internal inverse issuers and consumers were traced. Unsigned or incorrectly
+signed slot restore, snapshot restore, and acknowledgement deletion fail closed;
+character binding prevents cross-character use. Ordinary ability/rules inverses
+remain valid public commands, while slot, class, source, acknowledgement, and
+snapshot undo paths return payloads accepted by the stricter validator. Existing
+round-trip feature tests plus S3 and S7 remained green after the sibling fix.
+
+Falsifiability review: each committed A1-A5 test has a load-bearing response,
+exact-message, revision/audit, or complete-database assertion that changes when
+its intended guard is removed. None can remain green merely because a later
+guard returns the same generic status. The new slot-inverse test was sensitivity-
+checked directly: it received 200 before the production check and 422 afterward.
+
+What changed: `SetSlotCommand` gained the pre-write active-version check, and
+`CharacterWriteSurfaceAbuseTest` gained the falsifiable regression. No commit or
+push was made.
+
+Verification output observed verbatim:
+
+```text
+Dropping all tables ............................................ 4.22ms DONE
+
+ INFO  Preparing database.
+
+Creating migration table ....................................... 2.99ms DONE
+
+ INFO  Running migrations.
+
+0001_01_01_000000_create_users_table ........................... 1.03ms DONE
+0001_01_01_000001_create_cache_table ........................... 0.39ms DONE
+0001_01_01_000002_create_jobs_table ............................ 0.73ms DONE
+2026_07_21_000100_create_catalog_tables ........................ 7.26ms DONE
+2026_07_21_000200_create_character_tables ...................... 3.91ms DONE
+2026_07_21_000300_add_spell_selection_eligibility .............. 2.07ms DONE
+2026_07_21_000400_create_subclass_progressions ................. 0.43ms DONE
+2026_07_21_000500_create_character_operations .................. 0.35ms DONE
+
+ INFO  Seeding database.
+
+Database\Seeders\ClassProgressionSeeder ............................ RUNNING
+Database\Seeders\ClassProgressionSeeder ......................... 36 ms DONE
+Database\Seeders\ContentDefinitionSeeder ........................... RUNNING
+Database\Seeders\ContentDefinitionSeeder ......................... 1 ms DONE
+Database\Seeders\SeedCharacterSeeder ............................... RUNNING
+Database\Seeders\SeedCharacterSeeder ............................ 22 ms DONE
+
+Tests:    177 passed (1936 assertions)
+Duration: 24.05s
+
+> typecheck
+> vue-tsc --noEmit
+
+> build
+> vite build
+vite v8.1.5 building client environment for production...
+[plugin laravel:fonts] Optimized font fallbacks require the optional "fontaine" package. Install it, or set "optimizedFallbacks: false" on your fonts to disable the feature.
+✓ 567 modules transformed.
+✓ built in 525ms
+
+> test:e2e
+> playwright test
+
+Running 15 tests using 1 worker
+  ✓ S1
+  ✓ S2
+  ✓ S3
+  ✓ S4
+  ✓ S5
+  ✓ S6
+  ✓ S7
+  ✓ S8
+  ✓ S9
+  ✓ S10
+  ✓ S11
+  ✓ S12
+  ✓ S13
+  ✓ S14
+  ✓ S15
+  15 passed (46.1s)
+```
+
+Final direct golden-value output after another fresh seed:
+
+```json
+{
+    "caster_level": 6,
+    "slots": [4, 3, 3],
+    "proficiency_bonus": 3,
+    "class_max_preparable_levels": {
+        "Bard": 1,
+        "Cleric": 1,
+        "Druid": 1,
+        "Paladin": 1,
+        "Sorcerer": 1,
+        "Wizard": 1
+    },
+    "mage_hand": "wasteful",
+    "entangle": "none",
+    "detect_magic": {
+        "origin": "capability",
+        "casting_mode": "ritual_only",
+        "is_selection": false,
+        "counts_against_limit": false
+    }
+}
+```
+
+Review deviation: the required independent Claude review was run against both
+08b1685 and the uncommitted fix with a 240-second bound. It produced no review
+output and exited 124 with `Execution error`; no files were changed. This silence
+was not treated as approval. The finding above was independently reproduced and
+the remaining paths were reviewed locally. No verification-contract deviation
+occurred.

@@ -441,3 +441,31 @@ it('A5 rejects a valid save-point snapshot after one referenced spell version is
         );
     apiAbuseAssertRejectedWithoutWrites($response, $before);
 });
+
+it('A5 rejects a valid slot inverse after its restored spell version is tombstoned', function (): void {
+    $characterId = apiAbuseCharacterId();
+    $slot = DB::table('spell_selection_slots')
+        ->where('character_id', $characterId)
+        ->whereNotNull('current_spell_version_id')
+        ->first();
+    expect($slot)->not->toBeNull();
+
+    $spellVersionId = (int) data_get($slot, 'current_spell_version_id');
+    $changed = apiAbuseMutation($this, $characterId, [
+        'type' => 'set_slot',
+        'slot_id' => (int) data_get($slot, 'id'),
+        'mode' => 'clear',
+    ])->assertOk()->assertJsonPath('revision', 1);
+    $inverse = $changed->json('inverse');
+    expect(data_get($inverse, 'state.current_spell_version_id'))->toBe($spellVersionId);
+
+    DB::table('spell_versions')->where('id', $spellVersionId)->update(['is_active' => false]);
+    $before = apiAbuseDatabaseState();
+    $response = apiAbuseMutation($this, $characterId, $inverse, 1)
+        ->assertUnprocessable()
+        ->assertJsonPath(
+            'message',
+            "Slot restore references inactive spell version {$spellVersionId}.",
+        );
+    apiAbuseAssertRejectedWithoutWrites($response, $before);
+});
