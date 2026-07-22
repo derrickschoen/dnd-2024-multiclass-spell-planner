@@ -1842,44 +1842,56 @@ verified against migrations rather than a live database. It stated that rather
 than presenting them as checked. Its own independent critique attempts failed
 twice and it explicitly did not treat silence as approval.
 
-## Fan-out procedure — give each worktree its own ddev project
+## Fan-out procedure — a ddev project per worktree (VERIFIED end to end)
 
-Worktrees isolate the filesystem but not the runtime. This session's four-way
-fan-out therefore forbade producers from running migrations, seeders and the
-browser suite, which throttled it to roughly one effective writer. One producer
-also reported 6 failing tests that were purely environmental
-(`MissingAppKeyException` from a worktree with no `.env`), costing triage time to
-establish they were not real defects.
+Worktrees isolate the filesystem but not the runtime. Sharing one ddev instance
+throttles a four-way fan-out to roughly one effective writer, because only one
+agent can run migrations or the browser suite.
 
-The fix is a **whole ddev project per worktree**, not merely a separate database.
-It is cheap here: this project omits the db container, so each instance is a
-SINGLE web container. ddev already runs multiple projects side by side.
+A ddev project per worktree fixes that and is cheap: this project omits the db
+container, so each instance is a SINGLE web container, and ddev runs projects
+side by side happily.
+
+**I ran this procedure on a throwaway worktree rather than assuming it, and it
+exposed three gaps in my first draft.**
 
 ```bash
 git worktree add .worktrees/<name> feat/<name>
-cp .env .worktrees/<name>/.env
-ln -sfn "$(pwd)/vendor"       .worktrees/<name>/vendor
-ln -sfn "$(pwd)/node_modules" .worktrees/<name>/node_modules
-
 cd .worktrees/<name>
+cp ../../.env .env
+sed -i 's|^DB_DATABASE=.*|DB_DATABASE=/var/www/html/database/<name>.sqlite|' .env
+
 ddev config --project-name=dnd-wt-<name> --project-type=laravel --docroot=public \
   --php-version=8.4 --omit-containers=db --nodejs-version=24
 ddev start
+
+# GAP 1: symlinking vendor/node_modules to the main checkout DOES NOT WORK here.
+# The symlink targets an absolute HOST path, and each ddev project mounts its own
+# worktree at /var/www/html, so vendor/autoload.php is unreachable and artisan
+# dies immediately. Install real dependencies:
+ddev composer install
+ddev exec npm install
+
+# GAP 2: data/index is gitignored, so a fresh worktree has NO scraped catalog and
+# silently runs SRD-only. Several tests then fail. Copy it (or run npm run scrape):
+cp -r ../../data/index data/
+
+# GAP 3: public/build does not exist in a fresh worktree, so Inertia tests fail on
+# a missing Vite manifest:
+ddev exec npm run build
+
+ddev exec php artisan migrate:fresh --seed --force
+ddev exec vendor/bin/pest
+E2E_BASE_URL=https://dnd-wt-<name>.ddev.site ddev exec npm run test:e2e
 ```
 
-That yields `https://dnd-wt-<name>.ddev.site` with its own SQLite file, so the
-producer can run `migrate:fresh --seed`, the full Pest suite AND the browser suite
-against its own stack.
+Tear down: `ddev delete -Oy dnd-wt-<name>` then
+`git worktree remove .worktrees/<name> --force`.
+
+The symlink shortcut used earlier in this session only worked because those
+worktrees shared the MAIN project's container. It breaks the moment each worktree
+gets its own, which is exactly the kind of assumption worth paying one throwaway
+run to falsify.
 
 `playwright.config.ts` reads `E2E_BASE_URL`, defaulting to the main site, so each
-worktree points its browser suite at its own instance:
-
-```bash
-E2E_BASE_URL=https://dnd-wt-<name>.ddev.site npm run test:e2e
-```
-
-Tear down with `ddev delete -Oy dnd-wt-<name>` before removing the worktree.
-
-Nothing about this needs to stay serial. The earlier claim that browser E2E must
-run serially was wrong — it assumed one shared site rather than one site per
-worktree.
+worktree targets its own instance and browser suites run in parallel too.
