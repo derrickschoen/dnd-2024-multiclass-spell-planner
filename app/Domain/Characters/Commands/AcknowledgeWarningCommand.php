@@ -19,10 +19,14 @@ final class AcknowledgeWarningCommand implements CharacterCommand
         private readonly array $payload,
         private readonly SpellAccessBuilder $access,
         private readonly DuplicateWarningDetector $duplicates,
+        private readonly CharacterCommandIntegrity $integrity,
     ) {}
+
+    private int $characterId;
 
     public function apply(int $characterId): void
     {
+        $this->characterId = $characterId;
         $fingerprint = trim((string) data_get($this->payload, 'warning_fingerprint'));
         if (! str_starts_with($fingerprint, 'conflicting_versions:')) {
             throw new InvalidArgumentException('Unknown warning fingerprint.');
@@ -36,6 +40,9 @@ final class AcknowledgeWarningCommand implements CharacterCommand
                 ->where('character_id', $characterId)
                 ->where('warning_fingerprint', $fingerprint)
                 ->first();
+            if ($existing === null) {
+                throw new InvalidArgumentException('Warning acknowledgement does not belong to this character.');
+            }
             $this->previous = $existing === null ? null : (array) $existing;
             DB::table('warning_acknowledgements')
                 ->where('character_id', $characterId)
@@ -69,11 +76,11 @@ final class AcknowledgeWarningCommand implements CharacterCommand
     public function inverse(): array
     {
         if ($this->previous === null) {
-            return [
+            return $this->integrity->attach($this->characterId, [
                 'type' => 'acknowledge_warning',
                 'mode' => 'delete',
                 'warning_fingerprint' => (string) data_get($this->payload, 'warning_fingerprint'),
-            ];
+            ]);
         }
 
         return [

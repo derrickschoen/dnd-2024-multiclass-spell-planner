@@ -20,10 +20,14 @@ final class UpdateClassCommand implements CharacterCommand
         private readonly array $payload,
         private readonly CharacterState $state,
         private readonly GrantRuleSlotGenerator $generator,
+        private readonly CharacterCommandIntegrity $integrity,
     ) {}
+
+    private int $characterId;
 
     public function apply(int $characterId): void
     {
+        $this->characterId = $characterId;
         $this->before = $this->state->capture($characterId);
         $classId = (int) data_get($this->payload, 'class_definition_id');
         $class = DB::table('class_definitions')->find($classId);
@@ -199,7 +203,10 @@ final class UpdateClassCommand implements CharacterCommand
 
     public function inverse(): array
     {
-        return ['type' => 'restore_snapshot', 'snapshot' => $this->before];
+        return $this->integrity->attach($this->characterId, [
+            'type' => 'restore_snapshot',
+            'snapshot' => $this->before,
+        ]);
     }
 
     public function actionType(): string

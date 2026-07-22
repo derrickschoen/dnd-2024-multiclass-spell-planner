@@ -19,17 +19,26 @@ final readonly class CharacterCommandFactory
         private SpellSelectionEligibility $eligibility,
         private SpellAccessBuilder $access,
         private DuplicateWarningDetector $duplicates,
+        private CharacterCommandPayloadValidator $validator,
+        private CharacterCommandIntegrity $integrity,
     ) {}
 
     /** @param array<string, mixed> $payload */
-    public function make(array $payload): CharacterCommand
+    public function make(int $characterId, array $payload): CharacterCommand
     {
+        $payload = $this->validator->validate($payload);
+        if ((data_get($payload, 'type') === 'set_slot' && data_get($payload, 'mode') === 'restore')
+            || (data_get($payload, 'type') === 'acknowledge_warning' && data_get($payload, 'mode') === 'delete')
+            || data_get($payload, 'type') === 'restore_snapshot') {
+            $this->integrity->assertValid($characterId, $payload);
+        }
+
         return match (data_get($payload, 'type')) {
             'update_ability' => new UpdateAbilityCommand(
-                (string) data_get($payload, 'ability'),
-                (int) data_get($payload, 'score'),
+                data_get($payload, 'ability'),
+                data_get($payload, 'score'),
             ),
-            'set_slot' => new SetSlotCommand($payload, $this->eligibility),
+            'set_slot' => new SetSlotCommand($payload, $this->eligibility, $this->integrity),
             'update_character_rules' => new UpdateCharacterRulesCommand(
                 data_get($payload, 'allow_legacy'),
                 $this->eligibility,
@@ -38,16 +47,19 @@ final readonly class CharacterCommandFactory
                 $payload,
                 $this->state,
                 $this->generator,
+                $this->integrity,
             ),
             'acknowledge_warning' => new AcknowledgeWarningCommand(
                 $payload,
                 $this->access,
                 $this->duplicates,
+                $this->integrity,
             ),
-            'update_class' => new UpdateClassCommand($payload, $this->state, $this->generator),
+            'update_class' => new UpdateClassCommand($payload, $this->state, $this->generator, $this->integrity),
             'restore_snapshot' => new RestoreSnapshotCommand(
-                is_array(data_get($payload, 'snapshot')) ? data_get($payload, 'snapshot') : [],
+                data_get($payload, 'snapshot'),
                 $this->state,
+                $this->integrity,
             ),
             default => throw new InvalidArgumentException('Unknown character command type.'),
         };

@@ -15,17 +15,24 @@ final class RestoreSnapshotCommand implements CharacterCommand
     public function __construct(
         private readonly array $snapshot,
         private readonly CharacterState $state,
+        private readonly CharacterCommandIntegrity $integrity,
     ) {}
+
+    private int $characterId;
 
     public function apply(int $characterId): void
     {
+        $this->characterId = $characterId;
         $this->before = $this->state->capture($characterId);
         $this->state->restore($characterId, $this->snapshot);
     }
 
     public function inverse(): array
     {
-        return ['type' => 'restore_snapshot', 'snapshot' => $this->before];
+        return $this->integrity->attach($this->characterId, [
+            'type' => 'restore_snapshot',
+            'snapshot' => $this->before,
+        ]);
     }
 
     public function actionType(): string

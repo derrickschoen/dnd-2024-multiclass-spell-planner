@@ -22,10 +22,14 @@ final class UpdateSourceConfigCommand implements CharacterCommand
         private readonly array $payload,
         private readonly CharacterState $state,
         private readonly GrantRuleSlotGenerator $generator,
+        private readonly CharacterCommandIntegrity $integrity,
     ) {}
+
+    private int $characterId;
 
     public function apply(int $characterId): void
     {
+        $this->characterId = $characterId;
         $sourceId = (int) data_get($this->payload, 'source_instance_id');
         $source = DB::table('character_source_instances')
             ->where('character_id', $characterId)
@@ -88,7 +92,10 @@ final class UpdateSourceConfigCommand implements CharacterCommand
 
     public function inverse(): array
     {
-        return ['type' => 'restore_snapshot', 'snapshot' => $this->previousState];
+        return $this->integrity->attach($this->characterId, [
+            'type' => 'restore_snapshot',
+            'snapshot' => $this->previousState,
+        ]);
     }
 
     public function actionType(): string

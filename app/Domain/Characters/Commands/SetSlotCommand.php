@@ -17,10 +17,14 @@ final class SetSlotCommand implements CharacterCommand
     public function __construct(
         private readonly array $payload,
         private readonly SpellSelectionEligibility $eligibility,
+        private readonly CharacterCommandIntegrity $integrity,
     ) {}
+
+    private int $characterId;
 
     public function apply(int $characterId): void
     {
+        $this->characterId = $characterId;
         $slotId = (int) data_get($this->payload, 'slot_id');
         $slot = DB::table('spell_selection_slots')
             ->where('character_id', $characterId)
@@ -117,12 +121,12 @@ final class SetSlotCommand implements CharacterCommand
 
     public function inverse(): array
     {
-        return [
+        return $this->integrity->attach($this->characterId, [
             'type' => 'set_slot',
             'slot_id' => (int) data_get($this->payload, 'slot_id'),
             'mode' => 'restore',
             'state' => $this->previous,
-        ];
+        ]);
     }
 
     public function actionType(): string

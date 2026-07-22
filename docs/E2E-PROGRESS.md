@@ -97,6 +97,41 @@ No intermittent failures.
       on the SAME list must be refused; on a different list accepted. Enforced in
       the browser, not just the domain layer.
 
+
+## Backlog tier 3 — API-surface abuse (added after the Magic Initiate bug)
+
+Tier 2's independent review found a rules bug that **fifteen browser scenarios
+could not have caught**: `UpdateSourceConfigCommand` accepted any spellcasting
+class as a Magic Initiate list, so a direct API request could create Magic
+Initiate: Bard. The UI only ever offers the three legal lists, so UI-driven tests
+structurally cannot reach that hole.
+
+Conclusion: the browser suite is necessary but not sufficient. The write surface
+is 7 command types across 4 POST/DELETE routes and needs adversarial coverage of
+its own. These belong in **Pest feature tests** (direct, fast) rather than
+Playwright — a browser adds nothing when the point is to bypass the browser.
+
+- [x] **A1 Payload abuse, every command.** For all 7 command types: wrong types,
+      missing required fields, out-of-range numbers, unknown enum values, null
+      where an id is required, absurd magnitudes. Each must be rejected with a
+      clear error and leave the database untouched. Assert no partial write.
+- [x] **A2 Cross-character isolation.** Can a mutation posted to character 1 touch
+      character 2's slots, sources, save points or acknowledgements? The composite
+      FKs should make it impossible, but nothing proves the command layer checks
+      ownership before relying on them.
+- [x] **A3 Eligibility bypass.** POST `set_slot` with a spell that is NOT on the
+      slot's allowed list, outside its level range, or of the wrong edition while
+      `allow_legacy` is false. Must be refused or recorded invalid — never
+      silently accepted as a valid selection.
+- [x] **A4 Replay and idempotency.** Replay one `operation_uuid` across different
+      command types and against a changed revision. Assert exactly one write, one
+      audit group, and no duplicate rows.
+- [x] **A5 Restore-snapshot abuse.** Restore a save point belonging to a different
+      character; restore a snapshot referencing a tombstoned spell version.
+
+Each needs the same sensitivity treatment: break the guard, observe the test fail,
+restore.
+
 ## Iteration log
 
 ### Iteration 1 — E2E-1 batch 1 complete
@@ -525,3 +560,179 @@ The seven direct golden values remain caster level 6, slots 4/3/3, proficiency
 +3, every class maximum preparable level 1, Mage Hand `wasteful`, Entangle `none`,
 and Detect Magic `origin=capability`, `casting_mode=ritual_only`,
 `is_selection=false`, `counts_against_limit=false`. No commit or push was made.
+
+### Iteration 6 — UNIT E2E-6 API-surface abuse A1-A5
+
+Added `tests/Feature/Api/CharacterWriteSurfaceAbuseTest.php`: 13 Pest feature
+tests (one mutation-envelope test, seven A1 command datasets, A2, A3, A4, and
+two A5 cases) with 506 assertions. Every rejected request captures and compares
+every row in all 39 SQLite application tables before and after the request, not
+only the expected target row. The complete Pest suite increased from 163 to 176
+tests.
+
+Production holes found and fixed, separately:
+
+- **High — scalar coercion and missing-field semantics.** The factory and command
+  implementations converted untrusted strings, nulls and arrays before domain
+  validation; notably, a numeric-string score/id could be accepted, and omitted
+  `update_class.level` meant removal. `CharacterCommandPayloadValidator` now
+  enforces exact JSON scalar types, required keys, bounds, enum values, length
+  limits and command-specific key allowlists before a command is constructed.
+- **High — forgeable destructive inverse commands.** `set_slot:restore`,
+  `restore_snapshot`, and acknowledgement deletion were ordinary client payloads;
+  a caller could forge lifecycle/eligibility state or post another character's
+  snapshot. Server-issued destructive inverses now carry an HMAC over the full
+  canonical command and target character id. Slot, structural, acknowledgement
+  and save-point inverses are all signed, and the factory verifies the signature
+  before apply.
+- **High — snapshot validation occurred after writes and ignored catalog
+  tombstones.** `CharacterState::restore()` updated the character and deleted
+  current rows before validating every snapshot table, relying on transaction
+  rollback, and it accepted references to inactive spell versions. It now
+  preflights schema shape, required character fields, every row's ownership and
+  every fixed/current/spellbook spell reference before its first write, rejecting
+  missing or inactive versions.
+- **Medium — malformed JSON requests did not consistently behave as an API.** A
+  numeric-string `expected_revision` passed Laravel's integer rule, while other
+  envelope validation failures redirected with session errors because JSON
+  rendering was limited to `/api/*`. Revisions now require an actual JSON integer,
+  and requests that expect JSON receive JSON validation errors.
+- **Medium — acknowledgement deletion could record a no-op mutation.** Deleting a
+  nonexistent/cross-character acknowledgement succeeded, incremented revision and
+  created an operation. Delete is now a signed internal inverse and also requires
+  an existing acknowledgement scoped to the target character.
+- **Low — cross-character save-point lookup returned a blank framework 404.** It
+  now returns `{"message":"Save point does not belong to this character."}`
+  with 404 and no write.
+
+Sensitivity checks (all temporary production changes were restored, and the
+focused 13-test file passed again afterwards):
+
+- A1 mutation envelope: removing the exact-JSON-integer guard made
+  `expected_revision: "0"` succeed; expected 422, received 200.
+- A1 `update_ability`: bypassing its validator and restoring the old scalar casts
+  made string score `"20"` succeed; expected 422, received 200.
+- A1 `set_slot`: bypassing payload validation made a numeric-string owned slot id
+  with `mode=clear` succeed; expected 422, received 200.
+- A1 `update_character_rules`: bypassing payload validation admitted a command
+  with the absurd unknown `legacy_limit`; expected 422, received 200.
+- A1 `update_source_config`: bypassing payload validation admitted a
+  numeric-string source id; expected 422, received 200.
+- A1 `acknowledge_warning`: bypassing payload validation admitted the active
+  warning with a 2,001-character note; expected 422, received 200.
+- A1 `update_class`: bypassing payload validation admitted a numeric-string class
+  id; expected 422, received 200.
+- A1 `restore_snapshot`: bypassing payload validation admitted a correctly signed
+  snapshot carrying the absurd unknown `restore_limit`; expected 422, received
+  200.
+- A2: removing `SetSlotCommand`'s character ownership predicate let character 1
+  clear character 2's slot; expected 422, received 200.
+- A3: suppressing the selection eligibility rejection let Guidance enter a
+  Wizard cantrip slot as valid; expected 422, received 200.
+- A4: suppressing the prior-operation replay branch made the same UUID/different
+  command hit revision handling; expected the idempotent 200, received 409.
+- A5 cross-character restore: removing the character id from the HMAC let a
+  character-2 save-point command restore onto character 1; expected 422, received
+  200.
+- A5 tombstoned version: suppressing the inactive-version preflight restored the
+  snapshot; expected 422, received 200.
+
+Final verification observed:
+
+```text
+Dropping all tables ............................................ 4.34ms DONE
+
+ INFO  Preparing database.
+
+Creating migration table ....................................... 3.18ms DONE
+
+ INFO  Running migrations.
+
+0001_01_01_000000_create_users_table ........................... 0.96ms DONE
+0001_01_01_000001_create_cache_table ........................... 0.33ms DONE
+0001_01_01_000002_create_jobs_table ............................ 0.66ms DONE
+2026_07_21_000100_create_catalog_tables ........................ 6.59ms DONE
+2026_07_21_000200_create_character_tables ...................... 3.54ms DONE
+2026_07_21_000300_add_spell_selection_eligibility .............. 1.92ms DONE
+2026_07_21_000400_create_subclass_progressions ................. 0.32ms DONE
+2026_07_21_000500_create_character_operations .................. 0.30ms DONE
+
+ INFO  Seeding database.
+
+Database\Seeders\ClassProgressionSeeder ............................ RUNNING
+Database\Seeders\ClassProgressionSeeder ......................... 35 ms DONE
+Database\Seeders\ContentDefinitionSeeder ........................... RUNNING
+Database\Seeders\ContentDefinitionSeeder ......................... 1 ms DONE
+Database\Seeders\SeedCharacterSeeder ............................... RUNNING
+Database\Seeders\SeedCharacterSeeder ............................ 21 ms DONE
+
+Tests:    176 passed (1925 assertions)
+Duration: 23.41s
+
+> typecheck
+> vue-tsc --noEmit
+
+> build
+> vite build
+vite v8.1.5 building client environment for production...
+[plugin laravel:fonts] Optimized font fallbacks require the optional "fontaine" package. Install it, or set "optimizedFallbacks: false" on your fonts to disable the feature.
+✓ 567 modules transformed.
+✓ built in 350ms
+
+> test:e2e
+> playwright test
+
+Running 15 tests using 1 worker
+  ✓ S1
+  ✓ S2
+  ✓ S3
+  ✓ S4
+  ✓ S5
+  ✓ S6
+  ✓ S7
+  ✓ S8
+  ✓ S9
+  ✓ S10
+  ✓ S11
+  ✓ S12
+  ✓ S13
+  ✓ S14
+  ✓ S15
+  15 passed (45.5s)
+```
+
+Direct golden-value output after a final fresh seed:
+
+```json
+{
+    "caster_level": 6,
+    "slots": [4, 3, 3],
+    "proficiency_bonus": 3,
+    "class_max_preparable_levels": {
+        "Bard": 1,
+        "Cleric": 1,
+        "Druid": 1,
+        "Paladin": 1,
+        "Sorcerer": 1,
+        "Wizard": 1
+    },
+    "mage_hand": "wasteful",
+    "entangle": "none",
+    "detect_magic": {
+        "origin": "capability",
+        "casting_mode": "ritual_only",
+        "is_selection": false,
+        "counts_against_limit": false
+    }
+}
+```
+
+Review deviation: the required independent Claude plan review ended in
+`Execution error` and left an untracked dump-only probe file despite a read-only
+prompt. Its probes independently targeted the same coercion, forged restore,
+cross-character and no-op acknowledgement holes; the scratch file was removed.
+The post-implementation review was retried with plan-mode permissions and a
+240-second bound; it produced no findings and exited 124 with `Execution error`,
+without changing the worktree. Self-review verified every internal restore issuer,
+signature path and rollback/undo compatibility. No verification-contract
+deviation occurred. No commit or push was made.

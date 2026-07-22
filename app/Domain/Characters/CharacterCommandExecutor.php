@@ -47,7 +47,7 @@ final readonly class CharacterCommandExecutor
             }
 
             $before = $this->state->capture($characterId);
-            $command = $this->factory->make($payload);
+            $command = $this->factory->make($characterId, $payload);
             $command->apply($characterId);
             $nextRevision = $currentRevision + 1;
             DB::table('characters')->where('id', $characterId)->update([

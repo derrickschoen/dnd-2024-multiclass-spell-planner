@@ -8,6 +8,7 @@ use App\Domain\Characters\CharacterCommandExecutor;
 use App\Domain\Characters\RevisionConflict;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Validation\ValidationException;
 use Symfony\Component\HttpKernel\Exception\HttpExceptionInterface;
 use Throwable;
 
@@ -21,6 +22,11 @@ final class CharacterMutationController extends Controller
             'command' => ['required', 'array'],
             'command.type' => ['required', 'string'],
         ]);
+        if (! is_int($request->input('expected_revision'))) {
+            throw ValidationException::withMessages([
+                'expected_revision' => 'The expected revision must be a JSON integer.',
+            ]);
+        }
 
         try {
             return response()->json($executor->execute(

@@ -6,6 +6,7 @@ namespace App\Http\Controllers;
 
 use App\Domain\Characters\CharacterState;
 use App\Domain\Characters\CharacterWorkspaceBuilder;
+use App\Domain\Characters\Commands\CharacterCommandIntegrity;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -34,19 +35,24 @@ final class SavePointController extends Controller
         return response()->json(['workspace' => $workspace->build($character)], 201);
     }
 
-    public function command(int $character, int $savePoint): JsonResponse
-    {
+    public function command(
+        int $character,
+        int $savePoint,
+        CharacterCommandIntegrity $integrity,
+    ): JsonResponse {
         $point = DB::table('character_save_points')
             ->where('character_id', $character)
             ->where('id', $savePoint)
             ->first();
-        abort_if($point === null, 404);
+        if ($point === null) {
+            return response()->json(['message' => 'Save point does not belong to this character.'], 404);
+        }
 
         return response()->json([
-            'command' => [
+            'command' => $integrity->attach($character, [
                 'type' => 'restore_snapshot',
                 'snapshot' => json_decode((string) data_get($point, 'snapshot'), true, 512, JSON_THROW_ON_ERROR),
-            ],
+            ]),
         ]);
     }
 }
