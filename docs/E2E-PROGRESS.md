@@ -257,6 +257,8 @@ feature, repeatedly, for five iterations.
 - [x] **S18 Wizard prepares outside the book** — prepare a Wizard-list spell absent
 - [x] **S19 Clear a valid selection** — adds the missing browser affordance to
 - [x] **S20 Legacy toggle-off revalidation** — a live 2014 selection is preserved but
+- [x] **S21 Level-range tightening** — a surviving prepared slot invalidates when a
+      class-level drop narrows its level range, and heals when the level returns.
       invalidated when legacy rules are disabled, and healed when re-enabled (browser G3).
       un-prepare a spell; clears durably and undo restores the identical slot.
       from the spellbook, prove it is castable, persists, and clears durably.
@@ -2090,3 +2092,50 @@ Verified by rerunning, not by report: Playwright 26 passed, Pest 475 passed
 (13,278 assertions), only the spec modified. G3's remaining paths (class-level
 change, subclass change, catalog re-import) are Pest-covered at
 GuardCoverageTest; their browser cascades are the natural next S-scenarios.
+
+### Iteration 15 — S21, a surviving slot whose level range tightens (G3, class-level path)
+
+Third G3 browser cascade, and deliberately DISTINCT from the two already covered:
+S9 orphans SURPLUS slots on a level drop; S20 is the legacy toggle; S21 is a slot
+that SURVIVES a level drop but whose level range tightens, invalidating a
+still-in-slot selection.
+
+**Phase 0 paid for itself before a line was written.** I proved the whole cascade
+empirically against the real seed on character 1, via the command executor, rather
+than assuming it:
+- `wizard-prepared` scales level_max with Wizard level (L1→1, L3→2), verified from
+  class_progressions.
+- Prepared slot ordinal 1 keeps a STABLE id across level changes (id=10 at L1,
+  same id=10 at L3).
+- Raise to L3, select level-2 "Alter Self" → valid. Drop to L1 → SAME slot id=10
+  survives (state=active), keeps its version, spell_level_max back to 1, but
+  eligibility flips to 'invalid' reason "Selected spell is outside the slot level
+  range."; route gone. Raise back → heals.
+
+That empirical run also settled the one assumption Pest could NOT answer: the
+existing Pest test (GuardCoverageTest:427) uses count=1, so it can't show that a
+slot survives a COUNT change (4→6→4). The probe showed ordinal-1 survives the
+count change while only surplus slots orphan — which is exactly what makes this a
+distinct scenario rather than a dup of S9.
+
+**S21:** raise Wizard to 3, select a level-2 Wizard spell (chosen at runtime) into
+the ordinal-1 prepared slot, assert valid + exact with_slots route; drop to 1,
+assert the SAME slot id survives, selection preserved, spell_level_max 1,
+eligibility invalid with the exact reason, route gone, attention row shown; fresh
+hard reload for persistence; raise back to heal; undo/redo across the boundary;
+try/finally + resetDatabase.
+
+**Sensitivity proven.** Revert: remove the existing-slot `eligibility->refresh` in
+GrantRuleSlotGenerator::syncSlot. Applied it; S21 failed at line 1542 (persisted
+selection_eligibility came back 'valid'). As with S20, the route-gone assertions
+would have PASSED under this revert because SpellAccessBuilder re-evaluates
+eligibility live — the load-bearing catcher is the persisted-row assertion via
+slots()/slotFixtures(), and I confirmed the failure lands there.
+
+Fresh review: no significant defects; two trivial notes (name-based candidate
+exclusion, eligible-search cap) both fail deterministically rather than vacuously
+under future seed growth, so neither can mask a regression.
+
+Verified by rerunning, not by report: Playwright 27 passed, Pest 475 passed
+(13,278 assertions), only the spec modified. G3's remaining browser path (subclass
+change; catalog re-import) is the natural next scenario.

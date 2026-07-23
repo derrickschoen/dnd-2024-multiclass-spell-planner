@@ -1422,6 +1422,256 @@ test('S20: disabling legacy rules invalidates a live selection and enabling them
     }
 });
 
+test('S21: a surviving prepared slot invalidates when its level range tightens', async ({ page, context }) => {
+    const invalidReason = 'Selected spell is outside the slot level range.';
+    const initialTarget = requireSlot(
+        slotFixtures().find((slot) => slot.rule_key === 'wizard-prepared' && slot.ordinal === 1),
+        'the first Wizard prepared slot',
+    );
+    const targetId = initialTarget.id;
+    const targetSlot = (description: string) => requireSlot(
+        slots().find((slot) => slot.id === targetId),
+        description,
+    );
+    const matchingPreparedFixture = (description: string) => requireSlot(
+        slotFixtures().find((slot) => slot.rule_key === 'wizard-prepared' && slot.ordinal === 1),
+        description,
+    );
+
+    expect(initialTarget).toEqual(expect.objectContaining({
+        id: targetId,
+        spell_level_max: 1,
+        state: 'active',
+    }));
+
+    try {
+        await setClassLevel(page, 'Wizard', 3);
+        expect(classLevel('Wizard')).toBe(3);
+        expect(slotFixtures().filter((slot) => slot.rule_key === 'wizard-prepared' && slot.state === 'active'))
+            .toHaveLength(6);
+        const raisedFixture = matchingPreparedFixture('the raised first Wizard prepared slot');
+        expect(raisedFixture).toEqual(expect.objectContaining({
+            id: targetId,
+            slot_key: initialTarget.slot_key,
+            spell_level_max: 2,
+            state: 'active',
+        }));
+        expect(targetSlot('the persisted raised first Wizard prepared slot')).toEqual(expect.objectContaining({
+            id: targetId,
+            spell_level_max: 2,
+        }));
+
+        const selectedNames = new Set(
+            slotFixtures().flatMap((slot) => slot.spell_name === null ? [] : [slot.spell_name]),
+        );
+        const combobox = page.getByRole('combobox', { name: `Spell selection for slot ${targetId}` });
+        const eligibleResponsePromise = page.waitForResponse((response) => {
+            const url = new URL(response.url());
+
+            return response.request().method() === 'GET'
+                && url.pathname.endsWith(`/characters/1/slots/${targetId}/eligible-spells`)
+                && url.searchParams.get('q') === '';
+        });
+        await expect(combobox).toBeEnabled();
+        await combobox.fill('');
+        const eligibleResponse = await eligibleResponsePromise;
+        expect(eligibleResponse.status()).toBe(200);
+        const eligibleBody = await eligibleResponse.json() as {
+            spells: Array<{
+                id: number;
+                name: string;
+                level: number;
+                edition: '2014' | '2024';
+            }>;
+        };
+        const chosenSpell = eligibleBody.spells.find((spell) => spell.level === 2
+            && spell.edition === '2024'
+            && !selectedNames.has(spell.name));
+        expect(chosenSpell, 'the raised Wizard prepared slot should offer an unselected level-2 spell')
+            .toBeDefined();
+        expect(chosenSpell!.level).toBe(2);
+        expect(chosenSpell!.edition).toBe('2024');
+
+        const selectionBody = await selectSpellVersion(
+            page,
+            targetId,
+            chosenSpell!.name,
+            chosenSpell!.edition,
+        );
+        const chosenName = chosenSpell!.name;
+        const chosenVersionId = chosenSpell!.id;
+        const expectedRoute = {
+            spell_identity_id: expect.any(Number),
+            identity_name: chosenName,
+            spell_name: chosenName,
+            spell_content_key: expect.stringMatching(/^2024:/),
+            rules_edition: '2024',
+            spell_level: 2,
+            ability_modifier: 1,
+            attack_bonus: 4,
+            save_dc: 12,
+            origin: 'slot',
+            casting_mode: 'with_slots',
+            spell_version_id: chosenVersionId,
+            source_instance_id: raisedFixture.source_instance_id,
+            source_name: 'Wizard 3',
+            slot_id: targetId,
+            slot_key: initialTarget.slot_key,
+            selection_key: initialTarget.slot_key,
+            bucket: 'prepared',
+            selection_collection: null,
+            is_selection: true,
+            counts_against_limit: true,
+            free_cast: null,
+            spellcasting_ability: 'intelligence',
+        };
+        expect(targetSlot('the selected level-2 Wizard prepared slot')).toEqual(expect.objectContaining({
+            id: targetId,
+            current_spell_version_id: chosenVersionId,
+            spell_level_max: 2,
+            state: 'active',
+            selection_eligibility: 'valid',
+            selection_invalid_reason: null,
+        }));
+        expect(selectionBody.workspace.report.access_routes.filter((route) => route.slot_id === targetId))
+            .toEqual([expectedRoute]);
+
+        const dropBody = await setClassLevel(page, 'Wizard', 1);
+        expect(classLevel('Wizard')).toBe(1);
+        const droppedFixture = matchingPreparedFixture('the surviving tightened Wizard prepared slot');
+        expect(droppedFixture).toEqual(expect.objectContaining({
+            id: targetId,
+            slot_key: initialTarget.slot_key,
+            current_spell_version_id: chosenVersionId,
+            state: 'active',
+            spell_level_max: 1,
+            selection_eligibility: 'invalid',
+            selection_invalid_reason: invalidReason,
+        }));
+        expect(targetSlot('the persisted invalid Wizard prepared slot after level-down'))
+            .toEqual(expect.objectContaining({
+                id: targetId,
+                current_spell_version_id: chosenVersionId,
+                state: 'active',
+                spell_level_max: 1,
+                selection_eligibility: 'invalid',
+                selection_invalid_reason: invalidReason,
+            }));
+        expect(dropBody.workspace.report.access_routes.filter((route) => route.slot_id === targetId)).toEqual([]);
+        const attentionRow = slotRow(page, targetId).locator('xpath=following-sibling::tr[1]')
+            .filter({ hasText: 'Selection needs attention.' });
+        await expect(attentionRow.locator('p')).toHaveText(`⚠ Selection needs attention. ${invalidReason}`);
+        await expect(attentionRow.getByRole('button', { name: 'Replace', exact: true })).toHaveText('Replace');
+        await expect(attentionRow.getByRole('button', { name: 'Keep as override', exact: true }))
+            .toHaveText('Keep as override');
+        await expect(attentionRow.getByRole('button', { name: 'Clear', exact: true })).toHaveText('Clear');
+
+        const freshPage = await context.newPage();
+        try {
+            await freshPage.goto('/characters/1');
+            await expect(freshPage.getByRole('heading', {
+                name: 'A6 Sixfold Spellcaster',
+                level: 1,
+            })).toBeVisible();
+            await hardReloadIgnoringCache(freshPage, context);
+            await expect(freshPage.getByRole('heading', {
+                name: 'A6 Sixfold Spellcaster',
+                level: 1,
+            })).toBeVisible();
+            await expect(freshPage.getByRole('combobox', {
+                name: `Spell selection for slot ${targetId}`,
+            })).toHaveValue(chosenName);
+            await expect(slotRow(freshPage, targetId).locator('td').nth(10)).toHaveText('⚠ Invalid');
+            await expect(slotRow(freshPage, targetId).locator('xpath=following-sibling::tr[1]').locator('p'))
+                .toHaveText(`⚠ Selection needs attention. ${invalidReason}`);
+            expect(targetSlot('the freshly read persisted invalid Wizard prepared slot'))
+                .toEqual(expect.objectContaining({
+                    id: targetId,
+                    current_spell_version_id: chosenVersionId,
+                    state: 'active',
+                    spell_level_max: 1,
+                    selection_eligibility: 'invalid',
+                    selection_invalid_reason: invalidReason,
+                }));
+            expect(buildReport<MutationBody['workspace']['report']>().access_routes
+                .filter((route) => route.slot_id === targetId)).toEqual([]);
+        } finally {
+            await freshPage.close();
+        }
+
+        const healBody = await setClassLevel(page, 'Wizard', 3);
+        expect(classLevel('Wizard')).toBe(3);
+        const healedFixture = matchingPreparedFixture('the healed first Wizard prepared slot');
+        expect(healedFixture).toEqual(expect.objectContaining({
+            id: targetId,
+            slot_key: initialTarget.slot_key,
+            current_spell_version_id: chosenVersionId,
+            state: 'active',
+            spell_level_max: 2,
+            selection_eligibility: 'valid',
+            selection_invalid_reason: null,
+            orphan_reason_code: null,
+            orphaned_by_change_group_id: null,
+            orphaned_at: null,
+        }));
+        expect(healBody.workspace.report.access_routes.filter((route) => route.slot_id === targetId))
+            .toEqual([expectedRoute]);
+        expect(healBody.workspace.report.invalid_selections.filter((slot) => slot.id === targetId)).toEqual([]);
+        expect(healBody.workspace.report.duplicate_assessments
+            .filter((assessment) => assessment.spell_name === chosenName)).toEqual([
+            expect.objectContaining({ category: 'none', selection_count: 1 }),
+        ]);
+        expect(slots().filter((slot) => slot.slot_key === initialTarget.slot_key)).toHaveLength(1);
+        await expect(slotRow(page, targetId).locator('xpath=following-sibling::tr[1]')
+            .filter({ hasText: 'Selection needs attention.' })).toHaveCount(0);
+        await expect(slotRow(page, targetId).locator('td').nth(9)).toHaveText('— None');
+        await expect(slotRow(page, targetId).locator('td').nth(10)).toHaveText('✓ Valid');
+
+        const undo = page.getByRole('button', { name: /Undo/ });
+        const redo = page.getByRole('button', { name: /Redo/ });
+        await expect(undo).toBeEnabled();
+        const undoResponsePromise = page.waitForResponse(isMutationResponse);
+        await undo.click();
+        const undoResponse = await undoResponsePromise;
+        expect(undoResponse.status()).toBe(200);
+        const undoBody = await undoResponse.json() as CommandMutationBody;
+        await expect(page.getByText(new RegExp(`revision ${undoBody.revision}$`))).toBeVisible();
+        expect(classLevel('Wizard')).toBe(1);
+        expect(targetSlot('the invalid tightened Wizard prepared slot after undo'))
+            .toEqual(expect.objectContaining({
+                id: targetId,
+                current_spell_version_id: chosenVersionId,
+                state: 'active',
+                spell_level_max: 1,
+                selection_eligibility: 'invalid',
+                selection_invalid_reason: invalidReason,
+            }));
+        expect(undoBody.workspace.report.access_routes.filter((route) => route.slot_id === targetId)).toEqual([]);
+
+        await expect(redo).toBeEnabled();
+        const redoResponsePromise = page.waitForResponse(isMutationResponse);
+        await redo.click();
+        const redoResponse = await redoResponsePromise;
+        expect(redoResponse.status()).toBe(200);
+        const redoBody = await redoResponse.json() as CommandMutationBody;
+        await expect(page.getByText(new RegExp(`revision ${redoBody.revision}$`))).toBeVisible();
+        expect(classLevel('Wizard')).toBe(3);
+        expect(targetSlot('the healed Wizard prepared slot after redo')).toEqual(expect.objectContaining({
+            id: targetId,
+            current_spell_version_id: chosenVersionId,
+            state: 'active',
+            spell_level_max: 2,
+            selection_eligibility: 'valid',
+            selection_invalid_reason: null,
+            orphan_reason_code: null,
+        }));
+        expect(redoBody.workspace.report.access_routes.filter((route) => route.slot_id === targetId))
+            .toEqual([expectedRoute]);
+    } finally {
+        resetDatabase();
+    }
+});
+
 test('T10: Mutt matches the authoritative sheet attribution with zero duplicates', async ({ page }) => {
     const muttId = 2;
     await page.goto(`/characters/${muttId}`);
