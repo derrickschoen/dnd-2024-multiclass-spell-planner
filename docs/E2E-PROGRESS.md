@@ -258,6 +258,8 @@ feature, repeatedly, for five iterations.
 - [x] **S19 Clear a valid selection** — adds the missing browser affordance to
 - [x] **S20 Legacy toggle-off revalidation** — a live 2014 selection is preserved but
 - [x] **S21 Level-range tightening** — a surviving prepared slot invalidates when a
+- [x] **S22 Keep as override** — an invalid selection kept as a house rule regains its
+      route, survives regeneration, and is reversible via a slot command.
       class-level drop narrows its level range, and heals when the level returns.
       invalidated when legacy rules are disabled, and healed when re-enabled (browser G3).
       un-prepare a spell; clears durably and undo restores the identical slot.
@@ -2139,3 +2141,42 @@ under future seed growth, so neither can mask a regression.
 Verified by rerunning, not by report: Playwright 27 passed, Pest 475 passed
 (13,278 assertions), only the spec modified. G3's remaining browser path (subclass
 change; catalog re-import) is the natural next scenario.
+
+### Iteration 16 — S22, "Keep as override": an invalid selection kept as a house rule
+
+The subclass-change and catalog-re-import G3 paths turned out NOT to be browser-
+reachable (the seed has zero subclasses assigned or available; re-import is CLI-
+only), so Phase 0 redirected to a richer uncovered path S20/S21 both walked past:
+the attention row's "Keep as override" action, which they only ever assert as a
+button. Proven empirically on character 1 before writing anything:
+- an ordinary INVALID selection has NO access route;
+- after keep_override the SAME still-ineligible selection gains its route BACK
+  (the house rule — DM allowed it, so it casts);
+- the override SURVIVES an unrelated regeneration (bump a different class's level)
+  where an ordinary selection would be re-evaluated;
+- a slot command (clear) returns it to ordinary eligibility.
+
+**S22** reuses S21's setup to create the invalid selection, then clicks "Keep as
+override" with a note, asserts state=kept_override + the route RETURNS (whole
+route object), survives a Bard->2 regeneration (route still present), persists
+across a fresh-page hard reload, clears back to ordinary, and undoes back to the
+override — all in try/finally.
+
+**Sensitivity proven:** removing the `state !== 'kept_override'` bypass in
+SpellAccessBuilder makes S22 fail at line 1838 — the route-RETURNS assertion. The
+persisted state='kept_override' assertion PASSES under that revert (the state is
+still stored), so as with S20/S21 the load-bearing catcher is the route/behaviour
+assertion, not the state row, and I confirmed the failure lands there.
+
+**A Phase-0 assumption of MINE was wrong and my own run caught it.** I told the
+producer the kept_override attention row shows "This selection is being kept as an
+explicit override." In fact that fallback only shows when invalid_reason is null;
+a kept override of an out-of-range selection RETAINS its invalid_reason, so the
+row shows the invalid reason + the note. The producer inherited my wrong text (the
+fresh review inherited it too, since it never ran the test) and 4 assertions were
+wrong. Fixed to the real text — same exact-match strength, correct value; the
+route sensitivity assertions were untouched. The lesson repeats: an assumption
+about UI text is not proven until the browser renders it.
+
+Verified by rerunning, not by report: Playwright 28 passed, Pest 475 passed
+(13,278 assertions), only the spec modified.

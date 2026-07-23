@@ -1672,6 +1672,280 @@ test('S21: a surviving prepared slot invalidates when its level range tightens',
     }
 });
 
+test('S22: an invalid selection kept as an explicit override survives regeneration and remains reversible', async ({
+    page,
+    context,
+}) => {
+    const invalidReason = 'Selected spell is outside the slot level range.';
+    const overrideNote = 'DM ruled this legal for our table';
+    const initialTarget = requireSlot(
+        slotFixtures().find((slot) => slot.rule_key === 'wizard-prepared' && slot.ordinal === 1),
+        'the first Wizard prepared slot',
+    );
+    const targetId = initialTarget.id;
+    const targetSlot = (description: string) => requireSlot(
+        slots().find((slot) => slot.id === targetId),
+        description,
+    );
+    const attentionRow = (currentPage: Page) => slotRow(currentPage, targetId)
+        .locator('xpath=following-sibling::tr[1]')
+        .filter({ hasText: 'Selection needs attention.' });
+
+    expect(initialTarget).toEqual(expect.objectContaining({
+        id: targetId,
+        spell_level_max: 1,
+        state: 'active',
+    }));
+
+    try {
+        await setClassLevel(page, 'Wizard', 3);
+        expect(classLevel('Wizard')).toBe(3);
+        const raisedTarget = requireSlot(
+            slotFixtures().find((slot) => slot.rule_key === 'wizard-prepared' && slot.ordinal === 1),
+            'the raised first Wizard prepared slot',
+        );
+        expect(raisedTarget).toEqual(expect.objectContaining({
+            id: targetId,
+            slot_key: initialTarget.slot_key,
+            spell_level_max: 2,
+            state: 'active',
+        }));
+
+        const selectedNames = new Set(
+            slotFixtures().flatMap((slot) => slot.spell_name === null ? [] : [slot.spell_name]),
+        );
+        const combobox = page.getByRole('combobox', { name: `Spell selection for slot ${targetId}` });
+        const eligibleResponsePromise = page.waitForResponse((response) => {
+            const url = new URL(response.url());
+
+            return response.request().method() === 'GET'
+                && url.pathname.endsWith(`/characters/1/slots/${targetId}/eligible-spells`)
+                && url.searchParams.get('q') === '';
+        });
+        await expect(combobox).toBeEnabled();
+        await combobox.fill('');
+        const eligibleResponse = await eligibleResponsePromise;
+        expect(eligibleResponse.status()).toBe(200);
+        const eligibleBody = await eligibleResponse.json() as {
+            spells: Array<{
+                id: number;
+                name: string;
+                level: number;
+                edition: '2014' | '2024';
+            }>;
+        };
+        const chosenSpell = eligibleBody.spells.find((spell) => spell.level === 2
+            && spell.edition === '2024'
+            && !selectedNames.has(spell.name));
+        expect(chosenSpell, 'the raised Wizard prepared slot should offer an unselected level-2 spell')
+            .toBeDefined();
+        expect(chosenSpell!.level).toBe(2);
+        expect(chosenSpell!.edition).toBe('2024');
+
+        const selectionBody = await selectSpellVersion(
+            page,
+            targetId,
+            chosenSpell!.name,
+            chosenSpell!.edition,
+        );
+        const chosenName = chosenSpell!.name;
+        const chosenVersionId = chosenSpell!.id;
+        const expectedRoute = (sourceName: string) => ({
+            spell_identity_id: expect.any(Number),
+            identity_name: chosenName,
+            spell_name: chosenName,
+            spell_content_key: expect.stringMatching(/^2024:/),
+            rules_edition: '2024',
+            spell_level: 2,
+            ability_modifier: 1,
+            attack_bonus: 4,
+            save_dc: 12,
+            origin: 'slot',
+            casting_mode: 'with_slots',
+            spell_version_id: chosenVersionId,
+            source_instance_id: raisedTarget.source_instance_id,
+            source_name: sourceName,
+            slot_id: targetId,
+            slot_key: initialTarget.slot_key,
+            selection_key: initialTarget.slot_key,
+            bucket: 'prepared',
+            selection_collection: null,
+            is_selection: true,
+            counts_against_limit: true,
+            free_cast: null,
+            spellcasting_ability: 'intelligence',
+        });
+        expect(targetSlot('the selected level-2 Wizard prepared slot')).toEqual(expect.objectContaining({
+            id: targetId,
+            current_spell_version_id: chosenVersionId,
+            spell_level_max: 2,
+            state: 'active',
+            selection_eligibility: 'valid',
+            selection_invalid_reason: null,
+        }));
+        expect(selectionBody.workspace.report.access_routes.filter((route) => route.slot_id === targetId))
+            .toEqual([expectedRoute('Wizard 3')]);
+
+        const dropBody = await setClassLevel(page, 'Wizard', 1);
+        expect(classLevel('Wizard')).toBe(1);
+        expect(targetSlot('the persisted invalid Wizard prepared slot after level-down'))
+            .toEqual(expect.objectContaining({
+                id: targetId,
+                current_spell_version_id: chosenVersionId,
+                state: 'active',
+                spell_level_max: 1,
+                selection_eligibility: 'invalid',
+                selection_invalid_reason: invalidReason,
+            }));
+        expect(dropBody.workspace.report.access_routes.filter((route) => route.slot_id === targetId)).toEqual([]);
+        await expect(attentionRow(page).locator('p'))
+            .toHaveText(`⚠ Selection needs attention. ${invalidReason}`);
+
+        const noteInput = attentionRow(page).getByLabel('Override note', { exact: true });
+        const keepOverride = attentionRow(page).getByRole('button', { name: 'Keep as override', exact: true });
+        await expect(noteInput).toHaveAttribute('placeholder', 'Why this house rule is allowed');
+        await expect(noteInput).toHaveValue('');
+        await expect(keepOverride).toBeDisabled();
+        await noteInput.fill(overrideNote);
+        await expect(noteInput).toHaveValue(overrideNote);
+        await expect(keepOverride).toBeEnabled();
+
+        const revisionBeforeOverride = Number(character().revision);
+        const overrideResponsePromise = page.waitForResponse(isMutationResponse);
+        await keepOverride.click();
+        const overrideResponse = await overrideResponsePromise;
+        expect(overrideResponse.status()).toBe(200);
+        expect(overrideResponse.request().postDataJSON()).toEqual(expect.objectContaining({
+            expected_revision: revisionBeforeOverride,
+            command: {
+                type: 'set_slot',
+                slot_id: targetId,
+                mode: 'keep_override',
+                note: overrideNote,
+            },
+        }));
+        const overrideBody = await overrideResponse.json() as CommandMutationBody;
+        await expect(page.getByText(new RegExp(`revision ${overrideBody.revision}$`))).toBeVisible();
+        expect(targetSlot('the persisted kept-override Wizard prepared slot')).toEqual(expect.objectContaining({
+            id: targetId,
+            state: 'kept_override',
+            override_note: overrideNote,
+            current_spell_version_id: chosenVersionId,
+            selection_eligibility: 'invalid',
+            selection_invalid_reason: invalidReason,
+        }));
+        expect(overrideBody.workspace.report.access_routes.filter((route) => route.slot_id === targetId))
+            .toEqual([expectedRoute('Wizard 1')]);
+        await expect(attentionRow(page).locator('p'))
+            .toHaveText(`⚠ Selection needs attention. ${invalidReason} Note: ${overrideNote}`);
+        await expect(combobox).toHaveValue(chosenName);
+
+        const bardBody = await setClassLevel(page, 'Bard', 2);
+        expect(classLevel('Bard')).toBe(2);
+        expect(targetSlot('the kept-override Wizard slot after unrelated Bard regeneration'))
+            .toEqual(expect.objectContaining({
+                id: targetId,
+                state: 'kept_override',
+                override_note: overrideNote,
+                current_spell_version_id: chosenVersionId,
+                selection_eligibility: 'invalid',
+                selection_invalid_reason: invalidReason,
+            }));
+        expect(bardBody.workspace.report.access_routes.filter((route) => route.slot_id === targetId))
+            .toEqual([expectedRoute('Wizard 1')]);
+        await expect(attentionRow(page).locator('p'))
+            .toHaveText(`⚠ Selection needs attention. ${invalidReason} Note: ${overrideNote}`);
+        await expect(combobox).toHaveValue(chosenName);
+
+        const freshPage = await context.newPage();
+        try {
+            await freshPage.goto('/characters/1');
+            await expect(freshPage.getByRole('heading', {
+                name: 'A6 Sixfold Spellcaster',
+                level: 1,
+            })).toBeVisible();
+            await hardReloadIgnoringCache(freshPage, context);
+            await expect(freshPage.getByRole('heading', {
+                name: 'A6 Sixfold Spellcaster',
+                level: 1,
+            })).toBeVisible();
+            await expect(freshPage.getByRole('combobox', {
+                name: `Spell selection for slot ${targetId}`,
+            })).toHaveValue(chosenName);
+            expect(targetSlot('the freshly read persisted kept-override Wizard slot'))
+                .toEqual(expect.objectContaining({
+                    id: targetId,
+                    state: 'kept_override',
+                    override_note: overrideNote,
+                    current_spell_version_id: chosenVersionId,
+                    selection_eligibility: 'invalid',
+                    selection_invalid_reason: invalidReason,
+                }));
+            expect(buildReport<MutationBody['workspace']['report']>().access_routes
+                .filter((route) => route.slot_id === targetId)).toEqual([expectedRoute('Wizard 1')]);
+            await expect(attentionRow(freshPage).locator('p'))
+                .toHaveText(`⚠ Selection needs attention. ${invalidReason} Note: ${overrideNote}`);
+
+            let clearDialogMessage = '';
+            freshPage.once('dialog', async (dialog) => {
+                clearDialogMessage = dialog.message();
+                await dialog.accept();
+            });
+            const revisionBeforeClear = Number(character().revision);
+            const clearResponsePromise = freshPage.waitForResponse(isMutationResponse);
+            await attentionRow(freshPage).getByRole('button', { name: 'Clear', exact: true }).click();
+            const clearResponse = await clearResponsePromise;
+            expect(clearResponse.status()).toBe(200);
+            expect(clearResponse.request().postDataJSON()).toEqual(expect.objectContaining({
+                expected_revision: revisionBeforeClear,
+                command: { type: 'set_slot', slot_id: targetId, mode: 'clear' },
+            }));
+            const clearBody = await clearResponse.json() as CommandMutationBody;
+            await expect(freshPage.getByText(new RegExp(`revision ${clearBody.revision}$`))).toBeVisible();
+            expect(clearDialogMessage).toBe(`Clear ${chosenName} from Prepared 1?`);
+            expect(targetSlot('the cleared former override slot')).toEqual(expect.objectContaining({
+                id: targetId,
+                state: 'active',
+                selection_eligibility: 'unselected',
+                selection_invalid_reason: null,
+                override_note: null,
+                current_spell_version_id: null,
+            }));
+            expect(clearBody.workspace.report.access_routes.filter((route) => route.slot_id === targetId)).toEqual([]);
+            await expect(attentionRow(freshPage)).toHaveCount(0);
+
+            const undo = freshPage.getByRole('button', { name: /Undo/ });
+            await expect(undo).toBeEnabled();
+            const undoResponsePromise = freshPage.waitForResponse(isMutationResponse);
+            await undo.click();
+            const undoResponse = await undoResponsePromise;
+            expect(undoResponse.status()).toBe(200);
+            const undoBody = await undoResponse.json() as CommandMutationBody;
+            await expect(freshPage.getByText(new RegExp(`revision ${undoBody.revision}$`))).toBeVisible();
+            expect(targetSlot('the kept-override Wizard slot restored by undo'))
+                .toEqual(expect.objectContaining({
+                    id: targetId,
+                    state: 'kept_override',
+                    override_note: overrideNote,
+                    current_spell_version_id: chosenVersionId,
+                    selection_eligibility: 'invalid',
+                    selection_invalid_reason: invalidReason,
+                }));
+            expect(undoBody.workspace.report.access_routes.filter((route) => route.slot_id === targetId))
+                .toEqual([expectedRoute('Wizard 1')]);
+            await expect(attentionRow(freshPage).locator('p'))
+                .toHaveText(`⚠ Selection needs attention. ${invalidReason} Note: ${overrideNote}`);
+            await expect(freshPage.getByRole('combobox', {
+                name: `Spell selection for slot ${targetId}`,
+            })).toHaveValue(chosenName);
+        } finally {
+            await freshPage.close();
+        }
+    } finally {
+        resetDatabase();
+    }
+});
+
 test('T10: Mutt matches the authoritative sheet attribution with zero duplicates', async ({ page }) => {
     const muttId = 2;
     await page.goto(`/characters/${muttId}`);
